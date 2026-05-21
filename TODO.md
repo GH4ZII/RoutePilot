@@ -10,7 +10,7 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 | Område        | Status      |
 |---------------|-------------|
-| Web           | Ikke startet |
+| Web           | Startet |
 | Mobile (Expo) | Ikke startet |
 | Backend       | Ikke startet |
 | Database      | Ikke startet |
@@ -21,9 +21,9 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 ## Fase 1: Prosjektoppsett
 
-- [ ] Web (`apps/web`): React + TypeScript + Vite + Tailwind CSS
-- [ ] Mobile (`apps/mobile`): Expo + TypeScript + Expo Router
-- [ ] Backend (`apps/api`): NestJS + TypeScript
+- [x] Web (`apps/web`): React + TypeScript + Vite + Tailwind CSS
+- [x] Mobile (`apps/mobile`): Expo + TypeScript + Expo Router
+- [x] Backend (`apps/api`): NestJS + TypeScript
 - [ ] PostgreSQL + PostGIS
 - [ ] ORM / migrasjoner (f.eks. Prisma)
 - [ ] Autentisering: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`
