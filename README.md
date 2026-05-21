@@ -16,7 +16,7 @@ The goal of this project is to build a logistics platform that can answer questi
 * How much distance and time can be saved by optimizing the route?
 * How can a dispatcher monitor delivery progress during the day?
 
-The platform should support a realistic logistics workflow where an admin/dispatcher plans routes, while drivers use a mobile-friendly interface to complete deliveries.
+The platform should support a realistic logistics workflow where an admin/dispatcher plans routes on the web app, while drivers use a native mobile app (Expo) to complete deliveries.
 
 ---
 
@@ -367,7 +367,7 @@ The route planning workflow should work like this:
 
 ## 9. Driver Interface
 
-The driver interface should be simple and mobile-friendly.
+The driver interface is a dedicated **Expo mobile app** (`apps/mobile`) — simple, touch-first, and usable in the field.
 
 Driver should see:
 
@@ -518,7 +518,7 @@ The system should store both:
 
 ## 16. Tech Stack
 
-### Frontend
+### Web (dispatcher / admin)
 
 * React
 * TypeScript
@@ -527,6 +527,15 @@ The system should store both:
 * Leaflet or MapLibre
 * Recharts
 * React Query
+
+### Mobile (driver)
+
+* Expo (React Native)
+* TypeScript
+* Expo Router
+* React Query
+* Expo Location (GPS for proof of delivery)
+* Expo Image Picker / Camera (delivery photos)
 
 ### Backend
 
@@ -568,43 +577,42 @@ Useful for:
 
 ### Deployment
 
-* Frontend: Vercel
+* Web: Vercel
+* Mobile: Expo EAS Build → App Store / Google Play (or EAS Update for OTA)
 * Backend: Railway, Fly.io, Render, or VPS
 * Database: Supabase, Neon, Railway PostgreSQL, or managed Postgres
 * Redis: Upstash or Railway Redis
 
 ---
 
-## 17. Proposed Architecture
+## 17. Project Architecture
 
 ```txt
-Frontend Web App
-   |
-   | REST API / WebSocket
-   v
-NestJS Backend
-   |
-   |---- Auth module
-   |---- Users module
-   |---- Organizations module
-   |---- Drivers module
-   |---- Vehicles module
-   |---- Deliveries module
-   |---- Routes module
-   |---- Optimization module
-   |---- Reports module
-   |
-   | Background jobs
-   v
-Redis / BullMQ
-   |
-   v
-Python Optimization Worker
-   |
-   v
-Google OR-Tools
-
-PostgreSQL + PostGIS
+RoutePilot
+│
+├── Web App
+│   └── React + TypeScript + Vite + Tailwind CSS
+│       Used by admins and dispatchers
+│
+├── Mobile App
+│   └── Expo + React Native + TypeScript
+│       Used by drivers
+│
+├── Backend API
+│   └── NestJS + TypeScript
+│       Handles auth, roles, deliveries, vehicles, routes,        dashboard and reports
+│
+├── Optimization Service
+│   └── Python + Google OR-Tools
+│       Calculates optimized routes with constraints
+│
+├── Background Jobs
+│   └── Redis + BullMQ, optional
+│       Handles long-running jobs such as optimization, CSV import and geocoding
+│
+└── Database
+    └── PostgreSQL + PostGIS
+        Stores users, organizations, drivers, vehicles, deliveries, routes and geospatial data
 ```
 
 ---
@@ -859,9 +867,9 @@ The first version should include:
 * Capacity constraints
 * Time windows
 * Route assignment
-* Driver route view
-* Mark stop as delivered or failed
-* Dispatcher dashboard
+* Expo mobile app — driver route view
+* Mark stop as delivered or failed (mobile)
+* Dispatcher dashboard (web)
 
 ---
 
@@ -915,11 +923,12 @@ As an admin, I want to manage vehicles so that route planning respects real capa
 
 ## Phase 1: Project Setup
 
-* Set up frontend
-* Set up backend
+* Set up web (`apps/web`)
+* Set up mobile (`apps/mobile`, Expo + Expo Router)
+* Set up backend (`apps/api`)
 * Set up PostgreSQL database
-* Set up authentication
-* Set up basic layout and navigation
+* Set up authentication (shared across web and mobile)
+* Set up basic layout and navigation (web: dispatcher/admin, mobile: driver)
 
 ## Phase 2: Core CRUD
 
@@ -952,12 +961,13 @@ As an admin, I want to manage vehicles so that route planning respects real capa
 * Priority handling
 * Unassigned delivery handling
 
-## Phase 6: Driver Workflow
+## Phase 6: Driver Workflow (Expo `apps/mobile`)
 
-* Driver route page
+* Driver route screens
 * Start route
 * Complete stop
 * Fail stop
+* Proof of delivery (photo, GPS)
 * Finish route
 
 ## Phase 7: Dashboard
@@ -1003,13 +1013,18 @@ Test that:
 * High-priority deliveries are not ignored
 * Unassignable deliveries are reported
 
-### Frontend tests
+### Web tests
 
 * Login flow
 * Delivery form validation
 * Dashboard rendering
 * Route map rendering
-* Driver status actions
+
+### Mobile tests
+
+* Driver login
+* Route and stop screens
+* Complete / fail stop actions
 
 ---
 
@@ -1032,7 +1047,7 @@ Users from one organization must never access deliveries, drivers, vehicles, or 
 ---
 
 
-## 30. Final Product Vision
+## 28. Final Product Vision
 
 The final product should feel like a lightweight version of a professional dispatch and logistics system.
 

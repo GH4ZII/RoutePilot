@@ -10,7 +10,8 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 | Område        | Status      |
 |---------------|-------------|
-| Frontend      | Ikke startet |
+| Web           | Ikke startet |
+| Mobile (Expo) | Ikke startet |
 | Backend       | Ikke startet |
 | Database      | Ikke startet |
 | Optimalisering| Ikke startet |
@@ -20,14 +21,16 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 ## Fase 1: Prosjektoppsett
 
-- [ ] Frontend: React + TypeScript + Vite + Tailwind CSS
-- [ ] Backend: NestJS + TypeScript
+- [ ] Web (`apps/web`): React + TypeScript + Vite + Tailwind CSS
+- [ ] Mobile (`apps/mobile`): Expo + TypeScript + Expo Router
+- [ ] Backend (`apps/api`): NestJS + TypeScript
 - [ ] PostgreSQL + PostGIS
 - [ ] ORM / migrasjoner (f.eks. Prisma)
 - [ ] Autentisering: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`
 - [ ] Roller: Admin, Dispatcher, Driver
 - [ ] Organisasjons-isolasjon (brukere ser kun egen org)
-- [ ] Grunnleggende layout og navigasjon (dispatcher vs. sjåfør)
+- [ ] Web: layout og navigasjon (admin + dispatcher)
+- [ ] Mobile: layout og navigasjon (sjåfør, Expo Router)
 
 ---
 
@@ -97,13 +100,15 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 ---
 
-## Fase 6: Sjåfør-workflow
+## Fase 6: Sjåfør-workflow (Expo `apps/mobile`)
 
-- [ ] Mobilvennlig sjåførvisning (dagens rute, neste stopp)
+- [ ] Expo-app: innlogging, dagens rute, neste stopp
 - [ ] Vis adresse, telefon, notater, estimert ankomst, pakkeinfo
 - [ ] `POST /routes/:id/assign`, `/start`, `/finish`
 - [ ] `POST /route-stops/:id/complete`, `/fail`
-- [ ] Handlinger: start rute, åpne navigasjon, fullfør rute
+- [ ] Handlinger: start rute, åpne navigasjon (deep link), fullfør rute
+- [ ] Expo Location + kamera for proof of delivery
+- [ ] EAS Build / TestFlight / intern testing
 - [ ] Ruteplanleggingsflyt: opprett leveringer → generer → gjennomgå → tildel → kjør
 
 ---
@@ -127,9 +132,10 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 - [ ] React Query + Recharts på frontend
 - [ ] Feilhåndtering og input-validering
 - [ ] Backend-tester (auth, leveringer, kapasitet, optimalisering, API)
-- [ ] Frontend-tester (login, skjema, dashboard, kart, sjåførhandlinger)
+- [ ] Web-tester (login, skjema, dashboard, kart)
+- [ ] Mobile-tester (login, rutevisning, fullfør/feil stopp)
 - [ ] Sikkerhet: RBAC, org-isolasjon, rate limiting, sikker filopplasting
-- [ ] Deploy: frontend (Vercel), backend (Railway/Fly.io/Render), DB, Redis (Upstash)
+- [ ] Deploy: web (Vercel), mobile (EAS → App Store / Play), API, DB, Redis
 
 ---
 
@@ -147,7 +153,7 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 - [ ] Kapasitetsbegrensninger
 - [ ] Tidsvinduer
 - [ ] Rute-tildeling til sjåfør
-- [ ] Sjåfør-rutevisning
+- [ ] Sjåfør-rutevisning (Expo mobile app)
 - [ ] Marker stopp som levert eller feilet
 - [ ] Dispatcher-dashboard
 
@@ -171,14 +177,7 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 ## Arkitektur (referanse)
 
-```
-Frontend (React/Vite)
-    → REST / WebSocket
-NestJS Backend
-    → Redis / BullMQ
-Python Optimization Worker (OR-Tools)
-    → PostgreSQL + PostGIS
-```
+Se [README.md §17 Project Architecture](./README.md#17-project-architecture).
 
 ### NestJS-moduler
 
