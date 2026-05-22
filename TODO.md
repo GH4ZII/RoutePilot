@@ -24,8 +24,8 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 - [x] Web (`apps/web`): React + TypeScript + Vite + Tailwind CSS
 - [x] Mobile (`apps/mobile`): Expo + TypeScript + Expo Router
 - [x] Backend (`apps/api`): NestJS + TypeScript
-- [ ] PostgreSQL + PostGIS
-- [ ] ORM / migrasjoner (f.eks. Prisma)
+- [x] PostgreSQL + PostGIS
+- [x] ORM / migrasjoner (f.eks. Prisma)
 - [ ] Autentisering: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`
 - [ ] Roller: Admin, Dispatcher, Driver
 - [ ] Organisasjons-isolasjon (brukere ser kun egen org)

@@ -1,13 +1,309 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// RoutePilot — Prisma schema (Supabase PostgreSQL + PostGIS)
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// --- Enums ---
+
+enum UserRole {
+  ADMIN
+  DISPATCHER
+  DRIVER
+}
+
+enum DriverStatus {
+  AVAILABLE
+  ON_ROUTE
+  UNAVAILABLE
+  OFF_DUTY
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  IN_USE
+  MAINTENANCE
+  UNAVAILABLE
+}
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  DELIVERED
+  FAILED
+  CANCELLED
+}
+
+enum DeliveryPriority {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+enum RouteStatus {
+  PLANNED
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum RouteStopStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+
+enum OptimizationJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum OptimizationObjective {
+  MINIMIZE_TOTAL_DISTANCE
+  MINIMIZE_TOTAL_TIME
+  BALANCE_WORKLOAD
+  PRIORITIZE_URGENT
+  MINIMIZE_LATE_DELIVERIES
+}
+
+enum RouteEventType {
+  ROUTE_STARTED
+  STOP_COMPLETED
+  STOP_FAILED
+  ROUTE_FINISHED
+  DRIVER_DELAYED
+}
+
+// --- Models ---
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users            User[]
+  drivers          Driver[]
+  vehicles         Vehicle[]
+  deliveries       Delivery[]
+  routes           Route[]
+  optimizationJobs OptimizationJob[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  organizationId String
+  email          String
+  passwordHash   String
+  role           UserRole
+  name           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  driver       Driver?
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+  @@map("users")
+}
+
+model Driver {
+  id             String       @id @default(cuid())
+  organizationId String
+  userId         String?      @unique
+  vehicleId      String?
+  activeRouteId  String?      @unique
+  name           String
+  phone          String?
+  email          String?
+  status         DriverStatus @default(AVAILABLE)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  vehicle      Vehicle?     @relation("AssignedVehicle", fields: [vehicleId], references: [id], onDelete: SetNull)
+  activeRoute  Route?       @relation("ActiveRoute", fields: [activeRouteId], references: [id], onDelete: SetNull)
+  routes       Route[]      @relation("DriverRoutes")
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("drivers")
+}
+
+model Vehicle {
+  id                 String        @id @default(cuid())
+  organizationId     String
+  name               String
+  registrationNumber String
+  maxWeightKg        Decimal       @db.Decimal(10, 2)
+  maxVolumeM3        Decimal       @db.Decimal(10, 3)
+  startLatitude      Decimal       @db.Decimal(10, 7)
+  startLongitude     Decimal       @db.Decimal(10, 7)
+  endLatitude        Decimal       @db.Decimal(10, 7)
+  endLongitude       Decimal       @db.Decimal(10, 7)
+  startLocation      Unsupported("geography(Point,4326)")?
+  endLocation        Unsupported("geography(Point,4326)")?
+  status             VehicleStatus @default(AVAILABLE)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  drivers      Driver[]     @relation("AssignedVehicle")
+  routes       Route[]
+
+  @@unique([organizationId, registrationNumber])
+  @@index([organizationId])
+  @@index([status])
+  @@map("vehicles")
+}
+
+model Delivery {
+  id               String           @id @default(cuid())
+  organizationId   String
+  customerName     String
+  phone            String?
+  address          String
+  latitude         Decimal          @db.Decimal(10, 7)
+  longitude        Decimal          @db.Decimal(10, 7)
+  location         Unsupported("geography(Point,4326)")?
+  weightKg         Decimal          @db.Decimal(10, 2)
+  volumeM3         Decimal?         @db.Decimal(10, 3)
+  priority         DeliveryPriority @default(NORMAL)
+  deadline         DateTime?
+  timeWindowStart  DateTime?
+  timeWindowEnd    DateTime?
+  notes            String?
+  status           DeliveryStatus   @default(PENDING)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  routeStops     RouteStop[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([deadline])
+  @@index([priority])
+  @@map("deliveries")
+}
+
+model Route {
+  id                    String      @id @default(cuid())
+  organizationId        String
+  driverId              String?
+  vehicleId             String?
+  status                RouteStatus @default(PLANNED)
+  plannedDate           DateTime    @db.Date
+  totalDistanceMeters   Int?
+  totalDurationSeconds  Int?
+  capacityUsedKg        Decimal?    @db.Decimal(10, 2)
+  startedAt             DateTime?
+  finishedAt            DateTime?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  driver        Driver?       @relation("DriverRoutes", fields: [driverId], references: [id], onDelete: SetNull)
+  vehicle       Vehicle?      @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  activeDriver  Driver?       @relation("ActiveRoute")
+  stops         RouteStop[]
+  events        RouteEvent[]
+
+  @@index([organizationId])
+  @@index([driverId])
+  @@index([status])
+  @@index([plannedDate])
+  @@map("routes")
+}
+
+model RouteStop {
+  id                String          @id @default(cuid())
+  routeId           String
+  deliveryId        String
+  stopOrder         Int
+  estimatedArrival  DateTime?
+  actualArrival     DateTime?
+  status            RouteStopStatus @default(PENDING)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  route           Route            @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  delivery        Delivery         @relation(fields: [deliveryId], references: [id], onDelete: Restrict)
+  proofOfDelivery ProofOfDelivery?
+
+  @@unique([routeId, deliveryId])
+  @@unique([routeId, stopOrder])
+  @@index([routeId])
+  @@index([deliveryId])
+  @@map("route_stops")
+}
+
+model ProofOfDelivery {
+  id          String   @id @default(cuid())
+  routeStopId String   @unique
+  photoUrl    String?
+  signatureUrl String?
+  note        String?
+  latitude    Decimal? @db.Decimal(10, 7)
+  longitude   Decimal? @db.Decimal(10, 7)
+  location    Unsupported("geography(Point,4326)")?
+  capturedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  routeStop RouteStop @relation(fields: [routeStopId], references: [id], onDelete: Cascade)
+
+  @@map("proof_of_delivery")
+}
+
+model RouteEvent {
+  id        String         @id @default(cuid())
+  routeId   String
+  type      RouteEventType
+  metadata  Json?
+  createdAt DateTime       @default(now())
+
+  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@index([routeId])
+  @@index([type])
+  @@map("route_events")
+}
+
+model OptimizationJob {
+  id             String                @id @default(cuid())
+  organizationId String
+  status         OptimizationJobStatus @default(PENDING)
+  objective      OptimizationObjective @default(MINIMIZE_TOTAL_TIME)
+  plannedDate    DateTime              @db.Date
+  request        Json
+  result         Json?
+  errorMessage   String?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("optimization_jobs")
 }
