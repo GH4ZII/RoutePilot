@@ -16,6 +16,8 @@ const auth_module_1 = require("./auth/auth.module");
 const common_module_1 = require("./common/common.module");
 const geocoding_module_1 = require("./geocoding/geocoding.module");
 const routing_module_1 = require("./routing/routing.module");
+const optimization_module_1 = require("./optimization/optimization.module");
+const routes_module_1 = require("./routes/routes.module");
 const organizations_module_1 = require("./organizations/organizations.module");
 const users_module_1 = require("./users/users.module");
 const drivers_module_1 = require("./drivers/drivers.module");
@@ -32,6 +34,8 @@ exports.AppModule = AppModule = __decorate([
             common_module_1.CommonModule,
             geocoding_module_1.GeocodingModule,
             routing_module_1.RoutingModule,
+            optimization_module_1.OptimizationModule,
+            routes_module_1.RoutesModule,
             auth_module_1.AuthModule,
             organizations_module_1.OrganizationsModule,
             users_module_1.UsersModule,

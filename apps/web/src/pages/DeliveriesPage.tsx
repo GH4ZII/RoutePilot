@@ -1,7 +1,10 @@
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AddressAutocomplete from '../components/AddressAutocomplete'
 import FormModal from '../components/FormModal'
+import OptimizeRoutePanel from '../components/OptimizeRoutePanel'
 import PageToolbar from '../components/PageToolbar'
+import RouteOptimizationResult from '../components/RouteOptimizationResult'
 import StatusBadge from '../components/StatusBadge'
 import { useAuth } from '../context/AuthContext'
 import * as api from '../lib/api'
@@ -23,7 +26,9 @@ import type {
   Delivery,
   DeliveryPriority,
   DeliveryStatus,
+  OptimizationJob,
 } from '../types/domain'
+import type { RoutesPageState } from './RoutesPage'
 
 const STATUSES: DeliveryStatus[] = [
   'PENDING',
@@ -51,14 +56,31 @@ const emptyForm = () => ({
 })
 
 export default function DeliveriesPage() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const isAdmin = user?.role === 'ADMIN'
   const [statusFilter, setStatusFilter] = useState<DeliveryStatus | ''>('')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
+  const [completedJob, setCompletedJob] = useState<OptimizationJob | null>(null)
 
   const { data: deliveries, error, isLoading, reload, setError } = useAsync(
     () => api.listDeliveries(statusFilter || undefined),
     [statusFilter],
   )
+
+  const { data: vehicles } = useAsync(() => api.listVehicles(), [])
+  const { data: drivers } = useAsync(() => api.listDrivers(), [])
+
+  const pendingDeliveries = useMemo(
+    () => (deliveries ?? []).filter((d) => d.status === 'PENDING'),
+    [deliveries],
+  )
+
+  const completedRoute = completedJob?.result?.routes?.[0]
+  const resultVehicle = vehicles?.find(
+    (v) => v.id === completedRoute?.vehicleId,
+  )
+  const resultDriver = drivers?.find((d) => d.id === completedRoute?.driverId)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Delivery | null>(null)
@@ -147,6 +169,36 @@ export default function DeliveriesPage() {
     }
   }
 
+  function toggleDeliverySelection(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  function selectAllPending() {
+    setSelectedIds(new Set(pendingDeliveries.map((d) => d.id)))
+  }
+
+  function clearSelection() {
+    setSelectedIds(new Set())
+  }
+
+  function handleJobComplete(job: OptimizationJob) {
+    setCompletedJob(job)
+    setSelectedIds(new Set())
+    const route = job.result?.routes?.[0]
+    if (route) {
+      const state: RoutesPageState = { job, route }
+      navigate('/routes', { state })
+    }
+  }
+
   async function handleDelete(delivery: Delivery) {
     if (!confirm(`Slette leveranse til ${delivery.customerName}?`)) return
     setError(null)
@@ -189,6 +241,29 @@ export default function DeliveriesPage() {
         </label>
       </div>
 
+      <OptimizeRoutePanel
+        pendingDeliveries={pendingDeliveries}
+        vehicles={vehicles ?? []}
+        drivers={drivers ?? []}
+        selectedIds={selectedIds}
+        onSelectAllPending={selectAllPending}
+        onClearSelection={clearSelection}
+        onJobComplete={handleJobComplete}
+        onReloadDeliveries={reload}
+      />
+
+      {completedJob && completedRoute ? (
+        <div className="route-result-inline">
+          <RouteOptimizationResult
+            job={completedJob}
+            route={completedRoute}
+            deliveries={deliveries ?? []}
+            vehicle={resultVehicle}
+            driver={resultDriver}
+          />
+        </div>
+      ) : null}
+
       {error ? <p className="page-error" role="alert">{error}</p> : null}
 
       {isLoading ? (
@@ -198,6 +273,7 @@ export default function DeliveriesPage() {
           <table className="data-table">
             <thead>
               <tr>
+                <th className="table-check" aria-label="Velg" />
                 <th>Kunde</th>
                 <th>Adresse</th>
                 <th>Status</th>
@@ -210,13 +286,23 @@ export default function DeliveriesPage() {
             <tbody>
               {deliveries?.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="table-empty">
+                  <td colSpan={8} className="table-empty">
                     Ingen leveranser ennå.
                   </td>
                 </tr>
               ) : (
                 deliveries?.map((delivery) => (
                   <tr key={delivery.id}>
+                    <td className="table-check">
+                      {delivery.status === 'PENDING' ? (
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(delivery.id)}
+                          onChange={() => toggleDeliverySelection(delivery.id)}
+                          aria-label={`Velg ${delivery.customerName}`}
+                        />
+                      ) : null}
+                    </td>
                     <td>
                       <strong>{delivery.customerName}</strong>
                       {delivery.phone ? (

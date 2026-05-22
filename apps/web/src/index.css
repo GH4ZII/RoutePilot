@@ -774,6 +774,28 @@ body {
   box-shadow: 0 0 0 1px var(--auth-border);
 }
 
+.map-legend-line {
+  width: 22px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.map-route-stop-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.map-route-stop-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .map-layout {
   display: grid;
   grid-template-columns: 1fr 300px;
@@ -887,4 +909,200 @@ body {
   .form-span-2 {
     grid-column: span 1;
   }
+}
+
+.optimize-panel {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid var(--auth-border);
+  border-radius: var(--auth-radius);
+  background: var(--auth-surface);
+}
+
+.optimize-panel__intro h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.optimize-panel__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.optimize-panel__fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--auth-text-muted);
+}
+
+.optimize-panel__fields input,
+.optimize-panel__fields select {
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--auth-border);
+  border-radius: var(--auth-input-radius);
+  background: var(--auth-surface);
+  color: var(--auth-text);
+}
+
+.optimize-panel__selection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.optimize-panel__selection-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.optimize-panel__progress {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--auth-primary);
+}
+
+.optimize-panel__hint {
+  margin: 12px 0 0;
+}
+
+.route-result,
+.route-result-inline .route-result {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid #c7d2fe;
+  border-radius: var(--auth-radius);
+  background: #eef2ff;
+}
+
+.route-result__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.route-result__header h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.route-result__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+.route-result__stats dt {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--auth-text-muted);
+}
+
+.route-result__stats dd {
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.route-result__mono {
+  font-size: 12px;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.route-stops-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.route-stops-list__item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  background: var(--auth-surface);
+  border: 1px solid var(--auth-border);
+  border-radius: var(--auth-input-radius);
+}
+
+.route-stops-list__order {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--auth-primary);
+}
+
+.route-stops-list__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.route-stops-list__address {
+  font-size: 13px;
+  color: var(--auth-text-muted);
+}
+
+.route-stops-list__eta {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--auth-primary);
+}
+
+.table-check {
+  width: 40px;
+  text-align: center !important;
+}
+
+.table-check input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.route-empty {
+  padding: 40px 24px;
+  text-align: center;
+  border: 1px dashed var(--auth-border);
+  border-radius: var(--auth-radius);
+  background: var(--auth-surface);
+}
+
+.route-empty .btn-primary {
+  display: inline-block;
+  margin-top: 16px;
+  text-decoration: none;
+}
+
+.route-empty__back {
+  margin-top: 16px;
 }

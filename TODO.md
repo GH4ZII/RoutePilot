@@ -77,11 +77,11 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 - [x] Routing-motor for avstand og reisetid — OSRM (`RoutingModule`, `OSRM_BASE_URL`)
 - [x] Bygg avstands- og reisetidsmatrise — `POST /routing/matrix`
-- [ ] Python-tjeneste med Google OR-Tools (FastAPI eller worker)
-- [ ] Redis + BullMQ for bakgrunnsjobber
-- [ ] `POST /optimization/jobs`, `GET /optimization/jobs/:id`
-- [ ] Lagre genererte ruter og `route_stops` med rekkefølge
-- [ ] Estimert ankomsttid per stopp
+- [x] Python-tjeneste med Google OR-Tools — `apps/optimizer` (FastAPI + OR-Tools TSP)
+- [x] Redis + BullMQ for bakgrunnsjobber — `OptimizationProcessor`, `docker-compose.yml` (redis)
+- [x] `POST /optimization/jobs`, `GET /optimization/jobs/:id`
+- [x] Lagre genererte ruter og `route_stops` med rekkefølge
+- [x] Estimert ankomsttid per stopp (`estimatedArrival` på `route_stops`)
 
 ---
 

@@ -12,6 +12,7 @@ import DriversPage from './pages/DriversPage'
 import VehiclesPage from './pages/VehiclesPage'
 import DeliveriesPage from './pages/DeliveriesPage'
 import MapPage from './pages/MapPage'
+import RoutesPage from './pages/RoutesPage'
 
 function App() {
   return (
@@ -43,10 +44,7 @@ function App() {
         <Route path="vehicles" element={<VehiclesPage />} />
         <Route path="deliveries" element={<DeliveriesPage />} />
         <Route path="map" element={<MapPage />} />
-        <Route
-          path="routes"
-          element={<PlaceholderPage title="Ruter" />}
-        />
+        <Route path="routes" element={<RoutesPage />} />
         <Route
           path="settings/org"
           element={<PlaceholderPage title="Organisasjon" />}

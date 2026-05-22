@@ -10,3 +10,5 @@ export const DELIVERY_MARKER_COLORS: Record<DeliveryStatus, string> = {
 }
 
 export const DEPOT_MARKER_COLOR = '#7c3aed'
+
+export const ROUTE_LINE_COLOR = '#4f46e5'

@@ -21,6 +21,10 @@ import type {
   UpdateVehiclePayload,
   Vehicle,
   VehicleStatus,
+  CreateOptimizationJobPayload,
+  OptimizationJob,
+  RouteDetail,
+  RouteStatus,
 } from '../types/domain'
 import { getStoredToken } from './auth-storage'
 
@@ -217,4 +221,49 @@ export function deleteDelivery(id: string): Promise<void> {
 export function suggestAddresses(query: string): Promise<AddressSuggestion[]> {
   const params = new URLSearchParams({ q: query })
   return request<AddressSuggestion[]>(`/geocoding/suggest?${params}`)
+}
+
+export function createOptimizationJob(
+  payload: CreateOptimizationJobPayload,
+): Promise<OptimizationJob> {
+  return request<OptimizationJob>('/optimization/jobs', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getOptimizationJob(id: string): Promise<OptimizationJob> {
+  return request<OptimizationJob>(`/optimization/jobs/${id}`)
+}
+
+export function listRoutes(status?: RouteStatus): Promise<RouteDetail[]> {
+  const query = status ? `?status=${status}` : ''
+  return request<RouteDetail[]>(`/routes${query}`)
+}
+
+export function getRoute(id: string): Promise<RouteDetail> {
+  return request<RouteDetail>(`/routes/${id}`)
+}
+
+export async function pollOptimizationJob(
+  id: string,
+  options?: {
+    intervalMs?: number
+    maxAttempts?: number
+    onPoll?: (job: OptimizationJob) => void
+  },
+): Promise<OptimizationJob> {
+  const intervalMs = options?.intervalMs ?? 1500
+  const maxAttempts = options?.maxAttempts ?? 120
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const job = await getOptimizationJob(id)
+    options?.onPoll?.(job)
+    if (job.status === 'COMPLETED' || job.status === 'FAILED') {
+      return job
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs))
+  }
+
+  throw new ApiError('Optimalisering tok for lang tid. Prøv igjen.', 408)
 }

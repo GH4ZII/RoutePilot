@@ -12,6 +12,7 @@ const adminNav: NavItem[] = [
   { label: 'Kjøretøy', path: '/vehicles' },
   { label: 'Leveranser', path: '/deliveries' },
   { label: 'Kart', path: '/map' },
+  { label: 'Ruter', path: '/routes' },
   { label: 'Organisasjon', path: '/settings/org' },
 ]
 

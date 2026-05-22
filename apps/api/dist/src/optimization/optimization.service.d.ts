@@ -1,0 +1,50 @@
+import { Queue } from 'bullmq';
+import { OptimizationJobStatus, OptimizationObjective } from '../generated/prisma/client';
+import type { JwtPayload } from '../auth/types/jwt-payload';
+import { OrgScopeService } from '../common/org-scope.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { RoutingService } from '../routing/routing.service';
+import { CreateOptimizationJobDto } from './dto/create-optimization-job.dto';
+import { OptimizerClientService } from './optimizer-client.service';
+export declare const OPTIMIZATION_QUEUE = "optimization";
+type OptimizationJobRequest = {
+    plannedDate: string;
+    vehicleId: string;
+    driverId?: string;
+    deliveryIds: string[];
+    objective: OptimizationObjective;
+    routeStartTime: string;
+    returnToDepot: boolean;
+};
+export type OptimizationJobResponse = {
+    id: string;
+    organizationId: string;
+    status: OptimizationJobStatus;
+    objective: OptimizationObjective;
+    plannedDate: string;
+    request: OptimizationJobRequest;
+    result: unknown;
+    errorMessage: string | null;
+    startedAt: Date | null;
+    completedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+};
+export declare class OptimizationService {
+    private readonly prisma;
+    private readonly orgScope;
+    private readonly routing;
+    private readonly optimizer;
+    private readonly queue;
+    constructor(prisma: PrismaService, orgScope: OrgScopeService, routing: RoutingService, optimizer: OptimizerClientService, queue: Queue);
+    createJob(user: JwtPayload, dto: CreateOptimizationJobDto): Promise<OptimizationJobResponse>;
+    findJob(user: JwtPayload, id: string): Promise<OptimizationJobResponse>;
+    runJob(jobId: string, organizationId: string): Promise<void>;
+    private executeOptimization;
+    private extractDeliveryVisitOrder;
+    private computeLegMetrics;
+    private parseRouteStart;
+    private validateCreateRequest;
+    private toJobResponse;
+}
+export {};

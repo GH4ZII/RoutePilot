@@ -1,17 +1,20 @@
-import { useMemo, useState } from 'react'
-import DeliveryMap, { type DepotPoint } from '../components/DeliveryMap'
+import { useEffect, useMemo, useState } from 'react'
+import DeliveryMap, { type DepotPoint, type RouteLine } from '../components/DeliveryMap'
 import PageToolbar from '../components/PageToolbar'
 import StatusBadge from '../components/StatusBadge'
 import * as api from '../lib/api'
 import { formatDateTime } from '../lib/format'
+import { fetchDrivingRouteGeometry } from '../lib/osrm-route'
+import { buildRouteWaypoints } from '../lib/route-waypoints'
 import {
   DELIVERY_PRIORITY_LABELS,
   DELIVERY_STATUS_LABELS,
   deliveryPriorityClass,
   deliveryStatusClass,
 } from '../lib/labels'
+import { ROUTE_LINE_COLOR } from '../lib/map-colors'
 import { useAsync } from '../lib/useAsync'
-import type { Delivery, DeliveryStatus, Vehicle } from '../types/domain'
+import type { Delivery, DeliveryStatus, RouteDetail, Vehicle } from '../types/domain'
 
 const STATUSES: DeliveryStatus[] = [
   'PENDING',
@@ -58,6 +61,10 @@ function buildDepots(vehicles: Vehicle[]): DepotPoint[] {
 export default function MapPage() {
   const [statusFilter, setStatusFilter] = useState<DeliveryStatus | ''>('')
   const [selected, setSelected] = useState<Delivery | null>(null)
+  const [selectedRouteId, setSelectedRouteId] = useState('')
+  const [routeGeometry, setRouteGeometry] = useState<[number, number][]>([])
+  const [geometryError, setGeometryError] = useState<string | null>(null)
+  const [geometryLoading, setGeometryLoading] = useState(false)
 
   const {
     data: deliveries,
@@ -69,19 +76,79 @@ export default function MapPage() {
   )
 
   const { data: vehicles } = useAsync(() => api.listVehicles(), [])
+  const { data: routes, error: routesError } = useAsync(() => api.listRoutes(), [])
 
   const depots = useMemo(
     () => (vehicles ? buildDepots(vehicles) : []),
     [vehicles],
   )
 
-  const error = deliveriesError
+  const selectedRoute: RouteDetail | undefined = useMemo(() => {
+    if (!routes?.length) return undefined
+    if (selectedRouteId) {
+      return routes.find((r) => r.id === selectedRouteId) ?? routes[0]
+    }
+    return routes[0]
+  }, [routes, selectedRouteId])
+
+  useEffect(() => {
+    if (routes?.length && !selectedRouteId) {
+      setSelectedRouteId(routes[0].id)
+    }
+  }, [routes, selectedRouteId])
+
+  useEffect(() => {
+    if (!selectedRoute) {
+      setRouteGeometry([])
+      return
+    }
+
+    let cancelled = false
+    setGeometryLoading(true)
+    setGeometryError(null)
+
+    fetchDrivingRouteGeometry(buildRouteWaypoints(selectedRoute))
+      .then((geometry) => {
+        if (!cancelled) {
+          setRouteGeometry(geometry)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setGeometryError('Kunne ikke hente rutegeometri fra OSRM')
+          setRouteGeometry(
+            buildRouteWaypoints(selectedRoute).map((p) => [
+              p.latitude,
+              p.longitude,
+            ]),
+          )
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setGeometryLoading(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [selectedRoute])
+
+  const routeLines: RouteLine[] = useMemo(() => {
+    if (!selectedRoute || routeGeometry.length < 2) {
+      return []
+    }
+    return [{ id: selectedRoute.id, positions: routeGeometry }]
+  }, [selectedRoute, routeGeometry])
+
+  const error = deliveriesError ?? routesError
 
   return (
     <div className="page-content map-page">
       <PageToolbar
         title="Kart"
-        description="Leveranser og depot på kart. Klikk en markør for detaljer."
+        description="Leveranser, depot og kjørerute. Klikk en markør for detaljer."
       />
 
       <div className="filter-bar map-page-filters">
@@ -102,6 +169,25 @@ export default function MapPage() {
             ))}
           </select>
         </label>
+        <label>
+          Vis rute
+          <select
+            value={selectedRouteId}
+            onChange={(e) => setSelectedRouteId(e.target.value)}
+            disabled={!routes?.length}
+          >
+            {!routes?.length ? (
+              <option value="">Ingen ruter lagret</option>
+            ) : (
+              routes.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.plannedDate.slice(0, 10)} · {r.stops.length} stopp ·{' '}
+                  {r.status}
+                </option>
+              ))
+            )}
+          </select>
+        </label>
         <div className="map-legend">
           <span className="map-legend-item">
             <span
@@ -117,9 +203,22 @@ export default function MapPage() {
             />
             Leveranse
           </span>
+          <span className="map-legend-item">
+            <span
+              className="map-legend-line"
+              style={{ background: ROUTE_LINE_COLOR }}
+            />
+            Kjørerute
+          </span>
         </div>
       </div>
 
+      {geometryLoading ? (
+        <p className="page-muted">Laster rute på kart…</p>
+      ) : null}
+      {geometryError ? (
+        <p className="page-error" role="alert">{geometryError}</p>
+      ) : null}
       {error ? <p className="page-error" role="alert">{error}</p> : null}
 
       {deliveriesLoading ? (
@@ -130,6 +229,7 @@ export default function MapPage() {
             className="map-layout-map"
             deliveries={deliveries ?? []}
             depots={depots}
+            routeLines={routeLines}
             selectedDeliveryId={selected?.id ?? null}
             onSelectDelivery={setSelected}
           />
@@ -195,12 +295,33 @@ export default function MapPage() {
                   Lukk
                 </button>
               </>
+            ) : selectedRoute ? (
+              <>
+                <h2>Valgt rute</h2>
+                <p className="page-muted">
+                  {selectedRoute.stops.length} leveringsstopp ·{' '}
+                  {selectedRoute.status}
+                </p>
+                <ol className="map-route-stop-list">
+                  {selectedRoute.stops.map((stop) => (
+                    <li key={stop.id}>
+                      <span className="route-stops-list__order">
+                        {stop.stopOrder}
+                      </span>
+                      <span>{stop.delivery.customerName}</span>
+                    </li>
+                  ))}
+                </ol>
+                <p className="field-hint">
+                  Den lilla streken følger veinettet (OSRM).
+                </p>
+              </>
             ) : (
               <p className="page-muted map-detail-empty">
-                Klikk en leveranse på kartet for å se detaljer her.
+                Klikk en leveranse på kartet for detaljer.
                 {(deliveries?.length ?? 0) === 0
                   ? ' Ingen leveranser å vise med valgt filter.'
-                  : null}
+                  : ' Optimaliser en rute under Leveranser for å se strek her.'}
               </p>
             )}
           </aside>

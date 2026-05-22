@@ -148,3 +148,117 @@ export type UpdateDeliveryPayload = Partial<CreateDeliveryPayload> & {
   timeWindowStart?: string | null
   timeWindowEnd?: string | null
 }
+
+export type OptimizationJobStatus =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'COMPLETED'
+  | 'FAILED'
+
+export type OptimizationObjective =
+  | 'MINIMIZE_TOTAL_DISTANCE'
+  | 'MINIMIZE_TOTAL_TIME'
+  | 'BALANCE_WORKLOAD'
+  | 'PRIORITIZE_URGENT'
+  | 'MINIMIZE_LATE_DELIVERIES'
+
+export type CreateOptimizationJobPayload = {
+  plannedDate: string
+  vehicleId: string
+  driverId?: string
+  deliveryIds: string[]
+  objective?: OptimizationObjective
+  routeStartTime?: string
+  returnToDepot?: boolean
+}
+
+export type OptimizationRouteStop = {
+  deliveryId: string
+  order: number
+  estimatedArrival: string | null
+}
+
+export type OptimizationRouteResult = {
+  routeId: string
+  driverId: string | null
+  vehicleId: string
+  totalDistanceMeters: number
+  totalDurationSeconds: number
+  optimizerCost?: number
+  stops: OptimizationRouteStop[]
+}
+
+export type OptimizationJobResult = {
+  routes: OptimizationRouteResult[]
+  unassignedDeliveries: string[]
+  warnings: string[]
+}
+
+export type RouteStatus =
+  | 'PLANNED'
+  | 'ASSIGNED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED'
+
+export type RouteStopStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'SKIPPED'
+
+export type RouteStopDetail = {
+  id: string
+  stopOrder: number
+  estimatedArrival: string | null
+  status: RouteStopStatus
+  delivery: {
+    id: string
+    customerName: string
+    address: string
+    latitude: number
+    longitude: number
+    status: DeliveryStatus
+    priority: DeliveryPriority
+  }
+}
+
+export type RouteDetail = {
+  id: string
+  organizationId: string
+  driverId: string | null
+  vehicleId: string | null
+  status: RouteStatus
+  plannedDate: string
+  totalDistanceMeters: number | null
+  totalDurationSeconds: number | null
+  vehicle: {
+    id: string
+    name: string
+    startAddress: string
+    endAddress: string
+    startLatitude: number
+    startLongitude: number
+    endLatitude: number
+    endLongitude: number
+  } | null
+  stops: RouteStopDetail[]
+  createdAt: string
+  updatedAt: string
+}
+
+export type OptimizationJob = {
+  id: string
+  organizationId: string
+  status: OptimizationJobStatus
+  objective: OptimizationObjective
+  plannedDate: string
+  request: CreateOptimizationJobPayload
+  result: OptimizationJobResult | null
+  errorMessage: string | null
+  startedAt: string | null
+  completedAt: string | null
+  createdAt: string
+  updatedAt: string
+}

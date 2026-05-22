@@ -19,6 +19,27 @@ export function fromDatetimeLocalValue(value: string): string | undefined {
 }
 
 /** Same calendar day as deadline: 08:00 start, deadline as end (siste frist). */
+export function formatDistance(meters: number): string {
+  if (meters < 1000) {
+    return `${Math.round(meters)} m`
+  }
+  return `${(meters / 1000).toFixed(1)} km`
+}
+
+export function formatDuration(seconds: number): string {
+  const totalMinutes = Math.round(seconds / 60)
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  if (hours > 0) {
+    return `${hours} t ${minutes} min`
+  }
+  return `${minutes} min`
+}
+
+export function todayIsoDate(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
 export function timeWindowsFromDeadline(deadlineLocal: string): {
   timeWindowStart: string
   timeWindowEnd: string

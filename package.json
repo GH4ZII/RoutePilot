@@ -3,6 +3,7 @@
     "private": true,
     "scripts": {
       "dev": "concurrently -n api,web,mobile -c blue,green,magenta \"npm run dev:api\" \"npm run dev:web\" \"npm run dev:mobile\"",
+      "dev:optimizer": "apps/optimizer/.venv/Scripts/python.exe -m uvicorn main:app --reload --host 127.0.0.1 --port 8000 --app-dir apps/optimizer",
       "dev:api": "npm run start:dev --prefix apps/api",
       "dev:web": "npm run dev --prefix apps/web",
       "dev:mobile": "npm start --prefix apps/mobile"

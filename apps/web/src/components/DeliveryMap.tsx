@@ -8,7 +8,11 @@ import {
   DELIVERY_PRIORITY_LABELS,
   DELIVERY_STATUS_LABELS,
 } from '../lib/labels'
-import { DELIVERY_MARKER_COLORS, DEPOT_MARKER_COLOR } from '../lib/map-colors'
+import {
+  DELIVERY_MARKER_COLORS,
+  DEPOT_MARKER_COLOR,
+  ROUTE_LINE_COLOR,
+} from '../lib/map-colors'
 // Fix default marker icons when bundling with Vite
 const DefaultIcon = L.icon({
   iconRetinaUrl,
@@ -29,9 +33,15 @@ export type DepotPoint = {
   longitude: number
 }
 
+export type RouteLine = {
+  id: string
+  positions: L.LatLngExpression[]
+}
+
 type DeliveryMapProps = {
   deliveries: Delivery[]
   depots?: DepotPoint[]
+  routeLines?: RouteLine[]
   selectedDeliveryId?: string | null
   onSelectDelivery?: (delivery: Delivery | null) => void
   className?: string
@@ -59,6 +69,7 @@ function escapeHtml(value: string): string {
 export default function DeliveryMap({
   deliveries,
   depots = [],
+  routeLines = [],
   selectedDeliveryId,
   onSelectDelivery,
   className = '',
@@ -67,6 +78,7 @@ export default function DeliveryMap({
   const mapRef = useRef<L.Map | null>(null)
   const deliveryLayersRef = useRef<L.LayerGroup | null>(null)
   const depotLayersRef = useRef<L.LayerGroup | null>(null)
+  const routeLayersRef = useRef<L.LayerGroup | null>(null)
   const markerByIdRef = useRef<Map<string, L.CircleMarker>>(new Map())
 
   useEffect(() => {
@@ -82,6 +94,7 @@ export default function DeliveryMap({
       maxZoom: 19,
     }).addTo(map)
 
+    routeLayersRef.current = L.layerGroup().addTo(map)
     deliveryLayersRef.current = L.layerGroup().addTo(map)
     depotLayersRef.current = L.layerGroup().addTo(map)
     mapRef.current = map
@@ -89,6 +102,7 @@ export default function DeliveryMap({
     return () => {
       map.remove()
       mapRef.current = null
+      routeLayersRef.current = null
       deliveryLayersRef.current = null
       depotLayersRef.current = null
       markerByIdRef.current.clear()
@@ -99,13 +113,32 @@ export default function DeliveryMap({
     const map = mapRef.current
     const deliveryLayers = deliveryLayersRef.current
     const depotLayers = depotLayersRef.current
-    if (!map || !deliveryLayers || !depotLayers) return
+    const routeLayers = routeLayersRef.current
+    if (!map || !deliveryLayers || !depotLayers || !routeLayers) return
 
+    routeLayers.clearLayers()
     deliveryLayers.clearLayers()
     depotLayers.clearLayers()
     markerByIdRef.current.clear()
 
     const boundsPoints: L.LatLngExpression[] = []
+
+    for (const line of routeLines) {
+      if (line.positions.length < 2) continue
+      const polyline = L.polyline(line.positions, {
+        color: ROUTE_LINE_COLOR,
+        weight: 5,
+        opacity: 0.85,
+        lineJoin: 'round',
+      })
+      polyline.bindPopup(
+        `<div class="map-popup"><strong>Rute</strong><p>Optimalisert kjørerute langs vei</p></div>`,
+      )
+      routeLayers.addLayer(polyline)
+      for (const pos of line.positions) {
+        boundsPoints.push(pos)
+      }
+    }
 
     for (const depot of depots) {
       const marker = L.circleMarker([depot.latitude, depot.longitude], {
@@ -153,7 +186,7 @@ export default function DeliveryMap({
       const bounds = L.latLngBounds(boundsPoints)
       map.fitBounds(bounds.pad(0.12), { maxZoom: 14 })
     }
-  }, [deliveries, depots, onSelectDelivery])
+  }, [deliveries, depots, routeLines, onSelectDelivery])
 
   useEffect(() => {
     for (const [id, marker] of markerByIdRef.current) {
