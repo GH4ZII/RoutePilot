@@ -1,0 +1,13 @@
+{
+    "name": "routepilot",
+    "private": true,
+    "scripts": {
+      "dev": "concurrently -n api,web,mobile -c blue,green,magenta \"npm run dev:api\" \"npm run dev:web\" \"npm run dev:mobile\"",
+      "dev:api": "npm run start:dev --prefix apps/api",
+      "dev:web": "npm run dev --prefix apps/web",
+      "dev:mobile": "npm start --prefix apps/mobile"
+    },
+    "devDependencies": {
+      "concurrently": "^9.1.2"
+    }
+  }
