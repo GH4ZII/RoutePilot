@@ -114,9 +114,9 @@ let AuthService = class AuthService {
         }
         return this.buildAuthResponse(user, organization);
     }
-    async getMe(userId) {
-        const user = await this.prisma.user.findUnique({
-            where: { id: userId },
+    async getMe(userId, organizationId) {
+        const user = await this.prisma.user.findFirst({
+            where: { id: userId, organizationId },
             include: { organization: true },
         });
         if (!user) {

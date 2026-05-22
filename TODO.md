@@ -10,10 +10,10 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 | Område        | Status      |
 |---------------|-------------|
-| Web           | Startet |
-| Mobile (Expo) | Ikke startet |
-| Backend       | Ikke startet |
-| Database      | Ikke startet |
+| Web           | Startet (innlogging) |
+| Mobile (Expo) | Startet (innlogging) |
+| Backend       | Startet (auth) |
+| Database      | Startet (Prisma) |
 | Optimalisering| Ikke startet |
 | Deploy        | Ikke startet |
 
@@ -26,11 +26,11 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 - [x] Backend (`apps/api`): NestJS + TypeScript
 - [x] PostgreSQL + PostGIS
 - [x] ORM / migrasjoner (f.eks. Prisma)
-- [ ] Autentisering: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`
-- [ ] Roller: Admin, Dispatcher, Driver
-- [ ] Organisasjons-isolasjon (brukere ser kun egen org)
-- [ ] Web: layout og navigasjon (admin + dispatcher)
-- [ ] Mobile: layout og navigasjon (sjåfør, Expo Router)
+- [x] Autentisering: `POST /auth/register`, `POST /auth/login`, `GET /auth/me` (web + mobil innlogging mot API)
+- [x] Roller: Admin, Dispatcher, Driver (`@Roles` + `RolesGuard` på API)
+- [x] Organisasjons-isolasjon (`OrgScopeService`, `GET/PATCH /organizations/me`)
+- [x] Web: layout og navigasjon (admin + dispatcher) — sidebar, rollebasert nav
+- [x] Mobile: layout og navigasjon (sjåfør, Expo Router) — faner Hjem/Profil, staff → web
 
 ---
 
@@ -141,7 +141,7 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 ## MVP (må være ferdig før «Advanced»)
 
-- [ ] Brukerautentisering
+- [x] Brukerautentisering
 - [ ] Organisasjons-workspace
 - [ ] Roller: admin / dispatcher / driver
 - [ ] Sjåfør-CRUD
@@ -181,7 +181,7 @@ Se [README.md §17 Project Architecture](./README.md#17-project-architecture).
 
 ### NestJS-moduler
 
-- [ ] Auth
+- [x] Auth
 - [ ] Users
 - [ ] Organizations
 - [ ] Drivers

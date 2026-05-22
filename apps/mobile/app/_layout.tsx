@@ -1,11 +1,12 @@
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -13,11 +14,9 @@ export {
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -25,7 +24,6 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -40,7 +38,11 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <AuthProvider>
+      <RootLayoutNav />
+    </AuthProvider>
+  );
 }
 
 function RootLayoutNav() {
@@ -48,10 +50,35 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <AuthGate />
       <Stack>
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="signup" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
     </ThemeProvider>
   );
+}
+
+function AuthGate() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const inAuthGroup = segments[0] === '(tabs)' || segments[0] === 'modal';
+    const onAuthScreen =
+      segments[0] === 'login' || segments[0] === 'signup';
+
+    if (!isAuthenticated && inAuthGroup) {
+      router.replace('/login');
+    } else if (isAuthenticated && onAuthScreen) {
+      router.replace('/(tabs)');
+    }
+  }, [isAuthenticated, isLoading, segments, router]);
+
+  return null;
 }

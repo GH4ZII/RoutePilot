@@ -1,14 +1,35 @@
 import { StyleSheet } from 'react-native';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
+import StaffWebNotice from '@/components/StaffWebNotice';
+import { useAuth } from '@/context/AuthContext';
+import { authTheme } from '@/constants/authTheme';
 
-export default function TabOneScreen() {
+export default function HomeScreen() {
+  const { user } = useAuth();
+
+  if (!user) {
+    return null;
+  }
+
+  if (user.role !== 'DRIVER') {
+    return <StaffWebNotice />;
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Hallo</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <Text style={styles.title}>Min rute</Text>
+      <Text style={styles.subtitle}>
+        Hei, {user.name ?? user.email}. Dagens rute vises her når ruter er
+        tilgjengelige.
+      </Text>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Ingen aktiv rute</Text>
+        <Text style={styles.cardText}>
+          Planlegger tildeler ruter via webappen. Dra ned for å oppdatere når
+          det er klart.
+        </Text>
+      </View>
     </View>
   );
 }
@@ -16,16 +37,37 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 24,
+    backgroundColor: authTheme.background,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '700',
+    color: authTheme.text,
+    marginBottom: 8,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  subtitle: {
+    fontSize: 15,
+    color: authTheme.textMuted,
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+  card: {
+    backgroundColor: authTheme.surface,
+    borderRadius: authTheme.radius,
+    borderWidth: 1,
+    borderColor: authTheme.border,
+    padding: 16,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: authTheme.text,
+    marginBottom: 8,
+  },
+  cardText: {
+    fontSize: 14,
+    color: authTheme.textMuted,
+    lineHeight: 20,
   },
 });

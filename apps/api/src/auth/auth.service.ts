@@ -11,12 +11,9 @@ import {
   import { UserRole } from '../generated/prisma/client';
   import { LoginDto } from './dto/login.dto';
   import { RegisterDto } from './dto/register.dto';
-  
-  export type JwtPayload = {
-    sub: string;
-    organizationId: string;
-    role: UserRole;
-  };
+  import type { JwtPayload } from './types/jwt-payload';
+
+  export type { JwtPayload } from './types/jwt-payload';
   
   export type AuthUserResponse = {
     id: string;
@@ -111,9 +108,9 @@ import {
       return this.buildAuthResponse(user, organization);
     }
   
-    async getMe(userId: string): Promise<AuthUserResponse> {
-      const user = await this.prisma.user.findUnique({
-        where: { id: userId },
+    async getMe(userId: string, organizationId: string): Promise<AuthUserResponse> {
+      const user = await this.prisma.user.findFirst({
+        where: { id: userId, organizationId },
         include: { organization: true },
       });
       if (!user) {

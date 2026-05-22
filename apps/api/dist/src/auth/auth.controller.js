@@ -31,7 +31,7 @@ let AuthController = class AuthController {
         return this.authService.login(dto);
     }
     me(user) {
-        return this.authService.getMe(user.sub);
+        return this.authService.getMe(user.sub, user.organizationId);
     }
 };
 exports.AuthController = AuthController;

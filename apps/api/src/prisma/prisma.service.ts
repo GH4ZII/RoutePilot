@@ -3,6 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client';
 
+/**
+ * Database access. Org-scoped tables MUST filter by `organizationId` from the JWT
+ * (see OrgScopeService.forOrganization). Never query by resource id alone.
+ */
 @Injectable()
 export class PrismaService
   extends PrismaClient

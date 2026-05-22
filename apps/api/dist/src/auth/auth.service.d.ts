@@ -4,11 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '../generated/prisma/client';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-export type JwtPayload = {
-    sub: string;
-    organizationId: string;
-    role: UserRole;
-};
+export type { JwtPayload } from './types/jwt-payload';
 export type AuthUserResponse = {
     id: string;
     email: string;
@@ -31,7 +27,7 @@ export declare class AuthService {
     constructor(prisma: PrismaService, jwt: JwtService, config: ConfigService);
     register(dto: RegisterDto): Promise<AuthResponse>;
     login(dto: LoginDto): Promise<AuthResponse>;
-    getMe(userId: string): Promise<AuthUserResponse>;
+    getMe(userId: string, organizationId: string): Promise<AuthUserResponse>;
     private buildAuthResponse;
     private toUserResponse;
 }

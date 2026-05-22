@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Strategy } from 'passport-jwt';
-import type { JwtPayload } from '../auth.service';
+import type { JwtPayload } from '../types/jwt-payload';
 declare const JwtStrategy_base: new (...args: [opt: import("passport-jwt").StrategyOptionsWithRequest] | [opt: import("passport-jwt").StrategyOptionsWithoutRequest]) => Strategy & {
     validate(...args: any[]): unknown;
 };

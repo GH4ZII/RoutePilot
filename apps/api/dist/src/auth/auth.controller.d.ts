@@ -1,7 +1,7 @@
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import type { JwtPayload } from './auth.service';
+import type { JwtPayload } from './types/jwt-payload';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
