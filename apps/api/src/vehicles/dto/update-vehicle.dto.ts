@@ -3,7 +3,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  Max,
   MaxLength,
   Min,
   MinLength,
@@ -24,6 +23,18 @@ export class UpdateVehicleDto {
   registrationNumber?: string;
 
   @IsOptional()
+  @IsString()
+  @MinLength(3)
+  @MaxLength(500)
+  startAddress?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(3)
+  @MaxLength(500)
+  endAddress?: string;
+
+  @IsOptional()
   @IsNumber()
   @Min(0.01)
   maxWeightKg?: number;
@@ -32,30 +43,6 @@ export class UpdateVehicleDto {
   @IsNumber()
   @Min(0.001)
   maxVolumeM3?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(-90)
-  @Max(90)
-  startLatitude?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(-180)
-  @Max(180)
-  startLongitude?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(-90)
-  @Max(90)
-  endLatitude?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(-180)
-  @Max(180)
-  endLongitude?: number;
 
   @IsOptional()
   @IsEnum(VehicleStatus)

@@ -5,6 +5,7 @@ import type {
   RegisterCredentials,
 } from '../types/auth'
 import type {
+  AddressSuggestion,
   CreateDeliveryPayload,
   CreateDriverPayload,
   CreateUserPayload,
@@ -211,4 +212,9 @@ export function updateDelivery(
 
 export function deleteDelivery(id: string): Promise<void> {
   return request<void>(`/deliveries/${id}`, { method: 'DELETE' })
+}
+
+export function suggestAddresses(query: string): Promise<AddressSuggestion[]> {
+  const params = new URLSearchParams({ q: query })
+  return request<AddressSuggestion[]>(`/geocoding/suggest?${params}`)
 }

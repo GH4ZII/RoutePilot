@@ -14,13 +14,16 @@ const common_1 = require("@nestjs/common");
 const client_1 = require("../generated/prisma/client");
 const decimal_util_1 = require("../common/decimal.util");
 const org_scope_service_1 = require("../common/org-scope.service");
+const geocoding_service_1 = require("../geocoding/geocoding.service");
 const prisma_service_1 = require("../prisma/prisma.service");
 let DeliveriesService = class DeliveriesService {
     prisma;
     orgScope;
-    constructor(prisma, orgScope) {
+    geocoding;
+    constructor(prisma, orgScope, geocoding) {
         this.prisma = prisma;
         this.orgScope = orgScope;
+        this.geocoding = geocoding;
     }
     async findAll(user, query) {
         const rows = await this.prisma.delivery.findMany({
@@ -36,14 +39,16 @@ let DeliveriesService = class DeliveriesService {
     async create(user, dto) {
         const organizationId = this.orgScope.requireOrganizationId(user);
         this.assertTimeWindow(dto.timeWindowStart, dto.timeWindowEnd);
+        const address = dto.address.trim();
+        const location = await this.geocoding.geocode(address);
         const created = await this.prisma.delivery.create({
             data: {
                 organizationId,
                 customerName: dto.customerName,
                 phone: dto.phone,
-                address: dto.address,
-                latitude: dto.latitude,
-                longitude: dto.longitude,
+                address,
+                latitude: location.latitude,
+                longitude: location.longitude,
                 weightKg: dto.weightKg,
                 volumeM3: dto.volumeM3,
                 priority: dto.priority ?? client_1.DeliveryPriority.NORMAL,
@@ -65,6 +70,14 @@ let DeliveriesService = class DeliveriesService {
             ? parseNullableDate(dto.timeWindowEnd)
             : existing.timeWindowEnd;
         this.assertTimeWindow(timeWindowStart?.toISOString(), timeWindowEnd?.toISOString());
+        const address = dto.address !== undefined ? dto.address.trim() : existing.address;
+        let latitude = (0, decimal_util_1.decimalToNumber)(existing.latitude);
+        let longitude = (0, decimal_util_1.decimalToNumber)(existing.longitude);
+        if (dto.address !== undefined) {
+            const location = await this.geocoding.geocode(address);
+            latitude = location.latitude;
+            longitude = location.longitude;
+        }
         const updated = await this.prisma.delivery.update({
             where: { id },
             data: {
@@ -72,9 +85,7 @@ let DeliveriesService = class DeliveriesService {
                     customerName: dto.customerName,
                 }),
                 ...(dto.phone !== undefined && { phone: dto.phone }),
-                ...(dto.address !== undefined && { address: dto.address }),
-                ...(dto.latitude !== undefined && { latitude: dto.latitude }),
-                ...(dto.longitude !== undefined && { longitude: dto.longitude }),
+                ...(dto.address !== undefined && { address, latitude, longitude }),
                 ...(dto.weightKg !== undefined && { weightKg: dto.weightKg }),
                 ...(dto.volumeM3 !== undefined && { volumeM3: dto.volumeM3 }),
                 ...(dto.priority !== undefined && { priority: dto.priority }),
@@ -114,7 +125,7 @@ let DeliveriesService = class DeliveriesService {
     }
     assertTimeWindow(start, end) {
         if (start && end && new Date(start) > new Date(end)) {
-            throw new common_1.BadRequestException('timeWindowStart must be before timeWindowEnd');
+            throw new common_1.BadRequestException('Tidsvindu «fra» må være før «til»');
         }
     }
 };
@@ -122,7 +133,8 @@ exports.DeliveriesService = DeliveriesService;
 exports.DeliveriesService = DeliveriesService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        org_scope_service_1.OrgScopeService])
+        org_scope_service_1.OrgScopeService,
+        geocoding_service_1.GeocodingService])
 ], DeliveriesService);
 function parseOptionalDate(value) {
     return value ? new Date(value) : undefined;

@@ -153,6 +153,8 @@ model Vehicle {
   organizationId     String
   name               String
   registrationNumber String
+  startAddress       String
+  endAddress         String
   maxWeightKg        Decimal       @db.Decimal(10, 2)
   maxVolumeM3        Decimal       @db.Decimal(10, 3)
   startLatitude      Decimal       @db.Decimal(10, 7)

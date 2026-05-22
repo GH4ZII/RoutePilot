@@ -1,6 +1,7 @@
 import { VehicleStatus } from '../generated/prisma/client';
 import type { JwtPayload } from '../auth/types/jwt-payload';
 import { OrgScopeService } from '../common/org-scope.service';
+import { GeocodingService } from '../geocoding/geocoding.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { ListVehiclesQueryDto } from './dto/list-vehicles-query.dto';
@@ -10,6 +11,8 @@ export type VehicleResponse = {
     organizationId: string;
     name: string;
     registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
     maxWeightKg: number;
     maxVolumeM3: number;
     startLatitude: number;
@@ -23,7 +26,8 @@ export type VehicleResponse = {
 export declare class VehiclesService {
     private readonly prisma;
     private readonly orgScope;
-    constructor(prisma: PrismaService, orgScope: OrgScopeService);
+    private readonly geocoding;
+    constructor(prisma: PrismaService, orgScope: OrgScopeService, geocoding: GeocodingService);
     findAll(user: JwtPayload, query: ListVehiclesQueryDto): Promise<VehicleResponse[]>;
     findOne(user: JwtPayload, id: string): Promise<VehicleResponse>;
     create(user: JwtPayload, dto: CreateVehicleDto): Promise<VehicleResponse>;

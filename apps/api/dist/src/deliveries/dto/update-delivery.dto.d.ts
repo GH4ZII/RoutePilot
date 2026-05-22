@@ -3,8 +3,6 @@ export declare class UpdateDeliveryDto {
     customerName?: string;
     phone?: string;
     address?: string;
-    latitude?: number;
-    longitude?: number;
     weightKg?: number;
     volumeM3?: number;
     priority?: DeliveryPriority;

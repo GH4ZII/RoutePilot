@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
+import { GeocodingModule } from './geocoding/geocoding.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { UsersModule } from './users/users.module';
 import { DriversModule } from './drivers/drivers.module';
@@ -16,6 +17,7 @@ import { DeliveriesModule } from './deliveries/deliveries.module';
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     CommonModule,
+    GeocodingModule,
     AuthModule,
     OrganizationsModule,
     UsersModule,

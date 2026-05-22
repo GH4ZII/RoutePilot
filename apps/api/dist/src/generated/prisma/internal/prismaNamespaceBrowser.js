@@ -97,6 +97,8 @@ exports.VehicleScalarFieldEnum = {
     organizationId: 'organizationId',
     name: 'name',
     registrationNumber: 'registrationNumber',
+    startAddress: 'startAddress',
+    endAddress: 'endAddress',
     maxWeightKg: 'maxWeightKg',
     maxVolumeM3: 'maxVolumeM3',
     startLatitude: 'startLatitude',

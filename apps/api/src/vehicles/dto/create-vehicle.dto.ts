@@ -3,7 +3,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  Max,
   MaxLength,
   Min,
   MinLength,
@@ -21,6 +20,16 @@ export class CreateVehicleDto {
   @MaxLength(20)
   registrationNumber: string;
 
+  @IsString()
+  @MinLength(3)
+  @MaxLength(500)
+  startAddress: string;
+
+  @IsString()
+  @MinLength(3)
+  @MaxLength(500)
+  endAddress: string;
+
   @IsNumber()
   @Min(0.01)
   maxWeightKg: number;
@@ -28,26 +37,6 @@ export class CreateVehicleDto {
   @IsNumber()
   @Min(0.001)
   maxVolumeM3: number;
-
-  @IsNumber()
-  @Min(-90)
-  @Max(90)
-  startLatitude: number;
-
-  @IsNumber()
-  @Min(-180)
-  @Max(180)
-  startLongitude: number;
-
-  @IsNumber()
-  @Min(-90)
-  @Max(90)
-  endLatitude: number;
-
-  @IsNumber()
-  @Min(-180)
-  @Max(180)
-  endLongitude: number;
 
   @IsOptional()
   @IsEnum(VehicleStatus)

@@ -15,12 +15,10 @@ const client_1 = require("../../generated/prisma/client");
 class UpdateVehicleDto {
     name;
     registrationNumber;
+    startAddress;
+    endAddress;
     maxWeightKg;
     maxVolumeM3;
-    startLatitude;
-    startLongitude;
-    endLatitude;
-    endLongitude;
     status;
 }
 exports.UpdateVehicleDto = UpdateVehicleDto;
@@ -40,6 +38,20 @@ __decorate([
 ], UpdateVehicleDto.prototype, "registrationNumber", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(3),
+    (0, class_validator_1.MaxLength)(500),
+    __metadata("design:type", String)
+], UpdateVehicleDto.prototype, "startAddress", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(3),
+    (0, class_validator_1.MaxLength)(500),
+    __metadata("design:type", String)
+], UpdateVehicleDto.prototype, "endAddress", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0.01),
     __metadata("design:type", Number)
@@ -50,34 +62,6 @@ __decorate([
     (0, class_validator_1.Min)(0.001),
     __metadata("design:type", Number)
 ], UpdateVehicleDto.prototype, "maxVolumeM3", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(-90),
-    (0, class_validator_1.Max)(90),
-    __metadata("design:type", Number)
-], UpdateVehicleDto.prototype, "startLatitude", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(-180),
-    (0, class_validator_1.Max)(180),
-    __metadata("design:type", Number)
-], UpdateVehicleDto.prototype, "startLongitude", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(-90),
-    (0, class_validator_1.Max)(90),
-    __metadata("design:type", Number)
-], UpdateVehicleDto.prototype, "endLatitude", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(-180),
-    (0, class_validator_1.Max)(180),
-    __metadata("design:type", Number)
-], UpdateVehicleDto.prototype, "endLongitude", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(client_1.VehicleStatus),

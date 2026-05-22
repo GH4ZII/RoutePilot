@@ -10,6 +10,7 @@ import {
 import type { JwtPayload } from '../auth/types/jwt-payload';
 import { decimalToNumber } from '../common/decimal.util';
 import { OrgScopeService } from '../common/org-scope.service';
+import { GeocodingService } from '../geocoding/geocoding.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { ListDeliveriesQueryDto } from './dto/list-deliveries-query.dto';
@@ -40,6 +41,7 @@ export class DeliveriesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly orgScope: OrgScopeService,
+    private readonly geocoding: GeocodingService,
   ) {}
 
   async findAll(
@@ -68,14 +70,17 @@ export class DeliveriesService {
     const organizationId = this.orgScope.requireOrganizationId(user);
     this.assertTimeWindow(dto.timeWindowStart, dto.timeWindowEnd);
 
+    const address = dto.address.trim();
+    const location = await this.geocoding.geocode(address);
+
     const created = await this.prisma.delivery.create({
       data: {
         organizationId,
         customerName: dto.customerName,
         phone: dto.phone,
-        address: dto.address,
-        latitude: dto.latitude,
-        longitude: dto.longitude,
+        address,
+        latitude: location.latitude,
+        longitude: location.longitude,
         weightKg: dto.weightKg,
         volumeM3: dto.volumeM3,
         priority: dto.priority ?? DeliveryPriority.NORMAL,
@@ -109,6 +114,18 @@ export class DeliveriesService {
       timeWindowEnd?.toISOString(),
     );
 
+    const address =
+      dto.address !== undefined ? dto.address.trim() : existing.address;
+
+    let latitude = decimalToNumber(existing.latitude)!;
+    let longitude = decimalToNumber(existing.longitude)!;
+
+    if (dto.address !== undefined) {
+      const location = await this.geocoding.geocode(address);
+      latitude = location.latitude;
+      longitude = location.longitude;
+    }
+
     const updated = await this.prisma.delivery.update({
       where: { id },
       data: {
@@ -116,9 +133,7 @@ export class DeliveriesService {
           customerName: dto.customerName,
         }),
         ...(dto.phone !== undefined && { phone: dto.phone }),
-        ...(dto.address !== undefined && { address: dto.address }),
-        ...(dto.latitude !== undefined && { latitude: dto.latitude }),
-        ...(dto.longitude !== undefined && { longitude: dto.longitude }),
+        ...(dto.address !== undefined && { address, latitude, longitude }),
         ...(dto.weightKg !== undefined && { weightKg: dto.weightKg }),
         ...(dto.volumeM3 !== undefined && { volumeM3: dto.volumeM3 }),
         ...(dto.priority !== undefined && { priority: dto.priority }),
@@ -166,7 +181,7 @@ export class DeliveriesService {
   private assertTimeWindow(start?: string, end?: string) {
     if (start && end && new Date(start) > new Date(end)) {
       throw new BadRequestException(
-        'timeWindowStart must be before timeWindowEnd',
+        'Tidsvindu «fra» må være før «til»',
       );
     }
   }

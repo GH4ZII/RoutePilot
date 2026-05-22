@@ -16,8 +16,6 @@ class CreateDeliveryDto {
     customerName;
     phone;
     address;
-    latitude;
-    longitude;
     weightKg;
     volumeM3;
     priority;
@@ -42,22 +40,10 @@ __decorate([
 ], CreateDeliveryDto.prototype, "phone", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(1),
+    (0, class_validator_1.MinLength)(3),
     (0, class_validator_1.MaxLength)(500),
     __metadata("design:type", String)
 ], CreateDeliveryDto.prototype, "address", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(-90),
-    (0, class_validator_1.Max)(90),
-    __metadata("design:type", Number)
-], CreateDeliveryDto.prototype, "latitude", void 0);
-__decorate([
-    (0, class_validator_1.IsNumber)(),
-    (0, class_validator_1.Min)(-180),
-    (0, class_validator_1.Max)(180),
-    __metadata("design:type", Number)
-], CreateDeliveryDto.prototype, "longitude", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(0.01),

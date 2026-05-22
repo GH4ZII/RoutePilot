@@ -992,6 +992,8 @@ export declare const VehicleScalarFieldEnum: {
     readonly organizationId: "organizationId";
     readonly name: "name";
     readonly registrationNumber: "registrationNumber";
+    readonly startAddress: "startAddress";
+    readonly endAddress: "endAddress";
     readonly maxWeightKg: "maxWeightKg";
     readonly maxVolumeM3: "maxVolumeM3";
     readonly startLatitude: "startLatitude";

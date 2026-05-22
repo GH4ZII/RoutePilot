@@ -4,7 +4,6 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  Max,
   MaxLength,
   Min,
   MinLength,
@@ -26,19 +25,9 @@ export class CreateDeliveryDto {
   phone?: string;
 
   @IsString()
-  @MinLength(1)
+  @MinLength(3)
   @MaxLength(500)
   address: string;
-
-  @IsNumber()
-  @Min(-90)
-  @Max(90)
-  latitude: number;
-
-  @IsNumber()
-  @Min(-180)
-  @Max(180)
-  longitude: number;
 
   @IsNumber()
   @Min(0.01)

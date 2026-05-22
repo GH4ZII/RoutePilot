@@ -30,6 +30,8 @@ export type VehicleMinAggregateOutputType = {
     organizationId: string | null;
     name: string | null;
     registrationNumber: string | null;
+    startAddress: string | null;
+    endAddress: string | null;
     maxWeightKg: runtime.Decimal | null;
     maxVolumeM3: runtime.Decimal | null;
     startLatitude: runtime.Decimal | null;
@@ -45,6 +47,8 @@ export type VehicleMaxAggregateOutputType = {
     organizationId: string | null;
     name: string | null;
     registrationNumber: string | null;
+    startAddress: string | null;
+    endAddress: string | null;
     maxWeightKg: runtime.Decimal | null;
     maxVolumeM3: runtime.Decimal | null;
     startLatitude: runtime.Decimal | null;
@@ -60,6 +64,8 @@ export type VehicleCountAggregateOutputType = {
     organizationId: number;
     name: number;
     registrationNumber: number;
+    startAddress: number;
+    endAddress: number;
     maxWeightKg: number;
     maxVolumeM3: number;
     startLatitude: number;
@@ -92,6 +98,8 @@ export type VehicleMinAggregateInputType = {
     organizationId?: true;
     name?: true;
     registrationNumber?: true;
+    startAddress?: true;
+    endAddress?: true;
     maxWeightKg?: true;
     maxVolumeM3?: true;
     startLatitude?: true;
@@ -107,6 +115,8 @@ export type VehicleMaxAggregateInputType = {
     organizationId?: true;
     name?: true;
     registrationNumber?: true;
+    startAddress?: true;
+    endAddress?: true;
     maxWeightKg?: true;
     maxVolumeM3?: true;
     startLatitude?: true;
@@ -122,6 +132,8 @@ export type VehicleCountAggregateInputType = {
     organizationId?: true;
     name?: true;
     registrationNumber?: true;
+    startAddress?: true;
+    endAddress?: true;
     maxWeightKg?: true;
     maxVolumeM3?: true;
     startLatitude?: true;
@@ -166,6 +178,8 @@ export type VehicleGroupByOutputType = {
     organizationId: string;
     name: string;
     registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
     maxWeightKg: runtime.Decimal;
     maxVolumeM3: runtime.Decimal;
     startLatitude: runtime.Decimal;
@@ -192,6 +206,8 @@ export type VehicleWhereInput = {
     organizationId?: Prisma.StringFilter<"Vehicle"> | string;
     name?: Prisma.StringFilter<"Vehicle"> | string;
     registrationNumber?: Prisma.StringFilter<"Vehicle"> | string;
+    startAddress?: Prisma.StringFilter<"Vehicle"> | string;
+    endAddress?: Prisma.StringFilter<"Vehicle"> | string;
     maxWeightKg?: Prisma.DecimalFilter<"Vehicle"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFilter<"Vehicle"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFilter<"Vehicle"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -210,6 +226,8 @@ export type VehicleOrderByWithRelationInput = {
     organizationId?: Prisma.SortOrder;
     name?: Prisma.SortOrder;
     registrationNumber?: Prisma.SortOrder;
+    startAddress?: Prisma.SortOrder;
+    endAddress?: Prisma.SortOrder;
     maxWeightKg?: Prisma.SortOrder;
     maxVolumeM3?: Prisma.SortOrder;
     startLatitude?: Prisma.SortOrder;
@@ -232,6 +250,8 @@ export type VehicleWhereUniqueInput = Prisma.AtLeast<{
     organizationId?: Prisma.StringFilter<"Vehicle"> | string;
     name?: Prisma.StringFilter<"Vehicle"> | string;
     registrationNumber?: Prisma.StringFilter<"Vehicle"> | string;
+    startAddress?: Prisma.StringFilter<"Vehicle"> | string;
+    endAddress?: Prisma.StringFilter<"Vehicle"> | string;
     maxWeightKg?: Prisma.DecimalFilter<"Vehicle"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFilter<"Vehicle"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFilter<"Vehicle"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -250,6 +270,8 @@ export type VehicleOrderByWithAggregationInput = {
     organizationId?: Prisma.SortOrder;
     name?: Prisma.SortOrder;
     registrationNumber?: Prisma.SortOrder;
+    startAddress?: Prisma.SortOrder;
+    endAddress?: Prisma.SortOrder;
     maxWeightKg?: Prisma.SortOrder;
     maxVolumeM3?: Prisma.SortOrder;
     startLatitude?: Prisma.SortOrder;
@@ -273,6 +295,8 @@ export type VehicleScalarWhereWithAggregatesInput = {
     organizationId?: Prisma.StringWithAggregatesFilter<"Vehicle"> | string;
     name?: Prisma.StringWithAggregatesFilter<"Vehicle"> | string;
     registrationNumber?: Prisma.StringWithAggregatesFilter<"Vehicle"> | string;
+    startAddress?: Prisma.StringWithAggregatesFilter<"Vehicle"> | string;
+    endAddress?: Prisma.StringWithAggregatesFilter<"Vehicle"> | string;
     maxWeightKg?: Prisma.DecimalWithAggregatesFilter<"Vehicle"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalWithAggregatesFilter<"Vehicle"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalWithAggregatesFilter<"Vehicle"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -287,6 +311,8 @@ export type VehicleCreateInput = {
     id?: string;
     name: string;
     registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
     maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -305,6 +331,8 @@ export type VehicleUncheckedCreateInput = {
     organizationId: string;
     name: string;
     registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
     maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -321,6 +349,8 @@ export type VehicleUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
     maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -339,6 +369,8 @@ export type VehicleUncheckedUpdateInput = {
     organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
     maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -356,6 +388,8 @@ export type VehicleCreateManyInput = {
     organizationId: string;
     name: string;
     registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
     maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -370,6 +404,8 @@ export type VehicleUpdateManyMutationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
     maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -385,6 +421,8 @@ export type VehicleUncheckedUpdateManyInput = {
     organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
     maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -416,6 +454,8 @@ export type VehicleCountOrderByAggregateInput = {
     organizationId?: Prisma.SortOrder;
     name?: Prisma.SortOrder;
     registrationNumber?: Prisma.SortOrder;
+    startAddress?: Prisma.SortOrder;
+    endAddress?: Prisma.SortOrder;
     maxWeightKg?: Prisma.SortOrder;
     maxVolumeM3?: Prisma.SortOrder;
     startLatitude?: Prisma.SortOrder;
@@ -439,6 +479,8 @@ export type VehicleMaxOrderByAggregateInput = {
     organizationId?: Prisma.SortOrder;
     name?: Prisma.SortOrder;
     registrationNumber?: Prisma.SortOrder;
+    startAddress?: Prisma.SortOrder;
+    endAddress?: Prisma.SortOrder;
     maxWeightKg?: Prisma.SortOrder;
     maxVolumeM3?: Prisma.SortOrder;
     startLatitude?: Prisma.SortOrder;
@@ -454,6 +496,8 @@ export type VehicleMinOrderByAggregateInput = {
     organizationId?: Prisma.SortOrder;
     name?: Prisma.SortOrder;
     registrationNumber?: Prisma.SortOrder;
+    startAddress?: Prisma.SortOrder;
+    endAddress?: Prisma.SortOrder;
     maxWeightKg?: Prisma.SortOrder;
     maxVolumeM3?: Prisma.SortOrder;
     startLatitude?: Prisma.SortOrder;
@@ -552,6 +596,8 @@ export type VehicleCreateWithoutOrganizationInput = {
     id?: string;
     name: string;
     registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
     maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -568,6 +614,8 @@ export type VehicleUncheckedCreateWithoutOrganizationInput = {
     id?: string;
     name: string;
     registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
     maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -609,6 +657,8 @@ export type VehicleScalarWhereInput = {
     organizationId?: Prisma.StringFilter<"Vehicle"> | string;
     name?: Prisma.StringFilter<"Vehicle"> | string;
     registrationNumber?: Prisma.StringFilter<"Vehicle"> | string;
+    startAddress?: Prisma.StringFilter<"Vehicle"> | string;
+    endAddress?: Prisma.StringFilter<"Vehicle"> | string;
     maxWeightKg?: Prisma.DecimalFilter<"Vehicle"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFilter<"Vehicle"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFilter<"Vehicle"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -623,6 +673,8 @@ export type VehicleCreateWithoutDriversInput = {
     id?: string;
     name: string;
     registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
     maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -640,6 +692,8 @@ export type VehicleUncheckedCreateWithoutDriversInput = {
     organizationId: string;
     name: string;
     registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
     maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -668,6 +722,8 @@ export type VehicleUpdateWithoutDriversInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
     maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -685,6 +741,8 @@ export type VehicleUncheckedUpdateWithoutDriversInput = {
     organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
     maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -700,6 +758,8 @@ export type VehicleCreateWithoutRoutesInput = {
     id?: string;
     name: string;
     registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
     maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -717,6 +777,8 @@ export type VehicleUncheckedCreateWithoutRoutesInput = {
     organizationId: string;
     name: string;
     registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
     maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -745,6 +807,8 @@ export type VehicleUpdateWithoutRoutesInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
     maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -762,6 +826,8 @@ export type VehicleUncheckedUpdateWithoutRoutesInput = {
     organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
     maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -777,6 +843,8 @@ export type VehicleCreateManyOrganizationInput = {
     id?: string;
     name: string;
     registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
     maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -791,6 +859,8 @@ export type VehicleUpdateWithoutOrganizationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
     maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -807,6 +877,8 @@ export type VehicleUncheckedUpdateWithoutOrganizationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
     maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -823,6 +895,8 @@ export type VehicleUncheckedUpdateManyWithoutOrganizationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
     maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
@@ -855,6 +929,8 @@ export type VehicleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     organizationId?: boolean;
     name?: boolean;
     registrationNumber?: boolean;
+    startAddress?: boolean;
+    endAddress?: boolean;
     maxWeightKg?: boolean;
     maxVolumeM3?: boolean;
     startLatitude?: boolean;
@@ -874,6 +950,8 @@ export type VehicleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
     organizationId?: boolean;
     name?: boolean;
     registrationNumber?: boolean;
+    startAddress?: boolean;
+    endAddress?: boolean;
     maxWeightKg?: boolean;
     maxVolumeM3?: boolean;
     startLatitude?: boolean;
@@ -890,6 +968,8 @@ export type VehicleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
     organizationId?: boolean;
     name?: boolean;
     registrationNumber?: boolean;
+    startAddress?: boolean;
+    endAddress?: boolean;
     maxWeightKg?: boolean;
     maxVolumeM3?: boolean;
     startLatitude?: boolean;
@@ -906,6 +986,8 @@ export type VehicleSelectScalar = {
     organizationId?: boolean;
     name?: boolean;
     registrationNumber?: boolean;
+    startAddress?: boolean;
+    endAddress?: boolean;
     maxWeightKg?: boolean;
     maxVolumeM3?: boolean;
     startLatitude?: boolean;
@@ -916,7 +998,7 @@ export type VehicleSelectScalar = {
     createdAt?: boolean;
     updatedAt?: boolean;
 };
-export type VehicleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "registrationNumber" | "maxWeightKg" | "maxVolumeM3" | "startLatitude" | "startLongitude" | "endLatitude" | "endLongitude" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["vehicle"]>;
+export type VehicleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "registrationNumber" | "startAddress" | "endAddress" | "maxWeightKg" | "maxVolumeM3" | "startLatitude" | "startLongitude" | "endLatitude" | "endLongitude" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["vehicle"]>;
 export type VehicleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>;
     drivers?: boolean | Prisma.Vehicle$driversArgs<ExtArgs>;
@@ -941,6 +1023,8 @@ export type $VehiclePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
         organizationId: string;
         name: string;
         registrationNumber: string;
+        startAddress: string;
+        endAddress: string;
         maxWeightKg: runtime.Decimal;
         maxVolumeM3: runtime.Decimal;
         startLatitude: runtime.Decimal;
@@ -1014,6 +1098,8 @@ export interface VehicleFieldRefs {
     readonly organizationId: Prisma.FieldRef<"Vehicle", 'String'>;
     readonly name: Prisma.FieldRef<"Vehicle", 'String'>;
     readonly registrationNumber: Prisma.FieldRef<"Vehicle", 'String'>;
+    readonly startAddress: Prisma.FieldRef<"Vehicle", 'String'>;
+    readonly endAddress: Prisma.FieldRef<"Vehicle", 'String'>;
     readonly maxWeightKg: Prisma.FieldRef<"Vehicle", 'Decimal'>;
     readonly maxVolumeM3: Prisma.FieldRef<"Vehicle", 'Decimal'>;
     readonly startLatitude: Prisma.FieldRef<"Vehicle", 'Decimal'>;

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import AddressAutocomplete from '../components/AddressAutocomplete'
 import FormModal from '../components/FormModal'
 import PageToolbar from '../components/PageToolbar'
 import StatusBadge from '../components/StatusBadge'
@@ -24,10 +25,9 @@ const emptyForm = () => ({
   registrationNumber: '',
   maxWeightKg: '1000',
   maxVolumeM3: '10',
-  startLatitude: '58.1467',
-  startLongitude: '7.9956',
-  endLatitude: '58.1467',
-  endLongitude: '7.9956',
+  startAddress: '',
+  endAddress: '',
+  sameReturnDepot: true,
   status: 'AVAILABLE' as VehicleStatus,
 })
 
@@ -54,15 +54,15 @@ export default function VehiclesPage() {
 
   function openEdit(vehicle: Vehicle) {
     setEditing(vehicle)
+    const sameReturnDepot = vehicle.startAddress === vehicle.endAddress
     setForm({
       name: vehicle.name,
       registrationNumber: vehicle.registrationNumber,
       maxWeightKg: String(vehicle.maxWeightKg),
       maxVolumeM3: String(vehicle.maxVolumeM3),
-      startLatitude: String(vehicle.startLatitude),
-      startLongitude: String(vehicle.startLongitude),
-      endLatitude: String(vehicle.endLatitude),
-      endLongitude: String(vehicle.endLongitude),
+      startAddress: vehicle.startAddress,
+      endAddress: vehicle.endAddress,
+      sameReturnDepot,
       status: vehicle.status,
     })
     setModalOpen(true)
@@ -85,15 +85,18 @@ export default function VehiclesPage() {
     setIsSubmitting(true)
     setError(null)
     try {
+      const startAddress = form.startAddress.trim()
+      const endAddress = form.sameReturnDepot
+        ? startAddress
+        : form.endAddress.trim()
+
       const payload = {
         name: form.name,
         registrationNumber: form.registrationNumber,
         maxWeightKg: Number(form.maxWeightKg),
         maxVolumeM3: Number(form.maxVolumeM3),
-        startLatitude: Number(form.startLatitude),
-        startLongitude: Number(form.startLongitude),
-        endLatitude: Number(form.endLatitude),
-        endLongitude: Number(form.endLongitude),
+        startAddress,
+        endAddress,
         status: form.status,
       }
       if (editing) {
@@ -125,7 +128,7 @@ export default function VehiclesPage() {
     <div className="page-content">
       <PageToolbar
         title="Kjøretøy"
-        description="Flåte, kapasitet og depot-koordinater."
+        description="Flåte, kapasitet og depot-adresser."
         action={
           isAdmin ? (
             <button type="button" className="btn-primary" onClick={openCreate}>
@@ -184,8 +187,13 @@ export default function VehiclesPage() {
                     <td>{vehicle.name}</td>
                     <td>{vehicle.registrationNumber}</td>
                     <td>{vehicle.maxWeightKg}</td>
-                    <td className="table-coords">
-                      {vehicle.startLatitude}, {vehicle.startLongitude}
+                    <td className="table-address">
+                      {vehicle.startAddress}
+                      {vehicle.endAddress !== vehicle.startAddress ? (
+                        <span className="table-sub">
+                          Retur: {vehicle.endAddress}
+                        </span>
+                      ) : null}
                     </td>
                     <td>
                       <StatusBadge
@@ -270,46 +278,48 @@ export default function VehiclesPage() {
                 required
               />
             </label>
-            <label>
-              Depot start — breddegrad
+            <AddressAutocomplete
+              className="form-span-2"
+              label="Depotadresse (start)"
+              value={form.startAddress}
+              onChange={(startAddress) =>
+                setForm((prev) => ({
+                  ...prev,
+                  startAddress,
+                  endAddress: prev.sameReturnDepot ? startAddress : prev.endAddress,
+                }))
+              }
+              placeholder="Begynn å skrive adresse…"
+              hint="Velg et forslag eller skriv full adresse. Koordinater beregnes ved lagring."
+              required
+              disabled={isSubmitting}
+            />
+            <label className="form-span-2 auth-remember">
               <input
-                type="number"
-                step="any"
-                value={form.startLatitude}
-                onChange={(e) => updateField('startLatitude', e.target.value)}
-                required
+                type="checkbox"
+                checked={form.sameReturnDepot}
+                onChange={(e) => {
+                  const checked = e.target.checked
+                  setForm((prev) => ({
+                    ...prev,
+                    sameReturnDepot: checked,
+                    endAddress: checked ? prev.startAddress : prev.endAddress,
+                  }))
+                }}
               />
+              <span>Returner til samme depot</span>
             </label>
-            <label>
-              Depot start — lengdegrad
-              <input
-                type="number"
-                step="any"
-                value={form.startLongitude}
-                onChange={(e) => updateField('startLongitude', e.target.value)}
+            {!form.sameReturnDepot ? (
+              <AddressAutocomplete
+                className="form-span-2"
+                label="Depotadresse (retur)"
+                value={form.endAddress}
+                onChange={(endAddress) => updateField('endAddress', endAddress)}
+                placeholder="Begynn å skrive returadresse…"
                 required
+                disabled={isSubmitting}
               />
-            </label>
-            <label>
-              Depot slutt — breddegrad
-              <input
-                type="number"
-                step="any"
-                value={form.endLatitude}
-                onChange={(e) => updateField('endLatitude', e.target.value)}
-                required
-              />
-            </label>
-            <label>
-              Depot slutt — lengdegrad
-              <input
-                type="number"
-                step="any"
-                value={form.endLongitude}
-                onChange={(e) => updateField('endLongitude', e.target.value)}
-                required
-              />
-            </label>
+            ) : null}
             <label>
               Status
               <select

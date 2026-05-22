@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import AddressAutocomplete from '../components/AddressAutocomplete'
 import FormModal from '../components/FormModal'
 import PageToolbar from '../components/PageToolbar'
 import StatusBadge from '../components/StatusBadge'
@@ -38,8 +39,6 @@ const emptyForm = () => ({
   customerName: '',
   phone: '',
   address: '',
-  latitude: '58.1467',
-  longitude: '7.9956',
   weightKg: '1',
   volumeM3: '',
   priority: 'NORMAL' as DeliveryPriority,
@@ -77,8 +76,6 @@ export default function DeliveriesPage() {
       customerName: delivery.customerName,
       phone: delivery.phone ?? '',
       address: delivery.address,
-      latitude: String(delivery.latitude),
-      longitude: String(delivery.longitude),
       weightKg: String(delivery.weightKg),
       volumeM3: delivery.volumeM3 != null ? String(delivery.volumeM3) : '',
       priority: delivery.priority,
@@ -107,9 +104,7 @@ export default function DeliveriesPage() {
     return {
       customerName: form.customerName,
       phone: form.phone.trim() || undefined,
-      address: form.address,
-      latitude: Number(form.latitude),
-      longitude: Number(form.longitude),
+      address: form.address.trim(),
       weightKg: Number(form.weightKg),
       volumeM3: form.volumeM3 ? Number(form.volumeM3) : undefined,
       priority: form.priority,
@@ -284,35 +279,16 @@ export default function DeliveriesPage() {
                 onChange={(e) => updateField('phone', e.target.value)}
               />
             </label>
-            <label className="form-span-2">
-              Adresse
-              <input
-                type="text"
-                value={form.address}
-                onChange={(e) => updateField('address', e.target.value)}
-                required
-              />
-            </label>
-            <label>
-              Breddegrad
-              <input
-                type="number"
-                step="any"
-                value={form.latitude}
-                onChange={(e) => updateField('latitude', e.target.value)}
-                required
-              />
-            </label>
-            <label>
-              Lengdegrad
-              <input
-                type="number"
-                step="any"
-                value={form.longitude}
-                onChange={(e) => updateField('longitude', e.target.value)}
-                required
-              />
-            </label>
+            <AddressAutocomplete
+              className="form-span-2"
+              label="Leveringsadresse"
+              value={form.address}
+              onChange={(address) => updateField('address', address)}
+              placeholder="Begynn å skrive adresse…"
+              hint="Velg et forslag fra listen for best treff."
+              required
+              disabled={isSubmitting}
+            />
             <label>
               Vekt (kg)
               <input

@@ -8,6 +8,7 @@ import { VehicleStatus } from '../generated/prisma/client';
 import type { JwtPayload } from '../auth/types/jwt-payload';
 import { decimalToNumber } from '../common/decimal.util';
 import { OrgScopeService } from '../common/org-scope.service';
+import { GeocodingService } from '../geocoding/geocoding.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { ListVehiclesQueryDto } from './dto/list-vehicles-query.dto';
@@ -18,6 +19,8 @@ export type VehicleResponse = {
   organizationId: string;
   name: string;
   registrationNumber: string;
+  startAddress: string;
+  endAddress: string;
   maxWeightKg: number;
   maxVolumeM3: number;
   startLatitude: number;
@@ -34,6 +37,7 @@ export class VehiclesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly orgScope: OrgScopeService,
+    private readonly geocoding: GeocodingService,
   ) {}
 
   async findAll(
@@ -61,6 +65,13 @@ export class VehiclesService {
   ): Promise<VehicleResponse> {
     const organizationId = this.orgScope.requireOrganizationId(user);
     const registrationNumber = dto.registrationNumber.trim();
+    const startAddress = dto.startAddress.trim();
+    const endAddress = dto.endAddress.trim();
+
+    const [start, end] = await Promise.all([
+      this.geocoding.geocode(startAddress),
+      this.geocoding.geocode(endAddress),
+    ]);
 
     try {
       const created = await this.prisma.vehicle.create({
@@ -68,12 +79,14 @@ export class VehiclesService {
           organizationId,
           name: dto.name,
           registrationNumber,
+          startAddress,
+          endAddress,
           maxWeightKg: dto.maxWeightKg,
           maxVolumeM3: dto.maxVolumeM3,
-          startLatitude: dto.startLatitude,
-          startLongitude: dto.startLongitude,
-          endLatitude: dto.endLatitude,
-          endLongitude: dto.endLongitude,
+          startLatitude: start.latitude,
+          startLongitude: start.longitude,
+          endLatitude: end.latitude,
+          endLongitude: end.longitude,
           status: dto.status ?? VehicleStatus.AVAILABLE,
         },
       });
@@ -93,7 +106,33 @@ export class VehiclesService {
     id: string,
     dto: UpdateVehicleDto,
   ): Promise<VehicleResponse> {
-    await this.findScopedOrThrow(user, id);
+    const existing = await this.findScopedOrThrow(user, id);
+
+    const startAddress =
+      dto.startAddress !== undefined
+        ? dto.startAddress.trim()
+        : existing.startAddress;
+    const endAddress =
+      dto.endAddress !== undefined
+        ? dto.endAddress.trim()
+        : existing.endAddress;
+
+    let startLatitude = decimalToNumber(existing.startLatitude)!;
+    let startLongitude = decimalToNumber(existing.startLongitude)!;
+    let endLatitude = decimalToNumber(existing.endLatitude)!;
+    let endLongitude = decimalToNumber(existing.endLongitude)!;
+
+    if (dto.startAddress !== undefined) {
+      const start = await this.geocoding.geocode(startAddress);
+      startLatitude = start.latitude;
+      startLongitude = start.longitude;
+    }
+
+    if (dto.endAddress !== undefined) {
+      const end = await this.geocoding.geocode(endAddress);
+      endLatitude = end.latitude;
+      endLongitude = end.longitude;
+    }
 
     try {
       const updated = await this.prisma.vehicle.update({
@@ -103,23 +142,21 @@ export class VehiclesService {
           ...(dto.registrationNumber !== undefined && {
             registrationNumber: dto.registrationNumber.trim(),
           }),
+          ...(dto.startAddress !== undefined && { startAddress }),
+          ...(dto.endAddress !== undefined && { endAddress }),
           ...(dto.maxWeightKg !== undefined && {
             maxWeightKg: dto.maxWeightKg,
           }),
           ...(dto.maxVolumeM3 !== undefined && {
             maxVolumeM3: dto.maxVolumeM3,
           }),
-          ...(dto.startLatitude !== undefined && {
-            startLatitude: dto.startLatitude,
+          ...(dto.startAddress !== undefined && {
+            startLatitude,
+            startLongitude,
           }),
-          ...(dto.startLongitude !== undefined && {
-            startLongitude: dto.startLongitude,
-          }),
-          ...(dto.endLatitude !== undefined && {
-            endLatitude: dto.endLatitude,
-          }),
-          ...(dto.endLongitude !== undefined && {
-            endLongitude: dto.endLongitude,
+          ...(dto.endAddress !== undefined && {
+            endLatitude,
+            endLongitude,
           }),
           ...(dto.status !== undefined && { status: dto.status }),
         },
@@ -171,6 +208,8 @@ function toVehicleResponse(vehicle: {
   organizationId: string;
   name: string;
   registrationNumber: string;
+  startAddress: string;
+  endAddress: string;
   maxWeightKg: Parameters<typeof decimalToNumber>[0];
   maxVolumeM3: Parameters<typeof decimalToNumber>[0];
   startLatitude: Parameters<typeof decimalToNumber>[0];
@@ -186,6 +225,8 @@ function toVehicleResponse(vehicle: {
     organizationId: vehicle.organizationId,
     name: vehicle.name,
     registrationNumber: vehicle.registrationNumber,
+    startAddress: vehicle.startAddress,
+    endAddress: vehicle.endAddress,
     maxWeightKg: decimalToNumber(vehicle.maxWeightKg)!,
     maxVolumeM3: decimalToNumber(vehicle.maxVolumeM3)!,
     startLatitude: decimalToNumber(vehicle.startLatitude)!,

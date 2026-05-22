@@ -51,6 +51,8 @@ export type Vehicle = {
   organizationId: string
   name: string
   registrationNumber: string
+  startAddress: string
+  endAddress: string
   maxWeightKg: number
   maxVolumeM3: number
   startLatitude: number
@@ -80,6 +82,12 @@ export type Delivery = {
   status: DeliveryStatus
   createdAt: string
   updatedAt: string
+}
+
+export type AddressSuggestion = {
+  latitude: number
+  longitude: number
+  displayName: string
 }
 
 export type CreateUserPayload = {
@@ -112,12 +120,10 @@ export type UpdateDriverPayload = {
 export type CreateVehiclePayload = {
   name: string
   registrationNumber: string
+  startAddress: string
+  endAddress: string
   maxWeightKg: number
   maxVolumeM3: number
-  startLatitude: number
-  startLongitude: number
-  endLatitude: number
-  endLongitude: number
   status?: VehicleStatus
 }
 
@@ -127,8 +133,6 @@ export type CreateDeliveryPayload = {
   customerName: string
   phone?: string
   address: string
-  latitude: number
-  longitude: number
   weightKg: number
   volumeM3?: number
   priority?: DeliveryPriority

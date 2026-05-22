@@ -1,6 +1,7 @@
 import { DeliveryPriority, DeliveryStatus } from '../generated/prisma/client';
 import type { JwtPayload } from '../auth/types/jwt-payload';
 import { OrgScopeService } from '../common/org-scope.service';
+import { GeocodingService } from '../geocoding/geocoding.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { ListDeliveriesQueryDto } from './dto/list-deliveries-query.dto';
@@ -27,7 +28,8 @@ export type DeliveryResponse = {
 export declare class DeliveriesService {
     private readonly prisma;
     private readonly orgScope;
-    constructor(prisma: PrismaService, orgScope: OrgScopeService);
+    private readonly geocoding;
+    constructor(prisma: PrismaService, orgScope: OrgScopeService, geocoding: GeocodingService);
     findAll(user: JwtPayload, query: ListDeliveriesQueryDto): Promise<DeliveryResponse[]>;
     findOne(user: JwtPayload, id: string): Promise<DeliveryResponse>;
     create(user: JwtPayload, dto: CreateDeliveryDto): Promise<DeliveryResponse>;

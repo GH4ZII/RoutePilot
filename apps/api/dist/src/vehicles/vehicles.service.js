@@ -14,13 +14,16 @@ const common_1 = require("@nestjs/common");
 const client_1 = require("../generated/prisma/client");
 const decimal_util_1 = require("../common/decimal.util");
 const org_scope_service_1 = require("../common/org-scope.service");
+const geocoding_service_1 = require("../geocoding/geocoding.service");
 const prisma_service_1 = require("../prisma/prisma.service");
 let VehiclesService = class VehiclesService {
     prisma;
     orgScope;
-    constructor(prisma, orgScope) {
+    geocoding;
+    constructor(prisma, orgScope, geocoding) {
         this.prisma = prisma;
         this.orgScope = orgScope;
+        this.geocoding = geocoding;
     }
     async findAll(user, query) {
         const rows = await this.prisma.vehicle.findMany({
@@ -36,18 +39,26 @@ let VehiclesService = class VehiclesService {
     async create(user, dto) {
         const organizationId = this.orgScope.requireOrganizationId(user);
         const registrationNumber = dto.registrationNumber.trim();
+        const startAddress = dto.startAddress.trim();
+        const endAddress = dto.endAddress.trim();
+        const [start, end] = await Promise.all([
+            this.geocoding.geocode(startAddress),
+            this.geocoding.geocode(endAddress),
+        ]);
         try {
             const created = await this.prisma.vehicle.create({
                 data: {
                     organizationId,
                     name: dto.name,
                     registrationNumber,
+                    startAddress,
+                    endAddress,
                     maxWeightKg: dto.maxWeightKg,
                     maxVolumeM3: dto.maxVolumeM3,
-                    startLatitude: dto.startLatitude,
-                    startLongitude: dto.startLongitude,
-                    endLatitude: dto.endLatitude,
-                    endLongitude: dto.endLongitude,
+                    startLatitude: start.latitude,
+                    startLongitude: start.longitude,
+                    endLatitude: end.latitude,
+                    endLongitude: end.longitude,
                     status: dto.status ?? client_1.VehicleStatus.AVAILABLE,
                 },
             });
@@ -61,7 +72,27 @@ let VehiclesService = class VehiclesService {
         }
     }
     async update(user, id, dto) {
-        await this.findScopedOrThrow(user, id);
+        const existing = await this.findScopedOrThrow(user, id);
+        const startAddress = dto.startAddress !== undefined
+            ? dto.startAddress.trim()
+            : existing.startAddress;
+        const endAddress = dto.endAddress !== undefined
+            ? dto.endAddress.trim()
+            : existing.endAddress;
+        let startLatitude = (0, decimal_util_1.decimalToNumber)(existing.startLatitude);
+        let startLongitude = (0, decimal_util_1.decimalToNumber)(existing.startLongitude);
+        let endLatitude = (0, decimal_util_1.decimalToNumber)(existing.endLatitude);
+        let endLongitude = (0, decimal_util_1.decimalToNumber)(existing.endLongitude);
+        if (dto.startAddress !== undefined) {
+            const start = await this.geocoding.geocode(startAddress);
+            startLatitude = start.latitude;
+            startLongitude = start.longitude;
+        }
+        if (dto.endAddress !== undefined) {
+            const end = await this.geocoding.geocode(endAddress);
+            endLatitude = end.latitude;
+            endLongitude = end.longitude;
+        }
         try {
             const updated = await this.prisma.vehicle.update({
                 where: { id },
@@ -70,23 +101,21 @@ let VehiclesService = class VehiclesService {
                     ...(dto.registrationNumber !== undefined && {
                         registrationNumber: dto.registrationNumber.trim(),
                     }),
+                    ...(dto.startAddress !== undefined && { startAddress }),
+                    ...(dto.endAddress !== undefined && { endAddress }),
                     ...(dto.maxWeightKg !== undefined && {
                         maxWeightKg: dto.maxWeightKg,
                     }),
                     ...(dto.maxVolumeM3 !== undefined && {
                         maxVolumeM3: dto.maxVolumeM3,
                     }),
-                    ...(dto.startLatitude !== undefined && {
-                        startLatitude: dto.startLatitude,
+                    ...(dto.startAddress !== undefined && {
+                        startLatitude,
+                        startLongitude,
                     }),
-                    ...(dto.startLongitude !== undefined && {
-                        startLongitude: dto.startLongitude,
-                    }),
-                    ...(dto.endLatitude !== undefined && {
-                        endLatitude: dto.endLatitude,
-                    }),
-                    ...(dto.endLongitude !== undefined && {
-                        endLongitude: dto.endLongitude,
+                    ...(dto.endAddress !== undefined && {
+                        endLatitude,
+                        endLongitude,
                     }),
                     ...(dto.status !== undefined && { status: dto.status }),
                 },
@@ -128,7 +157,8 @@ exports.VehiclesService = VehiclesService;
 exports.VehiclesService = VehiclesService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        org_scope_service_1.OrgScopeService])
+        org_scope_service_1.OrgScopeService,
+        geocoding_service_1.GeocodingService])
 ], VehiclesService);
 function toVehicleResponse(vehicle) {
     return {
@@ -136,6 +166,8 @@ function toVehicleResponse(vehicle) {
         organizationId: vehicle.organizationId,
         name: vehicle.name,
         registrationNumber: vehicle.registrationNumber,
+        startAddress: vehicle.startAddress,
+        endAddress: vehicle.endAddress,
         maxWeightKg: (0, decimal_util_1.decimalToNumber)(vehicle.maxWeightKg),
         maxVolumeM3: (0, decimal_util_1.decimalToNumber)(vehicle.maxVolumeM3),
         startLatitude: (0, decimal_util_1.decimalToNumber)(vehicle.startLatitude),
