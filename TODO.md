@@ -65,18 +65,18 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 ## Fase 3: Kart og geokoding
 
-- [ ] Geokoding (Nominatim, Mapbox eller Google)
-- [ ] Lagre lesbar adresse + latitude/longitude
-- [ ] Kartbibliotek (Leaflet eller MapLibre + OpenStreetMap)
-- [ ] Markører for alle leveringer
-- [ ] Klikk på markør → leveringsdetaljer
+- [x] Geokoding — Kartverket Adresse-API på API + adresseforslag i skjema
+- [x] Lagre lesbar adresse + latitude/longitude
+- [x] Kartbibliotek (Leaflet eller MapLibre + OpenStreetMap) — Leaflet + OSM på `/map`
+- [x] Markører for alle leveringer (+ depot fra kjøretøy)
+- [x] Klikk på markør → leveringsdetaljer (popup + sidepanel)
 
 ---
 
 ## Fase 4: Grunnleggende optimalisering
 
-- [ ] Routing-motor for avstand og reisetid (OSRM, OpenRouteService, GraphHopper eller Google)
-- [ ] Bygg avstands- og reisetidsmatrise
+- [x] Routing-motor for avstand og reisetid — OSRM (`RoutingModule`, `OSRM_BASE_URL`)
+- [x] Bygg avstands- og reisetidsmatrise — `POST /routing/matrix`
 - [ ] Python-tjeneste med Google OR-Tools (FastAPI eller worker)
 - [ ] Redis + BullMQ for bakgrunnsjobber
 - [ ] `POST /optimization/jobs`, `GET /optimization/jobs/:id`

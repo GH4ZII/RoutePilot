@@ -3,7 +3,6 @@ import {
   Injectable,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 export type GeocodedLocation = {
   latitude: number;
@@ -13,18 +12,32 @@ export type GeocodedLocation = {
 
 export type AddressSuggestion = GeocodedLocation;
 
-type NominatimResult = {
-  lat: string;
-  lon: string;
-  display_name: string;
+type KartverketPoint = {
+  lat: number;
+  lon: number;
 };
+
+type KartverketAddress = {
+  adressetekst: string;
+  postnummer?: string;
+  poststed?: string;
+  kommunenavn?: string;
+  representasjonspunkt?: KartverketPoint;
+};
+
+type KartverketSearchResponse = {
+  adresser?: KartverketAddress[];
+};
+
+const KARTVERKET_BASE = 'https://ws.geonorge.no/adresser/v1';
 
 @Injectable()
 export class GeocodingService {
-  constructor(private readonly config: ConfigService) {}
-
   async geocode(address: string): Promise<GeocodedLocation> {
-    const results = await this.searchNominatim(address, 1);
+    let results = await this.searchKartverket(address, 1, false);
+    if (!results.length) {
+      results = await this.searchKartverket(address, 1, true);
+    }
     if (!results.length) {
       throw new BadRequestException(
         'Fant ikke adressen. Skriv gate, postnummer og sted (f.eks. Markens gate 10, 4610 Kristiansand).',
@@ -38,60 +51,57 @@ export class GeocodingService {
     if (trimmed.length < 3) {
       return [];
     }
-    const results = await this.searchNominatim(trimmed, 6);
+    const results = await this.searchKartverket(trimmed, 8, true);
     return results.map((hit) => this.toLocation(hit));
   }
 
-  private async searchNominatim(
+  private async searchKartverket(
     query: string,
     limit: number,
-  ): Promise<NominatimResult[]> {
+    fuzzy: boolean,
+  ): Promise<KartverketAddress[]> {
     const trimmed = query.trim();
     if (trimmed.length < 3) {
       throw new BadRequestException('Adressen er for kort');
     }
 
     const params = new URLSearchParams({
-      q: trimmed,
-      format: 'json',
-      limit: String(limit),
-      countrycodes: 'no',
-      addressdetails: '0',
+      sok: trimmed,
+      treffPerSide: String(Math.min(limit, 10)),
     });
-
-    const userAgent =
-      this.config.get<string>('GEOCODING_USER_AGENT') ??
-      'RoutePilot/1.0 (logistics-app)';
+    if (fuzzy) {
+      params.set('fuzzy', 'true');
+    }
 
     let response: Response;
     try {
-      response = await fetch(
-        `https://nominatim.openstreetmap.org/search?${params}`,
-        {
-          headers: {
-            'User-Agent': userAgent,
-            'Accept-Language': 'nb,no,en',
-          },
-        },
-      );
+      response = await fetch(`${KARTVERKET_BASE}/sok?${params}`, {
+        headers: { Accept: 'application/json' },
+      });
     } catch {
       throw new ServiceUnavailableException(
-        'Kunne ikke kontakte adressetjenesten. Prøv igjen.',
+        'Kunne ikke kontakte Kartverkets adressetjeneste. Prøv igjen.',
       );
     }
 
     if (!response.ok) {
       throw new ServiceUnavailableException(
-        'Adressetjenesten svarte med en feil. Prøv igjen.',
+        'Kartverkets adressetjeneste svarte med en feil. Prøv igjen.',
       );
     }
 
-    return (await response.json()) as NominatimResult[];
+    const body = (await response.json()) as KartverketSearchResponse;
+    return (body.adresser ?? []).filter((addr) => addr.representasjonspunkt);
   }
 
-  private toLocation(hit: NominatimResult): GeocodedLocation {
-    const latitude = Number(hit.lat);
-    const longitude = Number(hit.lon);
+  private toLocation(addr: KartverketAddress): GeocodedLocation {
+    const point = addr.representasjonspunkt;
+    if (!point) {
+      throw new BadRequestException('Adressen mangler koordinater');
+    }
+
+    const latitude = Number(point.lat);
+    const longitude = Number(point.lon);
 
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
       throw new BadRequestException('Ugyldig svar fra adressetjenesten');
@@ -100,7 +110,27 @@ export class GeocodingService {
     return {
       latitude,
       longitude,
-      displayName: hit.display_name,
+      displayName: this.formatDisplayName(addr),
     };
+  }
+
+  private formatDisplayName(addr: KartverketAddress): string {
+    const line = addr.adressetekst?.trim();
+    if (!line) {
+      return '';
+    }
+    if (!addr.postnummer) {
+      return line;
+    }
+    const place = this.formatPlaceName(addr.poststed ?? addr.kommunenavn);
+    return place ? `${line}, ${addr.postnummer} ${place}` : `${line}, ${addr.postnummer}`;
+  }
+
+  private formatPlaceName(raw?: string): string {
+    if (!raw?.trim()) {
+      return '';
+    }
+    const normalized = raw.trim().replace(/\s+S$/i, '').toLowerCase();
+    return normalized.replace(/\b\w/g, (char) => char.toUpperCase());
   }
 }

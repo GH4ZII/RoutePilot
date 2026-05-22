@@ -17,3 +17,17 @@ export function fromDatetimeLocalValue(value: string): string | undefined {
   if (!value.trim()) return undefined
   return new Date(value).toISOString()
 }
+
+/** Same calendar day as deadline: 08:00 start, deadline as end (siste frist). */
+export function timeWindowsFromDeadline(deadlineLocal: string): {
+  timeWindowStart: string
+  timeWindowEnd: string
+} | null {
+  if (!deadlineLocal.trim()) return null
+  const [datePart] = deadlineLocal.split('T')
+  if (!datePart) return null
+  return {
+    timeWindowStart: `${datePart}T08:00`,
+    timeWindowEnd: deadlineLocal,
+  }
+}

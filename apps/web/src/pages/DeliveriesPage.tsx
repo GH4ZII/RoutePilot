@@ -9,6 +9,7 @@ import { ApiError } from '../lib/api'
 import {
   fromDatetimeLocalValue,
   formatDateTime,
+  timeWindowsFromDeadline,
   toDatetimeLocalValue,
 } from '../lib/format'
 import {
@@ -98,6 +99,16 @@ export default function DeliveriesPage() {
     value: ReturnType<typeof emptyForm>[K],
   ) {
     setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function handleDeadlineChange(deadline: string) {
+    const windows = timeWindowsFromDeadline(deadline)
+    setForm((prev) => ({
+      ...prev,
+      deadline,
+      timeWindowStart: windows?.timeWindowStart ?? '',
+      timeWindowEnd: windows?.timeWindowEnd ?? '',
+    }))
   }
 
   function buildPayload() {
@@ -340,30 +351,25 @@ export default function DeliveriesPage() {
                 ))}
               </select>
             </label>
-            <label>
-              Deadline
+            <label className="form-span-2">
+              Siste frist for levering
               <input
                 type="datetime-local"
                 value={form.deadline}
-                onChange={(e) => updateField('deadline', e.target.value)}
+                onChange={(e) => handleDeadlineChange(e.target.value)}
               />
+              <span className="field-hint">
+                Senest når leveransen må være levert. Tidsvindu samme dag
+                (08:00–frist) fylles ut automatisk.
+              </span>
             </label>
-            <label>
-              Tidsvindu fra
-              <input
-                type="datetime-local"
-                value={form.timeWindowStart}
-                onChange={(e) => updateField('timeWindowStart', e.target.value)}
-              />
-            </label>
-            <label>
-              Tidsvindu til
-              <input
-                type="datetime-local"
-                value={form.timeWindowEnd}
-                onChange={(e) => updateField('timeWindowEnd', e.target.value)}
-              />
-            </label>
+            {form.deadline && form.timeWindowStart && form.timeWindowEnd ? (
+              <p className="field-hint form-span-2">
+                Tidsvindu:{' '}
+                {formatDateTime(fromDatetimeLocalValue(form.timeWindowStart))} –{' '}
+                {formatDateTime(fromDatetimeLocalValue(form.timeWindowEnd))}
+              </p>
+            ) : null}
             <label className="form-span-2">
               Notater
               <textarea

@@ -11,6 +11,7 @@ import UsersPage from './pages/UsersPage'
 import DriversPage from './pages/DriversPage'
 import VehiclesPage from './pages/VehiclesPage'
 import DeliveriesPage from './pages/DeliveriesPage'
+import MapPage from './pages/MapPage'
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
         <Route path="drivers" element={<DriversPage />} />
         <Route path="vehicles" element={<VehiclesPage />} />
         <Route path="deliveries" element={<DeliveriesPage />} />
+        <Route path="map" element={<MapPage />} />
         <Route
           path="routes"
           element={<PlaceholderPage title="Ruter" />}

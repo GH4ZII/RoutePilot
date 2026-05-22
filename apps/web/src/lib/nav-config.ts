@@ -11,12 +11,14 @@ const adminNav: NavItem[] = [
   { label: 'Sjåfører', path: '/drivers' },
   { label: 'Kjøretøy', path: '/vehicles' },
   { label: 'Leveranser', path: '/deliveries' },
+  { label: 'Kart', path: '/map' },
   { label: 'Organisasjon', path: '/settings/org' },
 ]
 
 const dispatcherNav: NavItem[] = [
   { label: 'Dashboard', path: '/' },
   { label: 'Leveranser', path: '/deliveries' },
+  { label: 'Kart', path: '/map' },
   { label: 'Ruter', path: '/routes' },
   { label: 'Sjåfører', path: '/drivers' },
   { label: 'Kjøretøy', path: '/vehicles' },

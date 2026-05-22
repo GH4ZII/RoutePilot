@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { GeocodingModule } from './geocoding/geocoding.module';
+import { RoutingModule } from './routing/routing.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { UsersModule } from './users/users.module';
 import { DriversModule } from './drivers/drivers.module';
@@ -18,6 +19,7 @@ import { DeliveriesModule } from './deliveries/deliveries.module';
     PrismaModule,
     CommonModule,
     GeocodingModule,
+    RoutingModule,
     AuthModule,
     OrganizationsModule,
     UsersModule,
