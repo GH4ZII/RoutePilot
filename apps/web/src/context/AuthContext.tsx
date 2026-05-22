@@ -13,17 +13,26 @@ import {
   getStoredToken,
   setStoredToken,
 } from '../lib/auth-storage'
+import {
+  clearRememberedLogin,
+  setRememberMeEnabled,
+  setRememberedLogin,
+} from '../lib/remember-login'
 import type {
   AuthUser,
   LoginCredentials,
   RegisterCredentials,
 } from '../types/auth'
 
+export type LoginOptions = {
+  rememberMe?: boolean
+}
+
 type AuthContextValue = {
   user: AuthUser | null
   isLoading: boolean
   isAuthenticated: boolean
-  login: (credentials: LoginCredentials) => Promise<void>
+  login: (credentials: LoginCredentials, options?: LoginOptions) => Promise<void>
   register: (credentials: RegisterCredentials) => Promise<void>
   logout: () => void
 }
@@ -39,15 +48,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
-  const applyAuthResponse = useCallback((response: Awaited<ReturnType<typeof api.login>>) => {
-    setStoredToken(response.accessToken)
-    setUser(response.user)
-  }, [])
+  const applyAuthResponse = useCallback(
+    (
+      response: Awaited<ReturnType<typeof api.login>>,
+      rememberMe: boolean,
+    ) => {
+      setStoredToken(response.accessToken, rememberMe)
+      setUser(response.user)
+    },
+    [],
+  )
 
   const login = useCallback(
-    async (credentials: LoginCredentials) => {
+    async (credentials: LoginCredentials, options?: LoginOptions) => {
+      const rememberMe = options?.rememberMe ?? false
       const response = await api.login(credentials)
-      applyAuthResponse(response)
+      setRememberMeEnabled(rememberMe)
+      if (rememberMe) {
+        setRememberedLogin({
+          organizationSlug: credentials.organizationSlug,
+          email: credentials.email,
+        })
+      } else {
+        clearRememberedLogin()
+      }
+      applyAuthResponse(response, rememberMe)
     },
     [applyAuthResponse],
   )
@@ -55,7 +80,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(
     async (credentials: RegisterCredentials) => {
       const response = await api.register(credentials)
-      applyAuthResponse(response)
+      setRememberMeEnabled(true)
+      setRememberedLogin({
+        organizationSlug: credentials.organizationSlug,
+        email: credentials.email,
+      })
+      applyAuthResponse(response, true)
     },
     [applyAuthResponse],
   )

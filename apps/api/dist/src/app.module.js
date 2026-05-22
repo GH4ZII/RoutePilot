@@ -15,6 +15,10 @@ const prisma_module_1 = require("./prisma/prisma.module");
 const auth_module_1 = require("./auth/auth.module");
 const common_module_1 = require("./common/common.module");
 const organizations_module_1 = require("./organizations/organizations.module");
+const users_module_1 = require("./users/users.module");
+const drivers_module_1 = require("./drivers/drivers.module");
+const vehicles_module_1 = require("./vehicles/vehicles.module");
+const deliveries_module_1 = require("./deliveries/deliveries.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -26,6 +30,10 @@ exports.AppModule = AppModule = __decorate([
             common_module_1.CommonModule,
             auth_module_1.AuthModule,
             organizations_module_1.OrganizationsModule,
+            users_module_1.UsersModule,
+            drivers_module_1.DriversModule,
+            vehicles_module_1.VehiclesModule,
+            deliveries_module_1.DeliveriesModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

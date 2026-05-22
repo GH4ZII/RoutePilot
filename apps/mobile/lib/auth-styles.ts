@@ -68,6 +68,17 @@ export const authStyles = StyleSheet.create({
   field: {
     marginBottom: 4,
   },
+  rememberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  rememberLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: authTheme.text,
+  },
   error: {
     color: authTheme.errorText,
     backgroundColor: authTheme.errorBackground,

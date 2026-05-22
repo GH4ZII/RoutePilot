@@ -119,6 +119,29 @@ body {
   cursor: not-allowed;
 }
 
+.auth-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--auth-text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.auth-remember input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--auth-primary);
+  cursor: pointer;
+}
+
+.auth-remember input:disabled {
+  cursor: not-allowed;
+}
+
 .auth-error {
   margin: 0;
   padding: 10px 12px;

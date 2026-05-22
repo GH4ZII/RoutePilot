@@ -6,11 +6,13 @@ import DashboardPage from './pages/DashboardPage'
 import DriverWebNoticePage from './pages/DriverWebNoticePage'
 import LoginPage from './pages/LoginPage'
 import PlaceholderPage from './pages/PlaceholderPage'
+import SignupPage from './pages/SignupPage'
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
 
       <Route
         path="/driver-notice"

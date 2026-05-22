@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
+  Switch,
   Text,
   TextInput,
   View,
@@ -15,6 +16,10 @@ import { useAuth } from '@/context/AuthContext';
 import { ApiError } from '@/lib/api';
 import { authStyles } from '@/lib/auth-styles';
 import { validatePassword } from '@/lib/auth-validation';
+import {
+  getRememberMeEnabled,
+  getRememberedLogin,
+} from '@/lib/remember-login';
 import { authTheme } from '@/constants/authTheme';
 
 export default function LoginScreen() {
@@ -24,8 +29,29 @@ export default function LoginScreen() {
   const [organizationSlug, setOrganizationSlug] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRemembered() {
+      const remembered = await getRememberedLogin();
+      const enabled = await getRememberMeEnabled();
+      if (cancelled) return;
+      if (remembered) {
+        setOrganizationSlug(remembered.organizationSlug);
+        setEmail(remembered.email);
+      }
+      setRememberMe(enabled);
+    }
+
+    loadRemembered();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleLogin() {
     setError(null);
@@ -39,11 +65,19 @@ export default function LoginScreen() {
     setIsSubmitting(true);
 
     try {
-      await login({ organizationSlug, email, password });
+      await login({ organizationSlug, email, password }, { rememberMe });
       router.replace('/(tabs)');
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
+      } else if (
+        err instanceof TypeError &&
+        (err.message === 'Network request failed' ||
+          err.message.includes('Failed to fetch'))
+      ) {
+        setError(
+          'Kunne ikke nå API-serveren. Sjekk at API kjører (port 3000) og at telefonen er på samme nettverk som PC-en.',
+        );
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -104,6 +138,17 @@ export default function LoginScreen() {
               onChangeText={setPassword}
               secureTextEntry
               editable={!isSubmitting}
+            />
+          </View>
+
+          <View style={authStyles.rememberRow}>
+            <Text style={authStyles.rememberLabel}>Husk meg</Text>
+            <Switch
+              value={rememberMe}
+              onValueChange={setRememberMe}
+              trackColor={{ false: authTheme.border, true: authTheme.primary }}
+              thumbColor="#fff"
+              disabled={isSubmitting}
             />
           </View>
 

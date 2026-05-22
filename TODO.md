@@ -38,28 +38,28 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 ### Tabeller
 
-- [ ] `organizations`
-- [ ] `users`
-- [ ] `drivers`
-- [ ] `vehicles`
-- [ ] `deliveries`
-- [ ] `routes`
-- [ ] `route_stops`
-- [ ] `proof_of_delivery`
-- [ ] `route_events`
-- [ ] `optimization_jobs`
+- [x] `organizations`
+- [x] `users`
+- [x] `drivers`
+- [x] `vehicles`
+- [x] `deliveries`
+- [x] `routes`
+- [x] `route_stops`
+- [x] `proof_of_delivery`
+- [x] `route_events`
+- [x] `optimization_jobs`
 
 ### Moduler og API
 
-- [ ] Organisasjoner — `GET /organizations/me`, `PATCH /organizations/me`
-- [ ] Brukere — admin kan legge til brukere og roller
-- [ ] Sjåfører — CRUD (`GET/POST/PATCH/DELETE /drivers`)
-- [ ] Sjåførstatus: Available, On route, Unavailable, Off duty
-- [ ] Kjøretøy — CRUD (`GET/POST/PATCH/DELETE /vehicles`)
-- [ ] Kjøretøy: navn, reg.nr, max vekt/volum, depot-koordinater, status
-- [ ] Leveringer — CRUD (`GET/POST/PATCH/DELETE /deliveries`)
-- [ ] Leveringsfelt: kunde, telefon, adresse, lat/lng, vekt, volum, prioritet, deadline, tidsvindu, notater, status
-- [ ] Leveringsstatuser: Pending, Assigned, In progress, Delivered, Failed, Cancelled
+- [x] Organisasjoner — `GET /organizations/me`, `PATCH /organizations/me`
+- [x] Brukere — admin kan legge til brukere og roller (`GET/POST/PATCH/DELETE /users`)
+- [x] Sjåfører — CRUD (`GET/POST/PATCH/DELETE /drivers`)
+- [x] Sjåførstatus: Available, On route, Unavailable, Off duty
+- [x] Kjøretøy — CRUD (`GET/POST/PATCH/DELETE /vehicles`)
+- [x] Kjøretøy: navn, reg.nr, max vekt/volum, depot-koordinater, status
+- [x] Leveringer — CRUD (`GET/POST/PATCH/DELETE /deliveries`)
+- [x] Leveringsfelt: kunde, telefon, adresse, lat/lng, vekt, volum, prioritet, deadline, tidsvindu, notater, status
+- [x] Leveringsstatuser: Pending, Assigned, In progress, Delivered, Failed, Cancelled
 
 ---
 

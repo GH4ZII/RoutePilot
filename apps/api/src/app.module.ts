@@ -6,6 +6,10 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { OrganizationsModule } from './organizations/organizations.module';
+import { UsersModule } from './users/users.module';
+import { DriversModule } from './drivers/drivers.module';
+import { VehiclesModule } from './vehicles/vehicles.module';
+import { DeliveriesModule } from './deliveries/deliveries.module';
 
 @Module({
   imports: [
@@ -14,6 +18,10 @@ import { OrganizationsModule } from './organizations/organizations.module';
     CommonModule,
     AuthModule,
     OrganizationsModule,
+    UsersModule,
+    DriversModule,
+    VehiclesModule,
+    DeliveriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

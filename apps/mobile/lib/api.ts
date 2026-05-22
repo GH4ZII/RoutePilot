@@ -4,11 +4,14 @@ import type {
   LoginCredentials,
   RegisterCredentials,
 } from '@/types/auth';
+import { resolveApiBaseUrl } from '@/lib/api-base-url';
 import { getStoredToken } from '@/lib/auth-storage';
 
-const API_BASE_URL = (
-  process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000'
-).replace(/\/$/, '');
+const API_BASE_URL = resolveApiBaseUrl();
+
+if (__DEV__) {
+  console.log('[RoutePilot] API base URL:', API_BASE_URL);
+}
 
 export class ApiError extends Error {
   status: number;
