@@ -19,6 +19,7 @@ const dispatcherNav: NavItem[] = [
   { label: 'Leveranser', path: '/deliveries' },
   { label: 'Ruter', path: '/routes' },
   { label: 'Sjåfører', path: '/drivers' },
+  { label: 'Kjøretøy', path: '/vehicles' },
 ]
 
 export function getNavItemsForRole(role: string): NavItem[] {

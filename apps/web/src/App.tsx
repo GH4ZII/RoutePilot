@@ -7,6 +7,10 @@ import DriverWebNoticePage from './pages/DriverWebNoticePage'
 import LoginPage from './pages/LoginPage'
 import PlaceholderPage from './pages/PlaceholderPage'
 import SignupPage from './pages/SignupPage'
+import UsersPage from './pages/UsersPage'
+import DriversPage from './pages/DriversPage'
+import VehiclesPage from './pages/VehiclesPage'
+import DeliveriesPage from './pages/DeliveriesPage'
 
 function App() {
   return (
@@ -33,22 +37,10 @@ function App() {
         }
       >
         <Route index element={<DashboardPage />} />
-        <Route
-          path="users"
-          element={<PlaceholderPage title="Brukere" />}
-        />
-        <Route
-          path="drivers"
-          element={<PlaceholderPage title="Sjåfører" />}
-        />
-        <Route
-          path="vehicles"
-          element={<PlaceholderPage title="Kjøretøy" />}
-        />
-        <Route
-          path="deliveries"
-          element={<PlaceholderPage title="Leveranser" />}
-        />
+        <Route path="users" element={<UsersPage />} />
+        <Route path="drivers" element={<DriversPage />} />
+        <Route path="vehicles" element={<VehiclesPage />} />
+        <Route path="deliveries" element={<DeliveriesPage />} />
         <Route
           path="routes"
           element={<PlaceholderPage title="Ruter" />}

@@ -4,6 +4,23 @@ import type {
   LoginCredentials,
   RegisterCredentials,
 } from '../types/auth'
+import type {
+  CreateDeliveryPayload,
+  CreateDriverPayload,
+  CreateUserPayload,
+  CreateVehiclePayload,
+  Delivery,
+  Driver,
+  DriverStatus,
+  DeliveryStatus,
+  OrgUser,
+  UpdateDeliveryPayload,
+  UpdateDriverPayload,
+  UpdateUserPayload,
+  UpdateVehiclePayload,
+  Vehicle,
+  VehicleStatus,
+} from '../types/domain'
 import { getStoredToken } from './auth-storage'
 
 const API_BASE_URL =
@@ -89,4 +106,109 @@ export function register(
 
 export function getMe(): Promise<AuthUser> {
   return request<AuthUser>('/auth/me')
+}
+
+export function listUsers(): Promise<OrgUser[]> {
+  return request<OrgUser[]>('/users')
+}
+
+export function createUser(payload: CreateUserPayload): Promise<OrgUser> {
+  return request<OrgUser>('/users', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateUser(
+  id: string,
+  payload: UpdateUserPayload,
+): Promise<OrgUser> {
+  return request<OrgUser>(`/users/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteUser(id: string): Promise<void> {
+  return request<void>(`/users/${id}`, { method: 'DELETE' })
+}
+
+export function listDrivers(status?: DriverStatus): Promise<Driver[]> {
+  const query = status ? `?status=${status}` : ''
+  return request<Driver[]>(`/drivers${query}`)
+}
+
+export function createDriver(payload: CreateDriverPayload): Promise<Driver> {
+  return request<Driver>('/drivers', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateDriver(
+  id: string,
+  payload: UpdateDriverPayload,
+): Promise<Driver> {
+  return request<Driver>(`/drivers/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteDriver(id: string): Promise<void> {
+  return request<void>(`/drivers/${id}`, { method: 'DELETE' })
+}
+
+export function listVehicles(status?: VehicleStatus): Promise<Vehicle[]> {
+  const query = status ? `?status=${status}` : ''
+  return request<Vehicle[]>(`/vehicles${query}`)
+}
+
+export function createVehicle(payload: CreateVehiclePayload): Promise<Vehicle> {
+  return request<Vehicle>('/vehicles', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateVehicle(
+  id: string,
+  payload: UpdateVehiclePayload,
+): Promise<Vehicle> {
+  return request<Vehicle>(`/vehicles/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteVehicle(id: string): Promise<void> {
+  return request<void>(`/vehicles/${id}`, { method: 'DELETE' })
+}
+
+export function listDeliveries(status?: DeliveryStatus): Promise<Delivery[]> {
+  const query = status ? `?status=${status}` : ''
+  return request<Delivery[]>(`/deliveries${query}`)
+}
+
+export function createDelivery(
+  payload: CreateDeliveryPayload,
+): Promise<Delivery> {
+  return request<Delivery>('/deliveries', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateDelivery(
+  id: string,
+  payload: UpdateDeliveryPayload,
+): Promise<Delivery> {
+  return request<Delivery>(`/deliveries/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteDelivery(id: string): Promise<void> {
+  return request<void>(`/deliveries/${id}`, { method: 'DELETE' })
 }
