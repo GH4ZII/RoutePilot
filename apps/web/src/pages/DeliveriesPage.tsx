@@ -76,7 +76,8 @@ export default function DeliveriesPage() {
     [deliveries],
   )
 
-  const completedRoute = completedJob?.result?.routes?.[0]
+  const completedRoutes = completedJob?.result?.routes ?? []
+  const completedRoute = completedRoutes[0]
   const resultVehicle = vehicles?.find(
     (v) => v.id === completedRoute?.vehicleId,
   )
@@ -252,12 +253,15 @@ export default function DeliveriesPage() {
         onReloadDeliveries={reload}
       />
 
-      {completedJob && completedRoute ? (
+      {completedJob && completedRoutes.length > 0 ? (
         <div className="route-result-inline">
           <RouteOptimizationResult
             job={completedJob}
+            routes={completedRoutes}
             route={completedRoute}
             deliveries={deliveries ?? []}
+            vehicles={vehicles ?? []}
+            drivers={drivers ?? []}
             vehicle={resultVehicle}
             driver={resultDriver}
           />

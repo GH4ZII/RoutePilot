@@ -164,12 +164,17 @@ export type OptimizationObjective =
 
 export type CreateOptimizationJobPayload = {
   plannedDate: string
-  vehicleId: string
-  driverId?: string
+  /** Én bil (bakoverkompatibel) */
+  vehicleId?: string
+  /** Flere kjøretøy (VRP) */
+  vehicleIds?: string[]
+  driverIds?: string[]
   deliveryIds: string[]
   objective?: OptimizationObjective
   routeStartTime?: string
   returnToDepot?: boolean
+  respectCapacity?: boolean
+  respectTimeWindows?: boolean
 }
 
 export type OptimizationRouteStop = {
@@ -184,6 +189,7 @@ export type OptimizationRouteResult = {
   vehicleId: string
   totalDistanceMeters: number
   totalDurationSeconds: number
+  capacityUsedKg?: number
   optimizerCost?: number
   stops: OptimizationRouteStop[]
 }

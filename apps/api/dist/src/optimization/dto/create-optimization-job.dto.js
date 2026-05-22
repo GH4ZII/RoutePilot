@@ -15,11 +15,14 @@ const client_1 = require("../../generated/prisma/client");
 class CreateOptimizationJobDto {
     plannedDate;
     vehicleId;
-    driverId;
+    vehicleIds;
+    driverIds;
     deliveryIds;
     objective;
     routeStartTime;
     returnToDepot;
+    respectCapacity;
+    respectTimeWindows;
 }
 exports.CreateOptimizationJobDto = CreateOptimizationJobDto;
 __decorate([
@@ -27,14 +30,23 @@ __decorate([
     __metadata("design:type", String)
 ], CreateOptimizationJobDto.prototype, "plannedDate", void 0);
 __decorate([
+    (0, class_validator_1.ValidateIf)((o) => !o.vehicleIds?.length),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateOptimizationJobDto.prototype, "vehicleId", void 0);
 __decorate([
+    (0, class_validator_1.ValidateIf)((o) => !o.vehicleId),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ArrayMinSize)(1),
+    (0, class_validator_1.IsString)({ each: true }),
+    __metadata("design:type", Array)
+], CreateOptimizationJobDto.prototype, "vehicleIds", void 0);
+__decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], CreateOptimizationJobDto.prototype, "driverId", void 0);
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsString)({ each: true }),
+    __metadata("design:type", Array)
+], CreateOptimizationJobDto.prototype, "driverIds", void 0);
 __decorate([
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ArrayMinSize)(1),
@@ -56,4 +68,14 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], CreateOptimizationJobDto.prototype, "returnToDepot", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], CreateOptimizationJobDto.prototype, "respectCapacity", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], CreateOptimizationJobDto.prototype, "respectTimeWindows", void 0);
 //# sourceMappingURL=create-optimization-job.dto.js.map

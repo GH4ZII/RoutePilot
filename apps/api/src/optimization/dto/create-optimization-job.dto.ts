@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsString,
   Matches,
+  ValidateIf,
 } from 'class-validator';
 import { OptimizationObjective } from '../../generated/prisma/client';
 
@@ -15,12 +16,23 @@ export class CreateOptimizationJobDto {
   @IsDateString()
   plannedDate!: string;
 
+  /** Én bil (bakoverkompatibel med fase 4). */
+  @ValidateIf((o: CreateOptimizationJobDto) => !o.vehicleIds?.length)
   @IsString()
-  vehicleId!: string;
+  vehicleId?: string;
 
+  /** Flere kjøretøy for VRP (fase 5). */
+  @ValidateIf((o: CreateOptimizationJobDto) => !o.vehicleId)
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsString({ each: true })
+  vehicleIds?: string[];
+
+  /** Valgfri sjåfør per kjøretøy (samme rekkefølge som vehicleIds). */
   @IsOptional()
-  @IsString()
-  driverId?: string;
+  @IsArray()
+  @IsString({ each: true })
+  driverIds?: string[];
 
   @IsArray()
   @ArrayMinSize(1)
@@ -39,4 +51,12 @@ export class CreateOptimizationJobDto {
   @IsOptional()
   @IsBoolean()
   returnToDepot?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  respectCapacity?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  respectTimeWindows?: boolean;
 }

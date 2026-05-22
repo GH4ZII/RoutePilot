@@ -1,0 +1,300 @@
+"""
+Multi-vehicle VRP with capacity, time windows, deadlines, and optional deliveries.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Literal
+
+from fastapi import HTTPException
+from ortools.constraint_solver import pywrapcp, routing_enums_pb2
+
+Objective = Literal[
+    "MINIMIZE_TOTAL_TIME",
+    "MINIMIZE_TOTAL_DISTANCE",
+    "BALANCE_WORKLOAD",
+    "PRIORITIZE_URGENT",
+    "MINIMIZE_LATE_DELIVERIES",
+]
+
+PRIORITY_DROP_PENALTY: dict[str, int] = {
+    "LOW": 10_000,
+    "NORMAL": 100_000,
+    "HIGH": 1_000_000,
+    "CRITICAL": 10_000_000,
+}
+
+
+@dataclass
+class VrpDeliveryInput:
+    node_index: int
+    delivery_index: int
+    weight_units: int
+    volume_units: int
+    package_count: int
+    time_window_start_sec: int | None
+    time_window_end_sec: int | None
+    deadline_sec: int | None
+    priority: str
+    drop_penalty: int
+
+
+@dataclass
+class VrpVehicleInput:
+    start_index: int
+    end_index: int
+    max_weight_units: int
+    max_volume_units: int
+    max_packages: int
+
+
+@dataclass
+class VrpSolveInput:
+    duration_matrix: list[list[int]]
+    distance_matrix: list[list[int]]
+    vehicles: list[VrpVehicleInput]
+    deliveries: list[VrpDeliveryInput]
+    objective: Objective
+    respect_capacity: bool
+    respect_time_windows: bool
+    service_time_sec: int
+    horizon_sec: int
+
+
+@dataclass
+class VrpRouteResult:
+    vehicle_index: int
+    route_indices: list[int]
+    total_cost: int
+
+
+@dataclass
+class VrpSolveResult:
+    routes: list[VrpRouteResult]
+    unassigned_delivery_indices: list[int]
+
+
+def _matrix_or_raise(matrix: list[list[float | int]]) -> list[list[int]]:
+    n = len(matrix)
+    if n < 2:
+        raise HTTPException(status_code=400, detail="Matrix must be at least 2×2")
+    out: list[list[int]] = []
+    for row in matrix:
+        if len(row) != n:
+            raise HTTPException(status_code=400, detail="Matrix must be square")
+        out.append([max(0, int(round(cell))) for cell in row])
+    return out
+
+
+def solve_vrp(data: VrpSolveInput) -> VrpSolveResult:
+    duration = _matrix_or_raise(data.duration_matrix)
+    distance = _matrix_or_raise(data.distance_matrix)
+    n = len(duration)
+    num_vehicles = len(data.vehicles)
+
+    if num_vehicles < 1:
+        raise HTTPException(status_code=400, detail="At least one vehicle required")
+    if not data.deliveries:
+        raise HTTPException(status_code=400, detail="At least one delivery required")
+
+    starts = [v.start_index for v in data.vehicles]
+    ends = [v.end_index for v in data.vehicles]
+    for idx in starts + ends:
+        if idx < 0 or idx >= n:
+            raise HTTPException(status_code=400, detail="Vehicle depot index out of range")
+
+    delivery_nodes = {d.node_index for d in data.deliveries}
+    for d in data.deliveries:
+        if d.node_index < 0 or d.node_index >= n:
+            raise HTTPException(status_code=400, detail="Delivery node index out of range")
+
+    use_time_cost = data.objective in (
+        "MINIMIZE_TOTAL_TIME",
+        "BALANCE_WORKLOAD",
+        "MINIMIZE_LATE_DELIVERIES",
+        "PRIORITIZE_URGENT",
+    )
+    cost_matrix = duration if use_time_cost else distance
+
+    manager = pywrapcp.RoutingIndexManager(n, num_vehicles, starts, ends)
+    routing = pywrapcp.RoutingModel(manager)
+
+    service_at_node = [0] * n
+    for d in data.deliveries:
+        service_at_node[d.node_index] = max(0, data.service_time_sec)
+
+    def transit_callback(from_index: int, to_index: int) -> int:
+        from_node = manager.IndexToNode(from_index)
+        to_node = manager.IndexToNode(to_index)
+        travel = cost_matrix[from_node][to_node]
+        return travel + service_at_node[from_node]
+
+    transit_cb = routing.RegisterTransitCallback(transit_callback)
+    routing.SetArcCostEvaluatorOfAllVehicles(transit_cb)
+
+    if data.respect_capacity:
+        _add_capacity_dimension(
+            routing,
+            manager,
+            data,
+            "Weight",
+            [d.weight_units for d in data.deliveries],
+            [v.max_weight_units for v in data.vehicles],
+        )
+        _add_capacity_dimension(
+            routing,
+            manager,
+            data,
+            "Volume",
+            [d.volume_units for d in data.deliveries],
+            [v.max_volume_units for v in data.vehicles],
+        )
+        _add_capacity_dimension(
+            routing,
+            manager,
+            data,
+            "Packages",
+            [d.package_count for d in data.deliveries],
+            [v.max_packages for v in data.vehicles],
+        )
+
+    time_dimension = None
+    needs_time = (
+        data.respect_time_windows
+        or any(d.deadline_sec is not None for d in data.deliveries)
+        or data.objective in ("MINIMIZE_LATE_DELIVERIES", "BALANCE_WORKLOAD")
+    )
+
+    if needs_time:
+        def time_callback(from_index: int, to_index: int) -> int:
+            from_node = manager.IndexToNode(from_index)
+            to_node = manager.IndexToNode(to_index)
+            return duration[from_node][to_node] + service_at_node[from_node]
+
+        time_cb = routing.RegisterTransitCallback(time_callback)
+        routing.AddDimension(
+            time_cb,
+            30 * 60,
+            data.horizon_sec,
+            False,
+            "Time",
+        )
+        time_dimension = routing.GetDimensionOrDie("Time")
+
+        for d in data.deliveries:
+            index = manager.NodeToIndex(d.node_index)
+            if data.respect_time_windows:
+                if (
+                    d.time_window_start_sec is not None
+                    and d.time_window_end_sec is not None
+                ):
+                    time_dimension.CumulVar(index).SetRange(
+                        d.time_window_start_sec,
+                        d.time_window_end_sec,
+                    )
+                elif d.time_window_end_sec is not None:
+                    time_dimension.CumulVar(index).SetMax(d.time_window_end_sec)
+                elif d.time_window_start_sec is not None:
+                    time_dimension.CumulVar(index).SetMin(d.time_window_start_sec)
+
+            if d.deadline_sec is not None:
+                if data.objective == "MINIMIZE_LATE_DELIVERIES":
+                    time_dimension.SetCumulVarSoftUpperBound(
+                        index, d.deadline_sec, 100_000
+                    )
+                elif data.respect_time_windows:
+                    current_max = time_dimension.CumulVar(index).Max()
+                    if current_max > d.deadline_sec:
+                        time_dimension.CumulVar(index).SetMax(d.deadline_sec)
+                else:
+                    time_dimension.CumulVar(index).SetMax(d.deadline_sec)
+
+        if data.objective == "BALANCE_WORKLOAD" and time_dimension is not None:
+            time_dimension.SetSpanCostCoefficientForAllVehicles(100)
+
+    for d in data.deliveries:
+        index = manager.NodeToIndex(d.node_index)
+        penalty = d.drop_penalty or PRIORITY_DROP_PENALTY.get(
+            d.priority, PRIORITY_DROP_PENALTY["NORMAL"]
+        )
+        routing.AddDisjunction([index], penalty)
+
+    search_parameters = pywrapcp.DefaultRoutingSearchParameters()
+    search_parameters.first_solution_strategy = (
+        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
+    )
+    search_parameters.local_search_metaheuristic = (
+        routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
+    )
+    search_parameters.time_limit.FromSeconds(30)
+
+    solution = routing.SolveWithParameters(search_parameters)
+    if solution is None:
+        raise HTTPException(status_code=422, detail="No VRP solution found")
+
+    routes: list[VrpRouteResult] = []
+    visited_delivery_nodes: set[int] = set()
+
+    for vehicle_idx in range(num_vehicles):
+        index = routing.Start(vehicle_idx)
+        route_nodes: list[int] = []
+        total_cost = 0
+
+        while not routing.IsEnd(index):
+            node = manager.IndexToNode(index)
+            route_nodes.append(node)
+            if node in delivery_nodes:
+                visited_delivery_nodes.add(node)
+            previous_index = index
+            index = solution.Value(routing.NextVar(index))
+            total_cost += routing.GetArcCostForVehicle(
+                previous_index, index, vehicle_idx
+            )
+
+        route_nodes.append(manager.IndexToNode(index))
+        routes.append(
+            VrpRouteResult(
+                vehicle_index=vehicle_idx,
+                route_indices=route_nodes,
+                total_cost=total_cost,
+            )
+        )
+
+    unassigned = [
+        d.delivery_index
+        for d in data.deliveries
+        if d.node_index not in visited_delivery_nodes
+    ]
+
+    return VrpSolveResult(routes=routes, unassigned_delivery_indices=unassigned)
+
+
+def _add_capacity_dimension(
+    routing: pywrapcp.RoutingModel,
+    manager: pywrapcp.RoutingIndexManager,
+    data: VrpSolveInput,
+    name: str,
+    delivery_demands: list[int],
+    vehicle_capacities: list[int],
+) -> None:
+    demands = [0] * len(data.duration_matrix)
+    demand_by_node = {
+        d.node_index: delivery_demands[i]
+        for i, d in enumerate(data.deliveries)
+    }
+    for node_idx, demand in demand_by_node.items():
+        demands[node_idx] = demand
+
+    def demand_callback(from_index: int) -> int:
+        from_node = manager.IndexToNode(from_index)
+        return demands[from_node]
+
+    demand_cb = routing.RegisterUnaryTransitCallback(demand_callback)
+    routing.AddDimensionWithVehicleCapacity(
+        demand_cb,
+        0,
+        vehicle_capacities,
+        True,
+        name,
+    )

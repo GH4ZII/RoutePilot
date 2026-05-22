@@ -1,6 +1,9 @@
 # RoutePilot Optimizer
 
-Python-tjeneste som kjører **Google OR-Tools** for å finne beste rekkefølge på leveringsstopp (én bil, TSP).
+Python-tjeneste med **Google OR-Tools**:
+
+- `POST /solve` — én bil (TSP, fase 4)
+- `POST /solve-vrp` — flere kjøretøy med kapasitet, tidsvinduer, deadlines og prioritet (fase 5)
 
 ## Start lokalt (Windows PowerShell)
 
@@ -16,4 +19,11 @@ py -3.12 -m venv .venv
 
 Eller fra repo-roten: `npm run dev:optimizer`
 
-API-et kaller `POST http://127.0.0.1:8000/solve` med varighetsmatrise fra OSRM.
+## Tester
+
+```powershell
+cd apps/optimizer
+.\.venv\Scripts\python -m pytest tests/ -v
+```
+
+API-et kaller `POST /solve-vrp` med matriser fra OSRM.

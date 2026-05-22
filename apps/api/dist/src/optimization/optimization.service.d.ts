@@ -7,14 +7,16 @@ import { RoutingService } from '../routing/routing.service';
 import { CreateOptimizationJobDto } from './dto/create-optimization-job.dto';
 import { OptimizerClientService } from './optimizer-client.service';
 export declare const OPTIMIZATION_QUEUE = "optimization";
-type OptimizationJobRequest = {
+export type OptimizationJobRequest = {
     plannedDate: string;
-    vehicleId: string;
-    driverId?: string;
+    vehicleIds: string[];
+    driverIds?: string[];
     deliveryIds: string[];
     objective: OptimizationObjective;
     routeStartTime: string;
     returnToDepot: boolean;
+    respectCapacity: boolean;
+    respectTimeWindows: boolean;
 };
 export type OptimizationJobResponse = {
     id: string;
@@ -40,11 +42,12 @@ export declare class OptimizationService {
     createJob(user: JwtPayload, dto: CreateOptimizationJobDto): Promise<OptimizationJobResponse>;
     findJob(user: JwtPayload, id: string): Promise<OptimizationJobResponse>;
     runJob(jobId: string, organizationId: string): Promise<void>;
-    private executeOptimization;
-    private extractDeliveryVisitOrder;
-    private computeLegMetrics;
-    private parseRouteStart;
+    private executeVrpOptimization;
+    private collectTimingWarnings;
+    private buildMatrixPoints;
+    private loadAvailableVehicles;
+    private resolveDrivers;
+    private loadPendingDeliveries;
     private validateCreateRequest;
     private toJobResponse;
 }
-export {};

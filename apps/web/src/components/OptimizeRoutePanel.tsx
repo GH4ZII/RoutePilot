@@ -6,6 +6,7 @@ import type {
   Delivery,
   Driver,
   OptimizationJob,
+  OptimizationObjective,
   Vehicle,
 } from '../types/domain'
 
@@ -27,6 +28,14 @@ const JOB_STATUS_LABELS: Record<string, string> = {
   FAILED: 'Feilet',
 }
 
+const OBJECTIVE_OPTIONS: { value: OptimizationObjective; label: string }[] = [
+  { value: 'MINIMIZE_TOTAL_TIME', label: 'Minimer kjøretid' },
+  { value: 'MINIMIZE_TOTAL_DISTANCE', label: 'Minimer distanse' },
+  { value: 'BALANCE_WORKLOAD', label: 'Balanser arbeidslast' },
+  { value: 'PRIORITIZE_URGENT', label: 'Prioriter hasteleveringer' },
+  { value: 'MINIMIZE_LATE_DELIVERIES', label: 'Minimer forsinkelser' },
+]
+
 export default function OptimizeRoutePanel({
   pendingDeliveries,
   vehicles,
@@ -37,25 +46,52 @@ export default function OptimizeRoutePanel({
   onJobComplete,
   onReloadDeliveries,
 }: OptimizeRoutePanelProps) {
-  const [vehicleId, setVehicleId] = useState('')
-  const [driverId, setDriverId] = useState('')
+  const [selectedVehicleIds, setSelectedVehicleIds] = useState<Set<string>>(
+    () => new Set(),
+  )
+  const [driverByVehicle, setDriverByVehicle] = useState<Record<string, string>>(
+    {},
+  )
   const [plannedDate, setPlannedDate] = useState(todayIsoDate())
   const [routeStartTime, setRouteStartTime] = useState('08:00')
+  const [objective, setObjective] = useState<OptimizationObjective>(
+    'MINIMIZE_TOTAL_TIME',
+  )
+  const [respectCapacity, setRespectCapacity] = useState(true)
+  const [respectTimeWindows, setRespectTimeWindows] = useState(true)
   const [isRunning, setIsRunning] = useState(false)
   const [progress, setProgress] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const availableVehicles = useMemo(
-    () => vehicles.filter((v) => v.status === 'AVAILABLE' || v.status === 'IN_USE'),
+    () => vehicles.filter((v) => v.status === 'AVAILABLE'),
     [vehicles],
   )
+
+  const availableDrivers = useMemo(
+    () => drivers.filter((d) => d.status === 'AVAILABLE'),
+    [drivers],
+  )
+
+  function toggleVehicle(id: string) {
+    setSelectedVehicleIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
 
   async function handleOptimize(event: FormEvent) {
     event.preventDefault()
     setError(null)
 
-    if (!vehicleId) {
-      setError('Velg kjøretøy')
+    const vehicleIds = [...selectedVehicleIds]
+    if (vehicleIds.length < 1) {
+      setError('Velg minst ett tilgjengelig kjøretøy')
       return
     }
     if (selectedIds.size < 1) {
@@ -63,17 +99,22 @@ export default function OptimizeRoutePanel({
       return
     }
 
+    const driverIds = vehicleIds.map((vid) => driverByVehicle[vid] ?? '')
+
     setIsRunning(true)
     setProgress('Oppretter jobb…')
 
     try {
       const job = await api.createOptimizationJob({
         plannedDate,
-        vehicleId,
-        driverId: driverId || undefined,
+        vehicleIds,
+        driverIds: driverIds.some((d) => d) ? driverIds : undefined,
         deliveryIds: [...selectedIds],
+        objective,
         routeStartTime,
         returnToDepot: true,
+        respectCapacity,
+        respectTimeWindows,
       })
 
       setProgress(JOB_STATUS_LABELS[job.status] ?? job.status)
@@ -102,10 +143,10 @@ export default function OptimizeRoutePanel({
   return (
     <section className="optimize-panel">
       <div className="optimize-panel__intro">
-        <h2>Optimaliser rute</h2>
+        <h2>Optimaliser ruter (VRP)</h2>
         <p className="page-muted">
-          Velg ventende leveranser, kjøretøy og start tid. Systemet beregner
-          beste rekkefølge og lagrer ruten.
+          Fordeler leveranser på flere tilgjengelige kjøretøy med kapasitet,
+          tidsvinduer, deadlines og prioritet.
         </p>
       </div>
 
@@ -132,35 +173,87 @@ export default function OptimizeRoutePanel({
             />
           </label>
           <label>
-            Kjøretøy
+            Optimaliseringsmål
             <select
-              value={vehicleId}
-              onChange={(e) => setVehicleId(e.target.value)}
-              required
+              value={objective}
+              onChange={(e) =>
+                setObjective(e.target.value as OptimizationObjective)
+              }
               disabled={isRunning}
             >
-              <option value="">Velg kjøretøy</option>
-              {availableVehicles.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.name} ({v.registrationNumber})
+              {OBJECTIVE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
                 </option>
               ))}
             </select>
           </label>
-          <label>
-            Sjåfør (valgfritt)
-            <select
-              value={driverId}
-              onChange={(e) => setDriverId(e.target.value)}
-              disabled={isRunning}
-            >
-              <option value="">Ingen</option>
-              {drivers.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
+        </div>
+
+        <fieldset className="optimize-panel__vehicles" disabled={isRunning}>
+          <legend>Tilgjengelige kjøretøy</legend>
+          {availableVehicles.length === 0 ? (
+            <p className="page-muted">Ingen kjøretøy med status AVAILABLE.</p>
+          ) : (
+            <ul className="optimize-panel__vehicle-list">
+              {availableVehicles.map((v) => (
+                <li key={v.id} className="optimize-panel__vehicle-row">
+                  <label className="optimize-panel__vehicle-check">
+                    <input
+                      type="checkbox"
+                      checked={selectedVehicleIds.has(v.id)}
+                      onChange={() => toggleVehicle(v.id)}
+                    />
+                    <span>
+                      {v.name} ({v.registrationNumber}) — maks{' '}
+                      {v.maxWeightKg} kg
+                    </span>
+                  </label>
+                  {selectedVehicleIds.has(v.id) ? (
+                    <label className="optimize-panel__driver-select">
+                      Sjåfør
+                      <select
+                        value={driverByVehicle[v.id] ?? ''}
+                        onChange={(e) =>
+                          setDriverByVehicle((prev) => ({
+                            ...prev,
+                            [v.id]: e.target.value,
+                          }))
+                        }
+                      >
+                        <option value="">Ingen</option>
+                        {availableDrivers.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ) : null}
+                </li>
               ))}
-            </select>
+            </ul>
+          )}
+        </fieldset>
+
+        <div className="optimize-panel__flags">
+          <label>
+            <input
+              type="checkbox"
+              checked={respectCapacity}
+              onChange={(e) => setRespectCapacity(e.target.checked)}
+              disabled={isRunning}
+            />
+            Respekter kapasitet (vekt, volum, pakker)
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={respectTimeWindows}
+              onChange={(e) => setRespectTimeWindows(e.target.checked)}
+              disabled={isRunning}
+            />
+            Respekter tidsvinduer og deadlines
           </label>
         </div>
 
@@ -195,15 +288,19 @@ export default function OptimizeRoutePanel({
           <button
             type="submit"
             className="btn-primary"
-            disabled={isRunning || selectedIds.size < 1}
+            disabled={
+              isRunning ||
+              selectedIds.size < 1 ||
+              selectedVehicleIds.size < 1
+            }
           >
-            {isRunning ? 'Optimaliserer…' : 'Optimaliser rute'}
+            {isRunning ? 'Optimaliserer…' : 'Optimaliser ruter'}
           </button>
         </div>
       </form>
 
       <p className="field-hint optimize-panel__hint">
-        Krever at API, Redis og Python-tjenesten (port 8000) kjører.
+        Krever API, Redis og Python-tjenesten (port 8000) med VRP-støtte.
       </p>
     </section>
   )

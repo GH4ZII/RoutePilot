@@ -1,5 +1,5 @@
 """
-RoutePilot optimization service — single-vehicle route (TSP) via Google OR-Tools.
+RoutePilot optimization service — TSP (single vehicle) and VRP (multi-vehicle).
 """
 
 from typing import Literal
@@ -8,12 +8,20 @@ from fastapi import FastAPI, HTTPException
 from ortools.constraint_solver import pywrapcp, routing_enums_pb2
 from pydantic import BaseModel, Field
 
-app = FastAPI(title="RoutePilot Optimizer", version="1.0.0")
+from vrp import (
+    PRIORITY_DROP_PENALTY,
+    VrpDeliveryInput,
+    VrpSolveInput,
+    VrpVehicleInput,
+    solve_vrp,
+)
+
+app = FastAPI(title="RoutePilot Optimizer", version="2.0.0")
 
 
 class SolveRequest(BaseModel):
     duration_matrix: list[list[float]] = Field(
-        description="N×N travel durations in seconds (integers recommended)",
+        description="N×N travel durations in seconds",
     )
     depot_index: int = 0
     cost_type: Literal["duration", "distance"] = "duration"
@@ -22,6 +30,56 @@ class SolveRequest(BaseModel):
 class SolveResponse(BaseModel):
     route_indices: list[int]
     total_cost: int
+
+
+class VrpDeliveryModel(BaseModel):
+    node_index: int
+    delivery_index: int
+    weight_units: int = Field(ge=0)
+    volume_units: int = Field(ge=0)
+    package_count: int = Field(default=1, ge=1)
+    time_window_start_sec: int | None = None
+    time_window_end_sec: int | None = None
+    deadline_sec: int | None = None
+    priority: Literal["LOW", "NORMAL", "HIGH", "CRITICAL"] = "NORMAL"
+    drop_penalty: int | None = None
+
+
+class VrpVehicleModel(BaseModel):
+    start_index: int
+    end_index: int
+    max_weight_units: int = Field(ge=0)
+    max_volume_units: int = Field(ge=0)
+    max_packages: int = Field(ge=1)
+
+
+class VrpSolveRequest(BaseModel):
+    duration_matrix: list[list[float]]
+    distance_matrix: list[list[float]]
+    vehicles: list[VrpVehicleModel]
+    deliveries: list[VrpDeliveryModel]
+    objective: Literal[
+        "MINIMIZE_TOTAL_TIME",
+        "MINIMIZE_TOTAL_DISTANCE",
+        "BALANCE_WORKLOAD",
+        "PRIORITIZE_URGENT",
+        "MINIMIZE_LATE_DELIVERIES",
+    ] = "MINIMIZE_TOTAL_TIME"
+    respect_capacity: bool = True
+    respect_time_windows: bool = True
+    service_time_sec: int = Field(default=120, ge=0)
+    horizon_sec: int = Field(default=86400, ge=60)
+
+
+class VrpRouteResponse(BaseModel):
+    vehicle_index: int
+    route_indices: list[int]
+    total_cost: int
+
+
+class VrpSolveResponse(BaseModel):
+    routes: list[VrpRouteResponse]
+    unassigned_delivery_indices: list[int]
 
 
 def _matrix_or_raise(matrix: list[list[float]]) -> list[list[int]]:
@@ -86,3 +144,58 @@ def solve(body: SolveRequest) -> SolveResponse:
     route.append(manager.IndexToNode(index))
 
     return SolveResponse(route_indices=route, total_cost=total_cost)
+
+
+@app.post("/solve-vrp", response_model=VrpSolveResponse)
+def solve_vrp_endpoint(body: VrpSolveRequest) -> VrpSolveResponse:
+    deliveries = [
+        VrpDeliveryInput(
+            node_index=d.node_index,
+            delivery_index=d.delivery_index,
+            weight_units=d.weight_units,
+            volume_units=d.volume_units,
+            package_count=d.package_count,
+            time_window_start_sec=d.time_window_start_sec,
+            time_window_end_sec=d.time_window_end_sec,
+            deadline_sec=d.deadline_sec,
+            priority=d.priority,
+            drop_penalty=d.drop_penalty
+            or PRIORITY_DROP_PENALTY.get(d.priority, PRIORITY_DROP_PENALTY["NORMAL"]),
+        )
+        for d in body.deliveries
+    ]
+
+    result = solve_vrp(
+        VrpSolveInput(
+            duration_matrix=_matrix_or_raise(body.duration_matrix),
+            distance_matrix=_matrix_or_raise(body.distance_matrix),
+            vehicles=[
+                VrpVehicleInput(
+                    start_index=v.start_index,
+                    end_index=v.end_index,
+                    max_weight_units=v.max_weight_units,
+                    max_volume_units=v.max_volume_units,
+                    max_packages=v.max_packages,
+                )
+                for v in body.vehicles
+            ],
+            deliveries=deliveries,
+            objective=body.objective,
+            respect_capacity=body.respect_capacity,
+            respect_time_windows=body.respect_time_windows,
+            service_time_sec=body.service_time_sec,
+            horizon_sec=body.horizon_sec,
+        )
+    )
+
+    return VrpSolveResponse(
+        routes=[
+            VrpRouteResponse(
+                vehicle_index=r.vehicle_index,
+                route_indices=r.route_indices,
+                total_cost=r.total_cost,
+            )
+            for r in result.routes
+        ],
+        unassigned_delivery_indices=result.unassigned_delivery_indices,
+    )

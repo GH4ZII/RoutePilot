@@ -25,7 +25,10 @@ let OptimizerClientService = class OptimizerClientService {
         try {
             response = await fetch(`${this.baseUrl}/solve`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
                 body: JSON.stringify({
                     duration_matrix: durationMatrix,
                     depot_index: 0,
@@ -44,6 +47,62 @@ let OptimizerClientService = class OptimizerClientService {
         return {
             routeIndices: body.route_indices,
             totalCost: body.total_cost,
+        };
+    }
+    async solveVrp(payload) {
+        let response;
+        try {
+            response = await fetch(`${this.baseUrl}/solve-vrp`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify({
+                    duration_matrix: payload.duration_matrix,
+                    distance_matrix: payload.distance_matrix,
+                    vehicles: payload.vehicles.map((v) => ({
+                        start_index: v.start_index,
+                        end_index: v.end_index,
+                        max_weight_units: v.max_weight_units,
+                        max_volume_units: v.max_volume_units,
+                        max_packages: v.max_packages,
+                    })),
+                    deliveries: payload.deliveries.map((d) => ({
+                        node_index: d.node_index,
+                        delivery_index: d.delivery_index,
+                        weight_units: d.weight_units,
+                        volume_units: d.volume_units,
+                        package_count: d.package_count,
+                        time_window_start_sec: d.time_window_start_sec,
+                        time_window_end_sec: d.time_window_end_sec,
+                        deadline_sec: d.deadline_sec,
+                        priority: d.priority,
+                        drop_penalty: d.drop_penalty,
+                    })),
+                    objective: payload.objective,
+                    respect_capacity: payload.respect_capacity,
+                    respect_time_windows: payload.respect_time_windows,
+                    service_time_sec: payload.service_time_sec,
+                    horizon_sec: payload.horizon_sec,
+                }),
+            });
+        }
+        catch {
+            throw new common_1.ServiceUnavailableException('Kunne ikke kontakte optimaliseringstjenesten (Python/OR-Tools). Er den startet?');
+        }
+        if (!response.ok) {
+            const detail = await response.text().catch(() => '');
+            throw new common_1.ServiceUnavailableException(detail || `VRP-tjenesten svarte med HTTP ${response.status}`);
+        }
+        const body = (await response.json());
+        return {
+            routes: body.routes.map((r) => ({
+                vehicleIndex: r.vehicle_index,
+                routeIndices: r.route_indices,
+                totalCost: r.total_cost,
+            })),
+            unassignedDeliveryIndices: body.unassigned_delivery_indices,
         };
     }
 };

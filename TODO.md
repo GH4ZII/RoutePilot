@@ -14,7 +14,7 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 | Mobile (Expo) | Startet (innlogging) |
 | Backend       | Startet (auth) |
 | Database      | Startet (Prisma) |
-| Optimalisering| Ikke startet |
+| Optimalisering| Startet (VRP) |
 | Deploy        | Ikke startet |
 
 ---
@@ -87,16 +87,16 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 ## Fase 5: Avansert optimalisering (VRP)
 
-- [ ] Fordeling på flere kjøretøy og sjåfører
-- [ ] Kapasitet: vekt, volum, antall pakker
-- [ ] Tidsvinduer
-- [ ] Deadlines
-- [ ] Prioritet: Low, Normal, High, Critical
-- [ ] Kun tilgjengelige sjåfører og kjøretøy
-- [ ] Ruter starter og slutter ved depot
-- [ ] Ufordelte leveringer og advarsler i respons
-- [ ] Optimaliseringsmål: min tid, min distanse, balansert arbeidslast, min forsinkelser
-- [ ] Tester: kapasitet, depot, tidsvinduer, prioritet, ingen dobbeltildeling
+- [x] Fordeling på flere kjøretøy og sjåfører
+- [x] Kapasitet: vekt, volum, antall pakker
+- [x] Tidsvinduer
+- [x] Deadlines
+- [x] Prioritet: Low, Normal, High, Critical
+- [x] Kun tilgjengelige sjåfører og kjøretøy
+- [x] Ruter starter og slutter ved depot
+- [x] Ufordelte leveringer og advarsler i respons
+- [x] Optimaliseringsmål: min tid, min distanse, balansert arbeidslast, min forsinkelser
+- [x] Tester: kapasitet, depot, tidsvinduer, prioritet, ingen dobbeltildeling
 
 ---
 
@@ -149,9 +149,9 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 - [ ] Leverings-CRUD
 - [ ] Adresse-geokoding
 - [ ] Kart med leveringsmarkører
-- [ ] Ruteoptimalisering for flere kjøretøy
-- [ ] Kapasitetsbegrensninger
-- [ ] Tidsvinduer
+- [x] Ruteoptimalisering for flere kjøretøy
+- [x] Kapasitetsbegrensninger
+- [x] Tidsvinduer
 - [ ] Rute-tildeling til sjåfør
 - [ ] Sjåfør-rutevisning (Expo mobile app)
 - [ ] Marker stopp som levert eller feilet

@@ -26,7 +26,7 @@ function routeDetailToJobShape(
       plannedDate: route.plannedDate.slice(0, 10),
       request: {
         plannedDate: route.plannedDate.slice(0, 10),
-        vehicleId: route.vehicleId ?? '',
+        vehicleIds: route.vehicleId ? [route.vehicleId] : [],
         deliveryIds: route.stops.map((s) => s.delivery.id),
       },
       result: null,

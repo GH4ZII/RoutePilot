@@ -22,6 +22,7 @@ const org_scope_service_1 = require("../common/org-scope.service");
 const prisma_service_1 = require("../prisma/prisma.service");
 const routing_service_1 = require("../routing/routing.service");
 const optimizer_client_service_1 = require("./optimizer-client.service");
+const optimization_vrp_util_1 = require("./optimization-vrp.util");
 exports.OPTIMIZATION_QUEUE = 'optimization';
 let OptimizationService = class OptimizationService {
     prisma;
@@ -81,7 +82,7 @@ let OptimizationService = class OptimizationService {
         });
         try {
             const request = job.request;
-            const result = await this.executeOptimization(organizationId, request);
+            const result = await this.executeVrpOptimization(organizationId, request);
             await this.prisma.optimizationJob.update({
                 where: { id: jobId },
                 data: {
@@ -103,204 +104,285 @@ let OptimizationService = class OptimizationService {
             });
         }
     }
-    async executeOptimization(organizationId, request) {
-        const vehicle = await this.prisma.vehicle.findFirst({
-            where: { id: request.vehicleId, organizationId },
+    async executeVrpOptimization(organizationId, request) {
+        const vehicles = await this.loadAvailableVehicles(organizationId, request.vehicleIds);
+        const drivers = await this.resolveDrivers(organizationId, request.vehicleIds, request.driverIds);
+        const deliveries = await this.loadPendingDeliveries(organizationId, request.deliveryIds);
+        const routeStart = (0, optimization_vrp_util_1.parseRouteStart)(request.plannedDate, request.routeStartTime);
+        const returnToDepot = request.returnToDepot !== false;
+        const { points, vehicleDepots } = this.buildMatrixPoints(vehicles, deliveries, returnToDepot);
+        const matrix = await this.routing.buildDistanceTimeMatrix(points);
+        const vrpDeliveries = deliveries.map((d, i) => ({
+            node_index: i,
+            delivery_index: i,
+            weight_units: (0, optimization_vrp_util_1.weightToUnits)(Number(d.weightKg)),
+            volume_units: (0, optimization_vrp_util_1.volumeToUnits)(d.volumeM3 != null ? Number(d.volumeM3) : null),
+            package_count: 1,
+            time_window_start_sec: (0, optimization_vrp_util_1.secondsFromRouteStart)(routeStart, d.timeWindowStart),
+            time_window_end_sec: (0, optimization_vrp_util_1.secondsFromRouteStart)(routeStart, d.timeWindowEnd),
+            deadline_sec: (0, optimization_vrp_util_1.secondsFromRouteStart)(routeStart, d.deadline),
+            priority: d.priority,
+            drop_penalty: (0, optimization_vrp_util_1.dropPenaltyForPriority)(d.priority),
+        }));
+        const vrpVehicles = vehicleDepots.map((depot, vehicleIndex) => {
+            const v = vehicles[vehicleIndex];
+            const maxWeight = request.respectCapacity
+                ? (0, optimization_vrp_util_1.weightToUnits)((0, decimal_util_1.decimalToNumber)(v.maxWeightKg) ?? 0)
+                : 1_000_000_000;
+            const maxVolume = request.respectCapacity
+                ? (0, optimization_vrp_util_1.volumeToUnits)((0, decimal_util_1.decimalToNumber)(v.maxVolumeM3))
+                : 1_000_000_000;
+            const maxPackages = request.respectCapacity ? 10_000 : 10_000;
+            return {
+                start_index: depot.startIndex,
+                end_index: depot.endIndex,
+                max_weight_units: maxWeight,
+                max_volume_units: maxVolume,
+                max_packages: maxPackages,
+            };
         });
-        if (!vehicle) {
-            throw new common_1.BadRequestException('Kjøretøy ikke funnet');
+        const vrpResult = await this.optimizer.solveVrp({
+            duration_matrix: matrix.durationsSeconds,
+            distance_matrix: matrix.distancesMeters,
+            vehicles: vrpVehicles,
+            deliveries: vrpDeliveries,
+            objective: request.objective,
+            respect_capacity: request.respectCapacity,
+            respect_time_windows: request.respectTimeWindows,
+            service_time_sec: optimization_vrp_util_1.SERVICE_TIME_SEC,
+            horizon_sec: optimization_vrp_util_1.HORIZON_SEC,
+        });
+        const warnings = [];
+        const unassignedDeliveryIds = vrpResult.unassignedDeliveryIndices.map((idx) => deliveries[idx].id);
+        if (unassignedDeliveryIds.length > 0) {
+            warnings.push(`${unassignedDeliveryIds.length} levering(er) kunne ikke tildeles (kapasitet, tidsvindu eller manglende sjåfør/kjøretøy).`);
         }
-        if (request.driverId) {
-            const driver = await this.prisma.driver.findFirst({
-                where: { id: request.driverId, organizationId },
-            });
-            if (!driver) {
-                throw new common_1.BadRequestException('Sjåfør ikke funnet');
+        const routeResults = [];
+        await this.prisma.$transaction(async (tx) => {
+            for (const vrpRoute of vrpResult.routes) {
+                const vehicleIndex = vrpRoute.vehicleIndex;
+                const vehicle = vehicles[vehicleIndex];
+                const driverId = drivers[vehicleIndex] ?? null;
+                const visitIndices = (0, optimization_vrp_util_1.extractDeliveryVisitOrder)(vrpRoute.routeIndices, points);
+                if (visitIndices.length === 0) {
+                    continue;
+                }
+                const { totalDistanceMeters, totalDurationSeconds, stopEtas } = (0, optimization_vrp_util_1.computeLegMetrics)(vrpRoute.routeIndices, matrix, routeStart);
+                const assignedDeliveries = visitIndices
+                    .map((idx) => points[idx])
+                    .filter((p) => p.kind === 'delivery' && p.deliveryIndex != null);
+                const capacityUsedKg = assignedDeliveries.reduce((sum, p) => {
+                    const d = deliveries[p.deliveryIndex];
+                    return sum + Number(d.weightKg);
+                }, 0);
+                const createdRoute = await tx.route.create({
+                    data: {
+                        organizationId,
+                        vehicleId: vehicle.id,
+                        driverId,
+                        status: client_1.RouteStatus.PLANNED,
+                        plannedDate: new Date(`${request.plannedDate}T12:00:00.000Z`),
+                        totalDistanceMeters,
+                        totalDurationSeconds,
+                        capacityUsedKg,
+                    },
+                });
+                let stopOrder = 1;
+                const stops = [];
+                for (const pointIndex of visitIndices) {
+                    const point = points[pointIndex];
+                    if (point.kind !== 'delivery' || point.deliveryIndex == null) {
+                        continue;
+                    }
+                    const delivery = deliveries[point.deliveryIndex];
+                    const eta = stopEtas.get(pointIndex) ?? null;
+                    await tx.routeStop.create({
+                        data: {
+                            routeId: createdRoute.id,
+                            deliveryId: delivery.id,
+                            stopOrder,
+                            estimatedArrival: eta,
+                            status: client_1.RouteStopStatus.PENDING,
+                        },
+                    });
+                    await tx.delivery.update({
+                        where: { id: delivery.id },
+                        data: { status: client_1.DeliveryStatus.ASSIGNED },
+                    });
+                    this.collectTimingWarnings(delivery, eta, routeStart, warnings);
+                    stops.push({
+                        deliveryId: delivery.id,
+                        order: stopOrder,
+                        estimatedArrival: eta?.toISOString() ?? null,
+                    });
+                    stopOrder += 1;
+                }
+                routeResults.push({
+                    routeId: createdRoute.id,
+                    driverId,
+                    vehicleId: vehicle.id,
+                    totalDistanceMeters,
+                    totalDurationSeconds,
+                    optimizerCost: vrpRoute.totalCost,
+                    capacityUsedKg,
+                    stops,
+                });
             }
-        }
-        const deliveries = await this.prisma.delivery.findMany({
-            where: {
-                organizationId,
-                id: { in: request.deliveryIds },
-            },
         });
-        if (deliveries.length !== request.deliveryIds.length) {
+        if (routeResults.length === 0 && deliveries.length > 0) {
+            throw new common_1.BadRequestException('Optimalisering opprettet ingen ruter — sjekk kapasitet, tidsvinduer og tilgjengelige kjøretøy');
+        }
+        return {
+            routes: routeResults,
+            unassignedDeliveries: unassignedDeliveryIds,
+            warnings,
+        };
+    }
+    collectTimingWarnings(delivery, eta, routeStart, warnings) {
+        if (!eta) {
+            return;
+        }
+        if (delivery.deadline && eta > delivery.deadline) {
+            warnings.push(`Levering ${delivery.id}: estimert ankomst etter deadline.`);
+        }
+        if (delivery.timeWindowEnd &&
+            eta > delivery.timeWindowEnd) {
+            warnings.push(`Levering ${delivery.id}: estimert ankomst utenfor tidsvindu.`);
+        }
+        if (delivery.timeWindowStart &&
+            eta < delivery.timeWindowStart &&
+            (0, optimization_vrp_util_1.secondsFromRouteStart)(routeStart, delivery.timeWindowStart) != null) {
+            warnings.push(`Levering ${delivery.id}: estimert ankomst før tidsvindu åpner.`);
+        }
+    }
+    buildMatrixPoints(vehicles, deliveries, returnToDepot) {
+        const points = deliveries.map((d, i) => ({
+            id: d.id,
+            kind: 'delivery',
+            deliveryIndex: i,
+            latitude: (0, decimal_util_1.decimalToNumber)(d.latitude),
+            longitude: (0, decimal_util_1.decimalToNumber)(d.longitude),
+        }));
+        const vehicleDepots = [];
+        for (let v = 0; v < vehicles.length; v += 1) {
+            const vehicle = vehicles[v];
+            const startLat = (0, decimal_util_1.decimalToNumber)(vehicle.startLatitude);
+            const startLon = (0, decimal_util_1.decimalToNumber)(vehicle.startLongitude);
+            const endLat = (0, decimal_util_1.decimalToNumber)(vehicle.endLatitude);
+            const endLon = (0, decimal_util_1.decimalToNumber)(vehicle.endLongitude);
+            const startIndex = points.length;
+            points.push({
+                id: `depot-start-${vehicle.id}`,
+                kind: 'depot-start',
+                vehicleIndex: v,
+                latitude: startLat,
+                longitude: startLon,
+            });
+            let endIndex = startIndex;
+            const endDiffers = Math.abs(startLat - endLat) > 1e-6 ||
+                Math.abs(startLon - endLon) > 1e-6;
+            if (returnToDepot && endDiffers) {
+                endIndex = points.length;
+                points.push({
+                    id: `depot-end-${vehicle.id}`,
+                    kind: 'depot-end',
+                    vehicleIndex: v,
+                    latitude: endLat,
+                    longitude: endLon,
+                });
+            }
+            vehicleDepots.push({ startIndex, endIndex });
+        }
+        return { points, vehicleDepots };
+    }
+    async loadAvailableVehicles(organizationId, vehicleIds) {
+        const vehicles = await this.prisma.vehicle.findMany({
+            where: { organizationId, id: { in: vehicleIds } },
+        });
+        if (vehicles.length !== vehicleIds.length) {
+            throw new common_1.BadRequestException('En eller flere kjøretøy ble ikke funnet');
+        }
+        const unavailable = vehicles.filter((v) => v.status !== client_1.VehicleStatus.AVAILABLE);
+        if (unavailable.length > 0) {
+            throw new common_1.BadRequestException(`Kun tilgjengelige kjøretøy kan brukes. Utilgjengelig: ${unavailable.map((v) => v.name).join(', ')}`);
+        }
+        const order = new Map(vehicleIds.map((id, i) => [id, i]));
+        return [...vehicles].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+    }
+    async resolveDrivers(organizationId, vehicleIds, driverIds) {
+        const result = vehicleIds.map(() => null);
+        if (!driverIds?.length) {
+            return result;
+        }
+        if (driverIds.length > vehicleIds.length) {
+            throw new common_1.BadRequestException('driverIds kan ikke være flere enn vehicleIds');
+        }
+        const uniqueDriverIds = [...new Set(driverIds)];
+        const drivers = await this.prisma.driver.findMany({
+            where: { organizationId, id: { in: uniqueDriverIds } },
+        });
+        if (drivers.length !== uniqueDriverIds.length) {
+            throw new common_1.BadRequestException('En eller flere sjåfører ble ikke funnet');
+        }
+        const unavailable = drivers.filter((d) => d.status !== client_1.DriverStatus.AVAILABLE);
+        if (unavailable.length > 0) {
+            throw new common_1.BadRequestException(`Kun tilgjengelige sjåfører kan tildeles. Utilgjengelig: ${unavailable.map((d) => d.name).join(', ')}`);
+        }
+        const usedDrivers = new Set();
+        for (let i = 0; i < driverIds.length; i += 1) {
+            const id = driverIds[i];
+            if (!id) {
+                continue;
+            }
+            if (usedDrivers.has(id)) {
+                throw new common_1.BadRequestException('Samme sjåfør kan ikke tildeles flere kjøretøy i én jobb');
+            }
+            usedDrivers.add(id);
+            result[i] = id;
+        }
+        return result;
+    }
+    async loadPendingDeliveries(organizationId, deliveryIds) {
+        const deliveries = await this.prisma.delivery.findMany({
+            where: { organizationId, id: { in: deliveryIds } },
+        });
+        if (deliveries.length !== deliveryIds.length) {
             throw new common_1.BadRequestException('En eller flere leveringer ble ikke funnet');
         }
         const notPending = deliveries.filter((d) => d.status !== client_1.DeliveryStatus.PENDING);
         if (notPending.length > 0) {
             throw new common_1.BadRequestException('Alle leveringer må ha status PENDING for optimalisering');
         }
-        const startLat = (0, decimal_util_1.decimalToNumber)(vehicle.startLatitude);
-        const startLon = (0, decimal_util_1.decimalToNumber)(vehicle.startLongitude);
-        const endLat = (0, decimal_util_1.decimalToNumber)(vehicle.endLatitude);
-        const endLon = (0, decimal_util_1.decimalToNumber)(vehicle.endLongitude);
-        const points = [
-            {
-                id: 'depot-start',
-                kind: 'depot-start',
-                latitude: startLat,
-                longitude: startLon,
-            },
-            ...deliveries.map((d) => ({
-                id: d.id,
-                kind: 'delivery',
-                deliveryId: d.id,
-                latitude: (0, decimal_util_1.decimalToNumber)(d.latitude),
-                longitude: (0, decimal_util_1.decimalToNumber)(d.longitude),
-            })),
-        ];
-        const returnToDepot = request.returnToDepot !== false;
-        const endDiffers = Math.abs(startLat - endLat) > 1e-6 ||
-            Math.abs(startLon - endLon) > 1e-6;
-        if (returnToDepot && endDiffers) {
-            points.push({
-                id: 'depot-end',
-                kind: 'depot-end',
-                latitude: endLat,
-                longitude: endLon,
-            });
-        }
-        const matrix = await this.routing.buildDistanceTimeMatrix(points);
-        const costMatrix = request.objective === client_1.OptimizationObjective.MINIMIZE_TOTAL_DISTANCE
-            ? matrix.distancesMeters
-            : matrix.durationsSeconds;
-        const { routeIndices, totalCost } = await this.optimizer.solveTsp(costMatrix);
-        const visitIndices = this.extractDeliveryVisitOrder(routeIndices, points);
-        if (visitIndices.length === 0) {
-            throw new common_1.BadRequestException('Optimalisering returnerte ingen leveringsstopp');
-        }
-        const { totalDistanceMeters, totalDurationSeconds, stopEtas } = this.computeLegMetrics(routeIndices, matrix, request);
-        const route = await this.prisma.$transaction(async (tx) => {
-            const createdRoute = await tx.route.create({
-                data: {
-                    organizationId,
-                    vehicleId: vehicle.id,
-                    driverId: request.driverId ?? null,
-                    status: client_1.RouteStatus.PLANNED,
-                    plannedDate: new Date(`${request.plannedDate}T12:00:00.000Z`),
-                    totalDistanceMeters,
-                    totalDurationSeconds,
-                    capacityUsedKg: deliveries.reduce((sum, d) => sum + Number(d.weightKg), 0),
-                },
-            });
-            let stopOrder = 1;
-            for (const pointIndex of visitIndices) {
-                const point = points[pointIndex];
-                if (point.kind !== 'delivery' || !point.deliveryId) {
-                    continue;
-                }
-                await tx.routeStop.create({
-                    data: {
-                        routeId: createdRoute.id,
-                        deliveryId: point.deliveryId,
-                        stopOrder,
-                        estimatedArrival: stopEtas.get(pointIndex) ?? null,
-                        status: client_1.RouteStopStatus.PENDING,
-                    },
-                });
-                await tx.delivery.update({
-                    where: { id: point.deliveryId },
-                    data: { status: client_1.DeliveryStatus.ASSIGNED },
-                });
-                stopOrder += 1;
-            }
-            return createdRoute;
-        });
-        const orderedStops = [];
-        let order = 1;
-        for (const pointIndex of visitIndices) {
-            const point = points[pointIndex];
-            if (point.kind !== 'delivery' || !point.deliveryId) {
-                continue;
-            }
-            orderedStops.push({
-                deliveryId: point.deliveryId,
-                order,
-                estimatedArrival: stopEtas.get(pointIndex)?.toISOString() ?? null,
-            });
-            order += 1;
-        }
-        return {
-            routes: [
-                {
-                    routeId: route.id,
-                    driverId: request.driverId ?? null,
-                    vehicleId: vehicle.id,
-                    totalDistanceMeters,
-                    totalDurationSeconds,
-                    optimizerCost: totalCost,
-                    stops: orderedStops,
-                },
-            ],
-            unassignedDeliveries: [],
-            warnings: [],
-        };
-    }
-    extractDeliveryVisitOrder(routeIndices, points) {
-        const seen = new Set();
-        const order = [];
-        for (const idx of routeIndices) {
-            if (seen.has(idx)) {
-                continue;
-            }
-            seen.add(idx);
-            if (points[idx]?.kind === 'delivery') {
-                order.push(idx);
-            }
-        }
-        return order;
-    }
-    computeLegMetrics(routeIndices, matrix, request) {
-        const startAt = this.parseRouteStart(request.plannedDate, request.routeStartTime);
-        let totalDistanceMeters = 0;
-        let totalDurationSeconds = 0;
-        const stopEtas = new Map();
-        let currentTime = startAt;
-        for (let i = 0; i < routeIndices.length - 1; i += 1) {
-            const from = routeIndices[i];
-            const to = routeIndices[i + 1];
-            const dist = matrix.distancesMeters[from]?.[to] ?? 0;
-            const dur = matrix.durationsSeconds[from]?.[to] ?? 0;
-            totalDistanceMeters += dist;
-            totalDurationSeconds += dur;
-            currentTime = new Date(currentTime.getTime() + dur * 1000);
-            stopEtas.set(to, new Date(currentTime));
-        }
-        return { totalDistanceMeters, totalDurationSeconds, stopEtas };
-    }
-    parseRouteStart(plannedDate, routeStartTime) {
-        const [hours, minutes] = routeStartTime.split(':').map(Number);
-        const [year, month, day] = plannedDate.split('-').map(Number);
-        return new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
+        const order = new Map(deliveryIds.map((id, i) => [id, i]));
+        return [...deliveries].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
     }
     async validateCreateRequest(organizationId, dto) {
-        const vehicle = await this.prisma.vehicle.findFirst({
-            where: { id: dto.vehicleId, organizationId },
-        });
-        if (!vehicle) {
-            throw new common_1.BadRequestException('Kjøretøy ikke funnet');
+        const vehicleIds = dto.vehicleIds?.length
+            ? [...new Set(dto.vehicleIds)]
+            : dto.vehicleId
+                ? [dto.vehicleId]
+                : [];
+        if (vehicleIds.length === 0) {
+            throw new common_1.BadRequestException('Angi vehicleId eller vehicleIds');
         }
-        if (dto.driverId) {
-            const driver = await this.prisma.driver.findFirst({
-                where: { id: dto.driverId, organizationId },
-            });
-            if (!driver) {
-                throw new common_1.BadRequestException('Sjåfør ikke funnet');
-            }
+        await this.loadAvailableVehicles(organizationId, vehicleIds);
+        if (dto.driverIds?.length) {
+            await this.resolveDrivers(organizationId, vehicleIds, dto.driverIds);
         }
-        const uniqueIds = [...new Set(dto.deliveryIds)];
-        if (uniqueIds.length !== dto.deliveryIds.length) {
+        const uniqueDeliveryIds = [...new Set(dto.deliveryIds)];
+        if (uniqueDeliveryIds.length !== dto.deliveryIds.length) {
             throw new common_1.BadRequestException('Duplikate deliveryIds');
         }
         return {
             plannedDate: dto.plannedDate,
-            vehicleId: dto.vehicleId,
-            driverId: dto.driverId,
-            deliveryIds: uniqueIds,
+            vehicleIds,
+            driverIds: dto.driverIds,
+            deliveryIds: uniqueDeliveryIds,
             objective: dto.objective ?? client_1.OptimizationObjective.MINIMIZE_TOTAL_TIME,
             routeStartTime: dto.routeStartTime ?? '08:00',
             returnToDepot: dto.returnToDepot !== false,
+            respectCapacity: dto.respectCapacity !== false,
+            respectTimeWindows: dto.respectTimeWindows !== false,
         };
     }
     toJobResponse(job) {
