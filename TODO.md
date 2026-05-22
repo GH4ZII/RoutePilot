@@ -11,7 +11,7 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 | Område        | Status      |
 |---------------|-------------|
 | Web           | Startet (innlogging) |
-| Mobile (Expo) | Startet (innlogging) |
+| Mobile (Expo) | Startet (sjåfør-workflow) |
 | Backend       | Startet (auth) |
 | Database      | Startet (Prisma) |
 | Optimalisering| Startet (VRP) |
@@ -102,14 +102,14 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 ## Fase 6: Sjåfør-workflow (Expo `apps/mobile`)
 
-- [ ] Expo-app: innlogging, dagens rute, neste stopp
-- [ ] Vis adresse, telefon, notater, estimert ankomst, pakkeinfo
-- [ ] `POST /routes/:id/assign`, `/start`, `/finish`
-- [ ] `POST /route-stops/:id/complete`, `/fail`
-- [ ] Handlinger: start rute, åpne navigasjon (deep link), fullfør rute
-- [ ] Expo Location + kamera for proof of delivery
-- [ ] EAS Build / TestFlight / intern testing
-- [ ] Ruteplanleggingsflyt: opprett leveringer → generer → gjennomgå → tildel → kjør
+- [x] Expo-app: innlogging, dagens rute, neste stopp
+- [x] Vis adresse, telefon, notater, estimert ankomst, pakkeinfo
+- [x] `POST /routes/:id/assign`, `/start`, `/finish`
+- [x] `POST /route-stops/:id/complete`, `/fail`
+- [x] Handlinger: start rute, åpne navigasjon (deep link), fullfør rute
+- [x] Expo Location + kamera for proof of delivery
+- [x] EAS Build / TestFlight / intern testing (`eas.json` + `apps/mobile/README.md`)
+- [x] Ruteplanleggingsflyt: opprett leveringer → generer → gjennomgå → tildel → kjør
 
 ---
 
@@ -152,9 +152,9 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 - [x] Ruteoptimalisering for flere kjøretøy
 - [x] Kapasitetsbegrensninger
 - [x] Tidsvinduer
-- [ ] Rute-tildeling til sjåfør
-- [ ] Sjåfør-rutevisning (Expo mobile app)
-- [ ] Marker stopp som levert eller feilet
+- [x] Rute-tildeling til sjåfør
+- [x] Sjåfør-rutevisning (Expo mobile app)
+- [x] Marker stopp som levert eller feilet
 - [ ] Dispatcher-dashboard
 
 ---

@@ -14,6 +14,7 @@ import { UsersModule } from './users/users.module';
 import { DriversModule } from './drivers/drivers.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { DeliveriesModule } from './deliveries/deliveries.module';
+import { RouteStopsModule } from './route-stops/route-stops.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { DeliveriesModule } from './deliveries/deliveries.module';
     DriversModule,
     VehiclesModule,
     DeliveriesModule,
+    RouteStopsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

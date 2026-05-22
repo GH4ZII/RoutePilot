@@ -1,7 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { RouteStatus, RouteStopStatus } from '../generated/prisma/client';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  DeliveryStatus,
+  DriverStatus,
+  RouteEventType,
+  RouteStatus,
+  RouteStopStatus,
+  UserRole,
+} from '../generated/prisma/client';
 import type { JwtPayload } from '../auth/types/jwt-payload';
 import { decimalToNumber } from '../common/decimal.util';
+import { DriverScopeService } from '../common/driver-scope.service';
 import { OrgScopeService } from '../common/org-scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListRoutesQueryDto } from './dto/list-routes-query.dto';
@@ -10,13 +23,18 @@ export type RouteStopResponse = {
   id: string;
   stopOrder: number;
   estimatedArrival: Date | null;
+  actualArrival: Date | null;
   status: RouteStopStatus;
   delivery: {
     id: string;
     customerName: string;
+    phone: string | null;
     address: string;
     latitude: number;
     longitude: number;
+    weightKg: number;
+    volumeM3: number | null;
+    notes: string | null;
     status: string;
     priority: string;
   };
@@ -31,6 +49,9 @@ export type RouteResponse = {
   plannedDate: Date;
   totalDistanceMeters: number | null;
   totalDurationSeconds: number | null;
+  capacityUsedKg: number | null;
+  startedAt: Date | null;
+  finishedAt: Date | null;
   vehicle: {
     id: string;
     name: string;
@@ -41,9 +62,23 @@ export type RouteResponse = {
     endLatitude: number;
     endLongitude: number;
   } | null;
+  driver: {
+    id: string;
+    name: string;
+    phone: string | null;
+  } | null;
   stops: RouteStopResponse[];
   createdAt: Date;
   updatedAt: Date;
+};
+
+const routeInclude = {
+  vehicle: true,
+  driver: true,
+  stops: {
+    orderBy: { stopOrder: 'asc' as const },
+    include: { delivery: true },
+  },
 };
 
 @Injectable()
@@ -51,6 +86,7 @@ export class RoutesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly orgScope: OrgScopeService,
+    private readonly driverScope: DriverScopeService,
   ) {}
 
   async findAll(
@@ -62,13 +98,7 @@ export class RoutesService {
         user,
         query.status ? { status: query.status } : {},
       ),
-      include: {
-        vehicle: true,
-        stops: {
-          orderBy: { stopOrder: 'asc' },
-          include: { delivery: true },
-        },
-      },
+      include: routeInclude,
       orderBy: [{ plannedDate: 'desc' }, { createdAt: 'desc' }],
     });
 
@@ -76,23 +106,256 @@ export class RoutesService {
   }
 
   async findOne(user: JwtPayload, id: string): Promise<RouteResponse> {
-    const row = await this.prisma.route.findFirst({
-      where: this.orgScope.forOrganization(user, { id }),
-      include: {
-        vehicle: true,
-        stops: {
-          orderBy: { stopOrder: 'asc' },
-          include: { delivery: true },
-        },
+    const row = await this.findScopedOrThrow(user, id);
+    if (user.role === UserRole.DRIVER) {
+      const driver = await this.driverScope.requireDriverForUser(user);
+      if (row.driverId !== driver.id) {
+        throw new ForbiddenException('Du har ikke tilgang til denne ruten');
+      }
+    }
+    return toRouteResponse(row);
+  }
+
+  async findMyToday(user: JwtPayload): Promise<RouteResponse | null> {
+    const driver = await this.driverScope.requireDriverForUser(user);
+    const today = todayUtcDate();
+
+    const active = await this.prisma.route.findFirst({
+      where: {
+        organizationId: user.organizationId,
+        driverId: driver.id,
+        status: RouteStatus.IN_PROGRESS,
       },
+      include: routeInclude,
+      orderBy: { updatedAt: 'desc' },
+    });
+    if (active) {
+      return toRouteResponse(active);
+    }
+
+    const planned = await this.prisma.route.findFirst({
+      where: {
+        organizationId: user.organizationId,
+        driverId: driver.id,
+        plannedDate: today,
+        status: { in: [RouteStatus.PLANNED, RouteStatus.ASSIGNED] },
+      },
+      include: routeInclude,
+      orderBy: { createdAt: 'desc' },
     });
 
+    return planned ? toRouteResponse(planned) : null;
+  }
+
+  async assign(
+    user: JwtPayload,
+    id: string,
+    driverId: string,
+  ): Promise<RouteResponse> {
+    this.assertStaff(user);
+
+    const route = await this.findScopedOrThrow(user, id);
+    if (
+      route.status !== RouteStatus.PLANNED &&
+      route.status !== RouteStatus.ASSIGNED
+    ) {
+      throw new BadRequestException(
+        'Ruten kan kun tildeles når status er PLANNED eller ASSIGNED',
+      );
+    }
+
+    const driver = await this.prisma.driver.findFirst({
+      where: this.orgScope.forOrganization(user, { id: driverId }),
+    });
+    if (!driver) {
+      throw new NotFoundException('Sjåfør ikke funnet');
+    }
+    if (driver.status !== DriverStatus.AVAILABLE) {
+      throw new BadRequestException('Sjåføren må være AVAILABLE for tildeling');
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      if (route.driverId && route.driverId !== driverId) {
+        await tx.driver.updateMany({
+          where: { activeRouteId: route.id },
+          data: { activeRouteId: null },
+        });
+      }
+
+      return tx.route.update({
+        where: { id: route.id },
+        data: {
+          driverId,
+          status: RouteStatus.ASSIGNED,
+        },
+        include: routeInclude,
+      });
+    });
+
+    return toRouteResponse(updated);
+  }
+
+  async start(user: JwtPayload, id: string): Promise<RouteResponse> {
+    const route = await this.findScopedOrThrow(user, id);
+    await this.assertDriverCanOperate(user, route);
+
+    if (
+      route.status !== RouteStatus.ASSIGNED &&
+      route.status !== RouteStatus.PLANNED
+    ) {
+      throw new BadRequestException(
+        'Ruten kan startes fra status PLANNED eller ASSIGNED',
+      );
+    }
+
+    const driverId = route.driverId;
+    if (!driverId) {
+      throw new BadRequestException('Ruten må ha tildelt sjåfør før start');
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.driver.update({
+        where: { id: driverId },
+        data: {
+          status: DriverStatus.ON_ROUTE,
+          activeRouteId: route.id,
+        },
+      });
+
+      const next = await tx.route.update({
+        where: { id: route.id },
+        data: {
+          status: RouteStatus.IN_PROGRESS,
+          startedAt: new Date(),
+        },
+        include: routeInclude,
+      });
+
+      await tx.routeEvent.create({
+        data: {
+          routeId: route.id,
+          type: RouteEventType.ROUTE_STARTED,
+        },
+      });
+
+      return next;
+    });
+
+    return toRouteResponse(updated);
+  }
+
+  async finish(user: JwtPayload, id: string): Promise<RouteResponse> {
+    const route = await this.findScopedOrThrow(user, id);
+    await this.assertDriverCanOperate(user, route);
+
+    if (route.status !== RouteStatus.IN_PROGRESS) {
+      throw new BadRequestException('Ruten må være IN_PROGRESS for å fullføres');
+    }
+
+    const pendingStops = route.stops.filter(
+      (s) =>
+        s.status === RouteStopStatus.PENDING ||
+        s.status === RouteStopStatus.IN_PROGRESS,
+    );
+    if (pendingStops.length > 0) {
+      throw new BadRequestException(
+        'Alle stopp må være fullført eller markert som feilet før ruten avsluttes',
+      );
+    }
+
+    const driverId = route.driverId;
+    const updated = await this.prisma.$transaction(async (tx) => {
+      if (driverId) {
+        await tx.driver.update({
+          where: { id: driverId },
+          data: {
+            status: DriverStatus.AVAILABLE,
+            activeRouteId: null,
+          },
+        });
+      }
+
+      const next = await tx.route.update({
+        where: { id: route.id },
+        data: {
+          status: RouteStatus.COMPLETED,
+          finishedAt: new Date(),
+        },
+        include: routeInclude,
+      });
+
+      await tx.routeEvent.create({
+        data: {
+          routeId: route.id,
+          type: RouteEventType.ROUTE_FINISHED,
+        },
+      });
+
+      return next;
+    });
+
+    return toRouteResponse(updated);
+  }
+
+  async findStopScoped(user: JwtPayload, stopId: string) {
+    const stop = await this.prisma.routeStop.findFirst({
+      where: {
+        id: stopId,
+        route: this.orgScope.forOrganization(user),
+      },
+      include: {
+        delivery: true,
+        route: { include: routeInclude },
+      },
+    });
+    if (!stop) {
+      throw new NotFoundException('Rutestopp ikke funnet');
+    }
+    return stop;
+  }
+
+  private assertStaff(user: JwtPayload) {
+    if (
+      user.role !== UserRole.ADMIN &&
+      user.role !== UserRole.DISPATCHER
+    ) {
+      throw new ForbiddenException();
+    }
+  }
+
+  private async assertDriverCanOperate(
+    user: JwtPayload,
+    route: { driverId: string | null; status: RouteStatus },
+  ) {
+    if (user.role === UserRole.ADMIN || user.role === UserRole.DISPATCHER) {
+      return;
+    }
+    if (user.role !== UserRole.DRIVER) {
+      throw new ForbiddenException();
+    }
+    const driver = await this.driverScope.requireDriverForUser(user);
+    if (route.driverId !== driver.id) {
+      throw new ForbiddenException('Du har ikke tilgang til denne ruten');
+    }
+  }
+
+  private async findScopedOrThrow(user: JwtPayload, id: string) {
+    const row = await this.prisma.route.findFirst({
+      where: this.orgScope.forOrganization(user, { id }),
+      include: routeInclude,
+    });
     if (!row) {
       throw new NotFoundException('Rute ikke funnet');
     }
-
-    return toRouteResponse(row);
+    return row;
   }
+}
+
+function todayUtcDate(): Date {
+  const now = new Date();
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  );
 }
 
 function toRouteResponse(route: {
@@ -104,6 +367,9 @@ function toRouteResponse(route: {
   plannedDate: Date;
   totalDistanceMeters: number | null;
   totalDurationSeconds: number | null;
+  capacityUsedKg: Parameters<typeof decimalToNumber>[0] | null;
+  startedAt: Date | null;
+  finishedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   vehicle: {
@@ -116,17 +382,23 @@ function toRouteResponse(route: {
     endLatitude: Parameters<typeof decimalToNumber>[0];
     endLongitude: Parameters<typeof decimalToNumber>[0];
   } | null;
+  driver: { id: string; name: string; phone: string | null } | null;
   stops: Array<{
     id: string;
     stopOrder: number;
     estimatedArrival: Date | null;
+    actualArrival: Date | null;
     status: RouteStopStatus;
     delivery: {
       id: string;
       customerName: string;
+      phone: string | null;
       address: string;
       latitude: Parameters<typeof decimalToNumber>[0];
       longitude: Parameters<typeof decimalToNumber>[0];
+      weightKg: Parameters<typeof decimalToNumber>[0];
+      volumeM3: Parameters<typeof decimalToNumber>[0] | null;
+      notes: string | null;
       status: string;
       priority: string;
     };
@@ -141,6 +413,12 @@ function toRouteResponse(route: {
     plannedDate: route.plannedDate,
     totalDistanceMeters: route.totalDistanceMeters,
     totalDurationSeconds: route.totalDurationSeconds,
+    capacityUsedKg:
+      route.capacityUsedKg != null
+        ? decimalToNumber(route.capacityUsedKg)
+        : null,
+    startedAt: route.startedAt,
+    finishedAt: route.finishedAt,
     createdAt: route.createdAt,
     updatedAt: route.updatedAt,
     vehicle: route.vehicle
@@ -155,17 +433,32 @@ function toRouteResponse(route: {
           endLongitude: decimalToNumber(route.vehicle.endLongitude)!,
         }
       : null,
+    driver: route.driver
+      ? {
+          id: route.driver.id,
+          name: route.driver.name,
+          phone: route.driver.phone,
+        }
+      : null,
     stops: route.stops.map((stop) => ({
       id: stop.id,
       stopOrder: stop.stopOrder,
       estimatedArrival: stop.estimatedArrival,
+      actualArrival: stop.actualArrival,
       status: stop.status,
       delivery: {
         id: stop.delivery.id,
         customerName: stop.delivery.customerName,
+        phone: stop.delivery.phone,
         address: stop.delivery.address,
         latitude: decimalToNumber(stop.delivery.latitude)!,
         longitude: decimalToNumber(stop.delivery.longitude)!,
+        weightKg: decimalToNumber(stop.delivery.weightKg)!,
+        volumeM3:
+          stop.delivery.volumeM3 != null
+            ? decimalToNumber(stop.delivery.volumeM3)
+            : null,
+        notes: stop.delivery.notes,
         status: stop.delivery.status,
         priority: stop.delivery.priority,
       },

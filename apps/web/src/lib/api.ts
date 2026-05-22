@@ -245,6 +245,16 @@ export function getRoute(id: string): Promise<RouteDetail> {
   return request<RouteDetail>(`/routes/${id}`)
 }
 
+export function assignRoute(
+  routeId: string,
+  driverId: string,
+): Promise<RouteDetail> {
+  return request<RouteDetail>(`/routes/${routeId}/assign`, {
+    method: 'POST',
+    body: JSON.stringify({ driverId }),
+  })
+}
+
 export async function pollOptimizationJob(
   id: string,
   options?: {

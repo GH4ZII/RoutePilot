@@ -35,7 +35,6 @@ export class DriversController {
   }
 
   @Post()
-  @Roles(UserRole.ADMIN)
   create(@CurrentUser() user: JwtPayload, @Body() dto: CreateDriverDto) {
     return this.driversService.create(user, dto);
   }
@@ -46,6 +45,7 @@ export class DriversController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.ADMIN, UserRole.DISPATCHER)
   update(
     @CurrentUser() user: JwtPayload,
     @Param('id') id: string,

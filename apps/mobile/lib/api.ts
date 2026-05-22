@@ -2,8 +2,8 @@ import type {
   AuthResponse,
   AuthUser,
   LoginCredentials,
-  RegisterCredentials,
 } from '@/types/auth';
+import type { DriverRoute } from '@/types/routes';
 import { resolveApiBaseUrl } from '@/lib/api-base-url';
 import { getStoredToken } from '@/lib/auth-storage';
 
@@ -82,15 +82,53 @@ export function login(credentials: LoginCredentials): Promise<AuthResponse> {
   });
 }
 
-export function register(
-  credentials: RegisterCredentials,
-): Promise<AuthResponse> {
-  return request<AuthResponse>('/auth/register', {
+export function getMe(): Promise<AuthUser> {
+  return request<AuthUser>('/auth/me');
+}
+
+export type { DriverRoute, RouteStop } from '@/types/routes';
+
+export function getMyRouteToday(): Promise<DriverRoute | null> {
+  return request<DriverRoute | null>('/routes/me/today');
+}
+
+export function getRoute(id: string): Promise<DriverRoute> {
+  return request<DriverRoute>(`/routes/${id}`);
+}
+
+export function startRoute(id: string): Promise<DriverRoute> {
+  return request<DriverRoute>(`/routes/${id}/start`, { method: 'POST' });
+}
+
+export function finishRoute(id: string): Promise<DriverRoute> {
+  return request<DriverRoute>(`/routes/${id}/finish`, { method: 'POST' });
+}
+
+export function completeRouteStop(id: string): Promise<DriverRoute> {
+  return request<DriverRoute>(`/route-stops/${id}/complete`, { method: 'POST' });
+}
+
+export function failRouteStop(
+  id: string,
+  reason?: string,
+): Promise<DriverRoute> {
+  return request<DriverRoute>(`/route-stops/${id}/fail`, {
     method: 'POST',
-    body: JSON.stringify(credentials),
+    body: JSON.stringify({ reason }),
   });
 }
 
-export function getMe(): Promise<AuthUser> {
-  return request<AuthUser>('/auth/me');
+export function submitProofOfDelivery(
+  stopId: string,
+  payload: {
+    note?: string;
+    latitude?: number;
+    longitude?: number;
+    photoUrl?: string;
+  },
+): Promise<DriverRoute> {
+  return request<DriverRoute>(`/route-stops/${stopId}/proof`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }

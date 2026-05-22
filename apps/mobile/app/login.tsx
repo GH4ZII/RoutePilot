@@ -10,7 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 import { useAuth } from '@/context/AuthContext';
 import { ApiError } from '@/lib/api';
@@ -97,7 +97,10 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled">
         <View style={authStyles.card}>
           <Text style={authStyles.title}>RoutePilot</Text>
-          <Text style={authStyles.subtitle}>Logg inn på organisasjonen din</Text>
+          <Text style={authStyles.subtitle}>
+            Sjåførinnlogging — bruk organisasjon (slug), e-post og passord du har
+            fått fra planlegger.
+          </Text>
 
           <View style={authStyles.field}>
             <Text style={authStyles.label}>Organisasjon (slug)</Text>
@@ -166,10 +169,7 @@ export default function LoginScreen() {
           </Pressable>
 
           <Text style={authStyles.footer}>
-            Har du ikke konto?{' '}
-            <Link href="/signup" style={authStyles.link}>
-              Registrer deg
-            </Link>
+            Konto opprettes av administrator eller planlegger i webappen.
           </Text>
         </View>
       </ScrollView>

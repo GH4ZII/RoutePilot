@@ -18,11 +18,7 @@ import {
   setRememberMeEnabled,
   setRememberedLogin,
 } from '@/lib/remember-login';
-import type {
-  AuthUser,
-  LoginCredentials,
-  RegisterCredentials,
-} from '@/types/auth';
+import type { AuthUser, LoginCredentials } from '@/types/auth';
 
 export type LoginOptions = {
   rememberMe?: boolean;
@@ -36,7 +32,6 @@ type AuthContextValue = {
     credentials: LoginCredentials,
     options?: LoginOptions,
   ) => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -66,6 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (credentials: LoginCredentials, options?: LoginOptions) => {
       const rememberMe = options?.rememberMe ?? false;
       const response = await api.login(credentials);
+      if (response.user.role !== 'DRIVER') {
+        throw new Error(
+          'Denne appen er kun for sjåfører. Bruk webappen for administrator/planlegger.',
+        );
+      }
+      if (!response.user.driverId) {
+        throw new Error(
+          'Brukeren er ikke koblet til en sjåførprofil. Kontakt planlegger.',
+        );
+      }
       await setRememberMeEnabled(rememberMe);
       if (rememberMe) {
         await setRememberedLogin({
@@ -76,19 +81,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await clearRememberedLogin();
       }
       await applyAuthResponse(response, rememberMe);
-    },
-    [applyAuthResponse],
-  );
-
-  const register = useCallback(
-    async (credentials: RegisterCredentials) => {
-      const response = await api.register(credentials);
-      await setRememberMeEnabled(true);
-      await setRememberedLogin({
-        organizationSlug: credentials.organizationSlug,
-        email: credentials.email,
-      });
-      await applyAuthResponse(response, true);
     },
     [applyAuthResponse],
   );
@@ -105,7 +97,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         const me = await api.getMe();
-        if (!cancelled) setUser(me);
+        if (!cancelled) {
+          if (me.role !== 'DRIVER' || !me.driverId) {
+            await clearStoredToken();
+            setUser(null);
+          } else {
+            setUser(me);
+          }
+        }
       } catch {
         await clearStoredToken();
         if (!cancelled) setUser(null);
@@ -126,10 +125,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       isAuthenticated: user !== null,
       login,
-      register,
       logout,
     }),
-    [user, isLoading, login, register, logout],
+    [user, isLoading, login, logout],
   );
 
   return (

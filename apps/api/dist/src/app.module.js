@@ -23,6 +23,7 @@ const users_module_1 = require("./users/users.module");
 const drivers_module_1 = require("./drivers/drivers.module");
 const vehicles_module_1 = require("./vehicles/vehicles.module");
 const deliveries_module_1 = require("./deliveries/deliveries.module");
+const route_stops_module_1 = require("./route-stops/route-stops.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -42,6 +43,7 @@ exports.AppModule = AppModule = __decorate([
             drivers_module_1.DriversModule,
             vehicles_module_1.VehiclesModule,
             deliveries_module_1.DeliveriesModule,
+            route_stops_module_1.RouteStopsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

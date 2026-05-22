@@ -106,7 +106,8 @@ export type UpdateUserPayload = {
 export type CreateDriverPayload = {
   name: string
   phone?: string
-  email?: string
+  email: string
+  password: string
   status?: DriverStatus
 }
 
@@ -115,6 +116,7 @@ export type UpdateDriverPayload = {
   phone?: string
   email?: string
   status?: DriverStatus
+  password?: string
 }
 
 export type CreateVehiclePayload = {
@@ -218,13 +220,18 @@ export type RouteStopDetail = {
   id: string
   stopOrder: number
   estimatedArrival: string | null
+  actualArrival: string | null
   status: RouteStopStatus
   delivery: {
     id: string
     customerName: string
+    phone: string | null
     address: string
     latitude: number
     longitude: number
+    weightKg: number
+    volumeM3: number | null
+    notes: string | null
     status: DeliveryStatus
     priority: DeliveryPriority
   }
@@ -239,6 +246,14 @@ export type RouteDetail = {
   plannedDate: string
   totalDistanceMeters: number | null
   totalDurationSeconds: number | null
+  capacityUsedKg: number | null
+  startedAt: string | null
+  finishedAt: string | null
+  driver: {
+    id: string
+    name: string
+    phone: string | null
+  } | null
   vehicle: {
     id: string
     name: string

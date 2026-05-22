@@ -20,6 +20,7 @@ import {
     email: string;
     name: string | null;
     role: UserRole;
+    driverId: string | null;
     organization: {
       id: string;
       name: string;
@@ -74,7 +75,7 @@ import {
         return { organization, user };
       });
   
-      return this.buildAuthResponse(result.user, result.organization);
+      return await this.buildAuthResponse(result.user, result.organization);
     }
   
     async login(dto: LoginDto): Promise<AuthResponse> {
@@ -105,22 +106,25 @@ import {
         throw new UnauthorizedException('Invalid credentials');
       }
   
-      return this.buildAuthResponse(user, organization);
+      return await this.buildAuthResponse(user, organization);
     }
   
     async getMe(userId: string, organizationId: string): Promise<AuthUserResponse> {
       const user = await this.prisma.user.findFirst({
         where: { id: userId, organizationId },
-        include: { organization: true },
+        include: {
+          organization: true,
+          driver: { select: { id: true } },
+        },
       });
       if (!user) {
         throw new UnauthorizedException();
       }
   
-      return this.toUserResponse(user, user.organization);
+      return this.toUserResponse(user, user.organization, user.driver?.id ?? null);
     }
   
-    private buildAuthResponse(
+    private async buildAuthResponse(
       user: {
         id: string;
         email: string;
@@ -129,7 +133,7 @@ import {
         organizationId: string;
       },
       organization: { id: string; name: string; slug: string },
-    ): AuthResponse {
+    ): Promise<AuthResponse> {
       const payload: JwtPayload = {
         sub: user.id,
         organizationId: user.organizationId,
@@ -141,9 +145,18 @@ import {
           '7d') as StringValue,
       });
   
+      const driver = await this.prisma.driver.findFirst({
+        where: { userId: user.id, organizationId: user.organizationId },
+        select: { id: true },
+      });
+
       return {
         accessToken,
-        user: this.toUserResponse(user, organization),
+        user: this.toUserResponse(
+          user,
+          organization,
+          driver?.id ?? null,
+        ),
       };
     }
   
@@ -155,12 +168,14 @@ import {
         role: UserRole;
       },
       organization: { id: string; name: string; slug: string },
+      driverId: string | null,
     ): AuthUserResponse {
       return {
         id: user.id,
         email: user.email,
         name: user.name,
         role: user.role,
+        driverId,
         organization: {
           id: organization.id,
           name: organization.name,

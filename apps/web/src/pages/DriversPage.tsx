@@ -21,6 +21,7 @@ const STATUSES: DriverStatus[] = [
 
 export default function DriversPage() {
   const { user } = useAuth()
+  const canManage = user?.role === 'ADMIN' || user?.role === 'DISPATCHER'
   const isAdmin = user?.role === 'ADMIN'
   const [statusFilter, setStatusFilter] = useState<DriverStatus | ''>('')
 
@@ -35,6 +36,7 @@ export default function DriversPage() {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [status, setStatus] = useState<DriverStatus>('AVAILABLE')
 
   function openCreate() {
@@ -42,6 +44,7 @@ export default function DriversPage() {
     setName('')
     setPhone('')
     setEmail('')
+    setPassword('')
     setStatus('AVAILABLE')
     setModalOpen(true)
   }
@@ -51,6 +54,7 @@ export default function DriversPage() {
     setName(driver.name)
     setPhone(driver.phone ?? '')
     setEmail(driver.email ?? '')
+    setPassword('')
     setStatus(driver.status)
     setModalOpen(true)
   }
@@ -65,16 +69,26 @@ export default function DriversPage() {
     setIsSubmitting(true)
     setError(null)
     try {
-      const payload = {
-        name,
-        phone: phone.trim() || undefined,
-        email: email.trim() || undefined,
-        status,
-      }
       if (editing) {
-        await api.updateDriver(editing.id, payload)
+        await api.updateDriver(editing.id, {
+          name,
+          phone: phone.trim() || undefined,
+          email: email.trim() || undefined,
+          status,
+          ...(password.trim() ? { password: password.trim() } : {}),
+        })
       } else {
-        await api.createDriver(payload)
+        if (!email.trim() || password.length < 8) {
+          setError('E-post og passord (min. 8 tegn) er påkrevd for mobilinnlogging')
+          return
+        }
+        await api.createDriver({
+          name,
+          phone: phone.trim() || undefined,
+          email: email.trim(),
+          password,
+          status,
+        })
       }
       closeModal()
       await reload()
@@ -86,7 +100,7 @@ export default function DriversPage() {
   }
 
   async function handleDelete(driver: Driver) {
-    if (!confirm(`Slette sjåfør ${driver.name}?`)) return
+    if (!confirm(`Slette sjåfør ${driver.name}? Innloggingskontoen slettes også.`)) return
     setError(null)
     try {
       await api.deleteDriver(driver.id)
@@ -100,9 +114,9 @@ export default function DriversPage() {
     <div className="page-content">
       <PageToolbar
         title="Sjåfører"
-        description="Oversikt over sjåfører og status."
+        description="Opprett sjåfører med innlogging til mobilappen (slug, e-post og passord)."
         action={
-          isAdmin ? (
+          canManage ? (
             <button type="button" className="btn-primary" onClick={openCreate}>
               Legg til sjåfør
             </button>
@@ -140,7 +154,7 @@ export default function DriversPage() {
               <tr>
                 <th>Navn</th>
                 <th>Telefon</th>
-                <th>E-post</th>
+                <th>Innlogging (e-post)</th>
                 <th>Status</th>
                 <th aria-label="Handlinger" />
               </tr>
@@ -165,13 +179,15 @@ export default function DriversPage() {
                       />
                     </td>
                     <td className="table-actions">
-                      <button
-                        type="button"
-                        className="btn-link"
-                        onClick={() => openEdit(driver)}
-                      >
-                        Rediger
-                      </button>
+                      {canManage ? (
+                        <button
+                          type="button"
+                          className="btn-link"
+                          onClick={() => openEdit(driver)}
+                        >
+                          Rediger
+                        </button>
+                      ) : null}
                       {isAdmin ? (
                         <button
                           type="button"
@@ -217,11 +233,25 @@ export default function DriversPage() {
               />
             </label>
             <label>
-              E-post
+              E-post (innlogging i app)
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="off"
+              />
+            </label>
+            <label>
+              {editing ? 'Nytt passord (valgfritt)' : 'Passord (mobilapp)'}
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required={!editing}
+                minLength={8}
+                autoComplete="new-password"
+                placeholder={editing ? 'La stå tom for å beholde' : 'Minst 8 tegn'}
               />
             </label>
             <label>
@@ -238,6 +268,12 @@ export default function DriversPage() {
               </select>
             </label>
           </div>
+          {!editing ? (
+            <p className="field-hint">
+              Sjåføren logger inn i mobilappen med organisasjonens slug, denne
+              e-posten og passordet.
+            </p>
+          ) : null}
         </FormModal>
       ) : null}
     </div>

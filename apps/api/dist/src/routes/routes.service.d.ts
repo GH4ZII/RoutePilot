@@ -1,5 +1,6 @@
-import { RouteStatus, RouteStopStatus } from '../generated/prisma/client';
+import { DeliveryStatus, DriverStatus, RouteStatus, RouteStopStatus } from '../generated/prisma/client';
 import type { JwtPayload } from '../auth/types/jwt-payload';
+import { DriverScopeService } from '../common/driver-scope.service';
 import { OrgScopeService } from '../common/org-scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListRoutesQueryDto } from './dto/list-routes-query.dto';
@@ -7,13 +8,18 @@ export type RouteStopResponse = {
     id: string;
     stopOrder: number;
     estimatedArrival: Date | null;
+    actualArrival: Date | null;
     status: RouteStopStatus;
     delivery: {
         id: string;
         customerName: string;
+        phone: string | null;
         address: string;
         latitude: number;
         longitude: number;
+        weightKg: number;
+        volumeM3: number | null;
+        notes: string | null;
         status: string;
         priority: string;
     };
@@ -27,6 +33,9 @@ export type RouteResponse = {
     plannedDate: Date;
     totalDistanceMeters: number | null;
     totalDurationSeconds: number | null;
+    capacityUsedKg: number | null;
+    startedAt: Date | null;
+    finishedAt: Date | null;
     vehicle: {
         id: string;
         name: string;
@@ -37,6 +46,11 @@ export type RouteResponse = {
         endLatitude: number;
         endLongitude: number;
     } | null;
+    driver: {
+        id: string;
+        name: string;
+        phone: string | null;
+    } | null;
     stops: RouteStopResponse[];
     createdAt: Date;
     updatedAt: Date;
@@ -44,7 +58,123 @@ export type RouteResponse = {
 export declare class RoutesService {
     private readonly prisma;
     private readonly orgScope;
-    constructor(prisma: PrismaService, orgScope: OrgScopeService);
+    private readonly driverScope;
+    constructor(prisma: PrismaService, orgScope: OrgScopeService, driverScope: DriverScopeService);
     findAll(user: JwtPayload, query: ListRoutesQueryDto): Promise<RouteResponse[]>;
     findOne(user: JwtPayload, id: string): Promise<RouteResponse>;
+    findMyToday(user: JwtPayload): Promise<RouteResponse | null>;
+    assign(user: JwtPayload, id: string, driverId: string): Promise<RouteResponse>;
+    start(user: JwtPayload, id: string): Promise<RouteResponse>;
+    finish(user: JwtPayload, id: string): Promise<RouteResponse>;
+    findStopScoped(user: JwtPayload, stopId: string): Promise<{
+        delivery: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            organizationId: string;
+            phone: string | null;
+            status: DeliveryStatus;
+            customerName: string;
+            address: string;
+            latitude: import("@prisma/client-runtime-utils").Decimal;
+            longitude: import("@prisma/client-runtime-utils").Decimal;
+            weightKg: import("@prisma/client-runtime-utils").Decimal;
+            volumeM3: import("@prisma/client-runtime-utils").Decimal | null;
+            priority: import("../generated/prisma/enums").DeliveryPriority;
+            deadline: Date | null;
+            timeWindowStart: Date | null;
+            timeWindowEnd: Date | null;
+            notes: string | null;
+        };
+        route: {
+            driver: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                organizationId: string;
+                email: string | null;
+                userId: string | null;
+                vehicleId: string | null;
+                activeRouteId: string | null;
+                phone: string | null;
+                status: DriverStatus;
+            } | null;
+            vehicle: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                organizationId: string;
+                status: import("../generated/prisma/enums").VehicleStatus;
+                registrationNumber: string;
+                maxWeightKg: import("@prisma/client-runtime-utils").Decimal;
+                maxVolumeM3: import("@prisma/client-runtime-utils").Decimal;
+                startLatitude: import("@prisma/client-runtime-utils").Decimal;
+                startLongitude: import("@prisma/client-runtime-utils").Decimal;
+                endLatitude: import("@prisma/client-runtime-utils").Decimal;
+                endLongitude: import("@prisma/client-runtime-utils").Decimal;
+                startAddress: string;
+                endAddress: string;
+            } | null;
+            stops: ({
+                delivery: {
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    organizationId: string;
+                    phone: string | null;
+                    status: DeliveryStatus;
+                    customerName: string;
+                    address: string;
+                    latitude: import("@prisma/client-runtime-utils").Decimal;
+                    longitude: import("@prisma/client-runtime-utils").Decimal;
+                    weightKg: import("@prisma/client-runtime-utils").Decimal;
+                    volumeM3: import("@prisma/client-runtime-utils").Decimal | null;
+                    priority: import("../generated/prisma/enums").DeliveryPriority;
+                    deadline: Date | null;
+                    timeWindowStart: Date | null;
+                    timeWindowEnd: Date | null;
+                    notes: string | null;
+                };
+            } & {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                status: RouteStopStatus;
+                routeId: string;
+                deliveryId: string;
+                stopOrder: number;
+                estimatedArrival: Date | null;
+                actualArrival: Date | null;
+            })[];
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            organizationId: string;
+            vehicleId: string | null;
+            status: RouteStatus;
+            driverId: string | null;
+            plannedDate: Date;
+            totalDistanceMeters: number | null;
+            totalDurationSeconds: number | null;
+            capacityUsedKg: import("@prisma/client-runtime-utils").Decimal | null;
+            startedAt: Date | null;
+            finishedAt: Date | null;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: RouteStopStatus;
+        routeId: string;
+        deliveryId: string;
+        stopOrder: number;
+        estimatedArrival: Date | null;
+        actualArrival: Date | null;
+    }>;
+    private assertStaff;
+    private assertDriverCanOperate;
+    private findScopedOrThrow;
 }

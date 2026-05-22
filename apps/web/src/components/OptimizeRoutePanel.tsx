@@ -300,7 +300,8 @@ export default function OptimizeRoutePanel({
       </form>
 
       <p className="field-hint optimize-panel__hint">
-        Krever API, Redis og Python-tjenesten (port 8000) med VRP-støtte.
+        Flyt: optimaliser → Ruter → tildel sjåfør → kjør i mobil. Krever API,
+        Redis og optimizer (port 8000).
       </p>
     </section>
   )

@@ -6,4 +6,5 @@ export declare class UpdateDriverDto {
     status?: DriverStatus;
     userId?: string | null;
     vehicleId?: string | null;
+    password?: string;
 }

@@ -33,6 +33,18 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "RoutePilot trenger posisjon for leveringsbevis."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "RoutePilot trenger kamera for leveringsbevis."
+        }
       ]
     ],
     "experiments": {

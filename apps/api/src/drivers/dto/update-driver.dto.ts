@@ -35,4 +35,11 @@ export class UpdateDriverDto {
   @IsOptional()
   @IsString()
   vehicleId?: string | null;
+
+  /** Nytt passord for mobilinnlogging (kun hvis sjåfør har brukerkonto). */
+  @IsOptional()
+  @IsString()
+  @MinLength(8)
+  @MaxLength(72)
+  password?: string;
 }

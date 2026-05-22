@@ -1,9 +1,11 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DriverStatus } from '../generated/prisma/client';
+import * as bcrypt from 'bcrypt';
+import { DriverStatus, UserRole } from '../generated/prisma/client';
 import type { JwtPayload } from '../auth/types/jwt-payload';
 import { OrgScopeService } from '../common/org-scope.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -53,20 +55,66 @@ export class DriversService {
 
   async create(user: JwtPayload, dto: CreateDriverDto): Promise<DriverResponse> {
     const organizationId = this.orgScope.requireOrganizationId(user);
-    await this.assertUserInOrg(user, dto.userId);
     await this.assertVehicleInOrg(user, dto.vehicleId);
 
-    const created = await this.prisma.driver.create({
-      data: {
-        organizationId,
-        name: dto.name,
-        phone: dto.phone,
-        email: dto.email?.toLowerCase(),
-        status: dto.status ?? DriverStatus.AVAILABLE,
-        userId: dto.userId,
-        vehicleId: dto.vehicleId,
-      },
+    if (dto.userId) {
+      await this.assertUserInOrg(user, dto.userId);
+      const created = await this.prisma.driver.create({
+        data: {
+          organizationId,
+          name: dto.name,
+          phone: dto.phone,
+          email: dto.email?.toLowerCase(),
+          status: dto.status ?? DriverStatus.AVAILABLE,
+          userId: dto.userId,
+          vehicleId: dto.vehicleId,
+        },
+      });
+      return toDriverResponse(created);
+    }
+
+    if (!dto.email || !dto.password) {
+      throw new BadRequestException(
+        'E-post og passord er påkrevd for å opprette sjåfør med innlogging',
+      );
+    }
+
+    const email = dto.email.toLowerCase();
+    const existingUser = await this.prisma.user.findUnique({
+      where: { organizationId_email: { organizationId, email } },
     });
+    if (existingUser) {
+      throw new ConflictException(
+        'E-posten er allerede i bruk i denne organisasjonen',
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, 12);
+
+    const created = await this.prisma.$transaction(async (tx) => {
+      const userRecord = await tx.user.create({
+        data: {
+          organizationId,
+          email,
+          passwordHash,
+          role: UserRole.DRIVER,
+          name: dto.name,
+        },
+      });
+
+      return tx.driver.create({
+        data: {
+          organizationId,
+          name: dto.name,
+          phone: dto.phone,
+          email,
+          status: dto.status ?? DriverStatus.AVAILABLE,
+          userId: userRecord.id,
+          vehicleId: dto.vehicleId,
+        },
+      });
+    });
+
     return toDriverResponse(created);
   }
 
@@ -75,23 +123,73 @@ export class DriversService {
     id: string,
     dto: UpdateDriverDto,
   ): Promise<DriverResponse> {
-    await this.findScopedOrThrow(user, id);
+    const existing = await this.findScopedOrThrow(user, id);
     await this.assertUserInOrg(user, dto.userId ?? undefined, id);
     await this.assertVehicleInOrg(user, dto.vehicleId ?? undefined);
 
-    const updated = await this.prisma.driver.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.phone !== undefined && { phone: dto.phone }),
-        ...(dto.email !== undefined && {
-          email: dto.email ? dto.email.toLowerCase() : null,
-        }),
-        ...(dto.status !== undefined && { status: dto.status }),
-        ...(dto.userId !== undefined && { userId: dto.userId }),
-        ...(dto.vehicleId !== undefined && { vehicleId: dto.vehicleId }),
-      },
+    const email =
+      dto.email !== undefined
+        ? dto.email
+          ? dto.email.toLowerCase()
+          : null
+        : undefined;
+
+    if (email && existing.userId) {
+      const clash = await this.prisma.user.findFirst({
+        where: {
+          organizationId: existing.organizationId,
+          email,
+          NOT: { id: existing.userId },
+        },
+      });
+      if (clash) {
+        throw new ConflictException(
+          'E-posten er allerede i bruk i denne organisasjonen',
+        );
+      }
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      if (existing.userId) {
+        const userData: {
+          email?: string;
+          name?: string;
+          passwordHash?: string;
+        } = {};
+        if (email !== undefined) {
+          userData.email = email ?? undefined;
+        }
+        if (dto.name !== undefined) {
+          userData.name = dto.name;
+        }
+        if (dto.password) {
+          userData.passwordHash = await bcrypt.hash(dto.password, 12);
+        }
+        if (Object.keys(userData).length > 0) {
+          await tx.user.update({
+            where: { id: existing.userId },
+            data: userData,
+          });
+        }
+      } else if (dto.password) {
+        throw new BadRequestException(
+          'Sjåføren har ingen brukerkonto — opprett på nytt med e-post og passord',
+        );
+      }
+
+      return tx.driver.update({
+        where: { id },
+        data: {
+          ...(dto.name !== undefined && { name: dto.name }),
+          ...(dto.phone !== undefined && { phone: dto.phone }),
+          ...(email !== undefined && { email }),
+          ...(dto.status !== undefined && { status: dto.status }),
+          ...(dto.userId !== undefined && { userId: dto.userId }),
+          ...(dto.vehicleId !== undefined && { vehicleId: dto.vehicleId }),
+        },
+      });
     });
+
     return toDriverResponse(updated);
   }
 
@@ -99,10 +197,21 @@ export class DriversService {
     const driver = await this.findScopedOrThrow(user, id);
     if (driver.activeRouteId) {
       throw new BadRequestException(
-        'Cannot delete a driver with an active route',
+        'Kan ikke slette sjåfør med aktiv rute',
       );
     }
-    await this.prisma.driver.delete({ where: { id } });
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.driver.delete({ where: { id } });
+      if (driver.userId) {
+        const linkedUser = await tx.user.findUnique({
+          where: { id: driver.userId },
+        });
+        if (linkedUser?.role === UserRole.DRIVER) {
+          await tx.user.delete({ where: { id: driver.userId } });
+        }
+      }
+    });
   }
 
   private async findScopedOrThrow(user: JwtPayload, id: string) {
@@ -110,7 +219,7 @@ export class DriversService {
       where: this.orgScope.forOrganization(user, { id }),
     });
     if (!row) {
-      throw new NotFoundException('Driver not found');
+      throw new NotFoundException('Sjåfør ikke funnet');
     }
     return row;
   }
@@ -125,11 +234,14 @@ export class DriversService {
       where: this.orgScope.forOrganization(user, { id: userId }),
     });
     if (!found) {
-      throw new BadRequestException('User not found in this organization');
+      throw new BadRequestException('Bruker ikke funnet i organisasjonen');
+    }
+    if (found.role !== UserRole.DRIVER) {
+      throw new BadRequestException('Brukeren må ha rolle DRIVER');
     }
     const linked = await this.prisma.driver.findUnique({ where: { userId } });
     if (linked && linked.id !== excludeDriverId) {
-      throw new BadRequestException('User is already linked to a driver');
+      throw new BadRequestException('Brukeren er allerede koblet til en sjåfør');
     }
   }
 
@@ -139,7 +251,7 @@ export class DriversService {
       where: this.orgScope.forOrganization(user, { id: vehicleId }),
     });
     if (!found) {
-      throw new BadRequestException('Vehicle not found in this organization');
+      throw new BadRequestException('Kjøretøy ikke funnet i organisasjonen');
     }
   }
 }

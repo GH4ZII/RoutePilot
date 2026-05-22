@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CommonModule = void 0;
 const common_1 = require("@nestjs/common");
+const driver_scope_service_1 = require("./driver-scope.service");
 const org_scope_service_1 = require("./org-scope.service");
 let CommonModule = class CommonModule {
 };
@@ -15,8 +16,8 @@ exports.CommonModule = CommonModule;
 exports.CommonModule = CommonModule = __decorate([
     (0, common_1.Global)(),
     (0, common_1.Module)({
-        providers: [org_scope_service_1.OrgScopeService],
-        exports: [org_scope_service_1.OrgScopeService],
+        providers: [org_scope_service_1.OrgScopeService, driver_scope_service_1.DriverScopeService],
+        exports: [org_scope_service_1.OrgScopeService, driver_scope_service_1.DriverScopeService],
     })
 ], CommonModule);
 //# sourceMappingURL=common.module.js.map

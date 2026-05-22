@@ -11,6 +11,7 @@ export type AuthUser = {
   email: string;
   name: string | null;
   role: UserRole;
+  driverId: string | null;
   organization: Organization;
 };
 

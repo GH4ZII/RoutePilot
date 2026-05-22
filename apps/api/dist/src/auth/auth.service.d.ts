@@ -10,6 +10,7 @@ export type AuthUserResponse = {
     email: string;
     name: string | null;
     role: UserRole;
+    driverId: string | null;
     organization: {
         id: string;
         name: string;

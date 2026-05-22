@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import AssignRoutePanel from '../components/AssignRoutePanel'
 import RouteOptimizationResult from '../components/RouteOptimizationResult'
 import PageToolbar from '../components/PageToolbar'
 import * as api from '../lib/api'
@@ -56,7 +57,8 @@ export default function RoutesPage() {
   const navigate = useNavigate()
   const navigationState = location.state as RoutesPageState | null
 
-  const { data: routes, isLoading } = useAsync(() => api.listRoutes(), [])
+  const { data: routes, isLoading, reload } = useAsync(() => api.listRoutes(), [])
+  const { data: drivers } = useAsync(() => api.listDrivers(), [])
 
   const fromApi = routes?.[0]
   const active = navigationState ?? (fromApi ? routeDetailToJobShape(fromApi) : null)
@@ -82,8 +84,8 @@ export default function RoutesPage() {
         <div className="route-empty">
           <p>Ingen rute vist ennå.</p>
           <p className="page-muted">
-            Gå til Leveranser, velg ventende leveranser og trykk{' '}
-            <strong>Optimaliser rute</strong>.
+            Flyt: opprett leveranser → optimaliser ruter → tildel sjåfør her →
+            sjåfør kjører i mobilappen.
           </p>
           <Link to="/deliveries" className="btn-primary">
             Gå til leveranser
@@ -131,26 +133,41 @@ export default function RoutesPage() {
         </div>
       ) : null}
 
+      {routeDetail ? (
+        <AssignRoutePanel
+          route={routeDetail}
+          drivers={drivers ?? []}
+          onAssigned={(updated) => {
+            reload()
+            navigate('/routes', {
+              state: routeDetailToJobShape(updated),
+              replace: true,
+            })
+          }}
+        />
+      ) : null}
+
       <RouteOptimizationResult
         job={active.job.id ? active.job : undefined}
         route={active.route}
         routeDetail={routeDetail}
+        drivers={drivers ?? []}
         deliveries={
           routeDetail?.stops.map((s) => ({
             id: s.delivery.id,
             organizationId: routeDetail.organizationId,
             customerName: s.delivery.customerName,
-            phone: null,
+            phone: s.delivery.phone,
             address: s.delivery.address,
             latitude: s.delivery.latitude,
             longitude: s.delivery.longitude,
-            weightKg: 0,
-            volumeM3: null,
+            weightKg: s.delivery.weightKg,
+            volumeM3: s.delivery.volumeM3,
             priority: s.delivery.priority,
             deadline: null,
             timeWindowStart: null,
             timeWindowEnd: null,
-            notes: null,
+            notes: s.delivery.notes,
             status: s.delivery.status,
             createdAt: routeDetail.createdAt,
             updatedAt: routeDetail.updatedAt,
