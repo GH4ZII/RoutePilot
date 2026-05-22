@@ -72,7 +72,7 @@ export default function ProofOfDeliveryScreen() {
         photoUrl: photoUri ?? undefined,
       });
 
-      await queryClient.invalidateQueries({ queryKey: ['my-route-today'] });
+      await queryClient.invalidateQueries({ queryKey: ['my-routes'] });
       Alert.alert('Lagret', 'Leveringsbevis er registrert.', [
         { text: 'OK', onPress: () => router.back() },
       ]);

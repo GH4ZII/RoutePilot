@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -21,8 +21,13 @@ import { useAuth } from '@/context/AuthContext';
 import { authTheme } from '@/constants/authTheme';
 import * as api from '@/lib/api';
 import { ApiError } from '@/lib/api';
-import { formatDateTime, formatDuration, formatWeight } from '@/lib/format';
-import { openMapsNavigation } from '@/lib/navigation';
+import {
+  formatDateTime,
+  formatDuration,
+  formatPlannedDate,
+  formatWeight,
+} from '@/lib/format';
+import { mapsAppLabel, openRouteInMaps } from '@/lib/navigation';
 import type { DriverRoute, RouteStop } from '@/types/routes';
 
 const ROUTE_STATUS_LABELS: Record<string, string> = {
@@ -43,6 +48,8 @@ function allStopsHandled(route: DriverRoute): boolean {
   );
 }
 
+const MY_ROUTES_QUERY_KEY = ['my-routes'] as const;
+
 export default function HomeScreen() {
   const { user } = useAuth();
   const router = useRouter();
@@ -51,21 +58,53 @@ export default function HomeScreen() {
   const [busy, setBusy] = useState(false);
   const [failStopId, setFailStopId] = useState<string | null>(null);
   const [failReason, setFailReason] = useState('');
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 
   const {
-    data: route,
+    data: routes = [],
     isLoading,
     isRefetching,
     refetch,
     error,
   } = useQuery({
-    queryKey: ['my-route-today'],
-    queryFn: () => api.getMyRouteToday(),
+    queryKey: MY_ROUTES_QUERY_KEY,
+    queryFn: () => api.getMyRoutes(),
     enabled: user?.role === 'DRIVER',
     refetchInterval: 30_000,
   });
 
+  useEffect(() => {
+    if (routes.length === 0) {
+      setSelectedRouteId(null);
+      return;
+    }
+    if (
+      !selectedRouteId ||
+      !routes.some((r) => r.id === selectedRouteId)
+    ) {
+      setSelectedRouteId(routes[0].id);
+    }
+  }, [routes, selectedRouteId]);
+
+  const route = useMemo(
+    () =>
+      routes.find((r) => r.id === selectedRouteId) ?? routes[0] ?? undefined,
+    [routes, selectedRouteId],
+  );
+
   const nextStop = useMemo(() => (route ? nextPendingStop(route) : undefined), [route]);
+
+  const patchRoutesCache = useCallback(
+    (updated: DriverRoute) => {
+      queryClient.setQueryData<DriverRoute[]>(MY_ROUTES_QUERY_KEY, (old) => {
+        if (updated.status === 'COMPLETED') {
+          return old?.filter((r) => r.id !== updated.id) ?? [];
+        }
+        return old?.map((r) => (r.id === updated.id ? updated : r)) ?? [updated];
+      });
+    },
+    [queryClient],
+  );
 
   const runAction = useCallback(
     async (fn: () => Promise<DriverRoute | null>) => {
@@ -74,7 +113,7 @@ export default function HomeScreen() {
       try {
         const updated = await fn();
         if (updated) {
-          queryClient.setQueryData(['my-route-today'], updated);
+          patchRoutesCache(updated);
         } else {
           await refetch();
         }
@@ -84,7 +123,7 @@ export default function HomeScreen() {
         setBusy(false);
       }
     },
-    [queryClient, refetch],
+    [patchRoutesCache, refetch],
   );
 
   if (!user) {
@@ -114,9 +153,9 @@ export default function HomeScreen() {
           tintColor={authTheme.primary}
         />
       }>
-      <ThemedText style={styles.title}>Min rute</ThemedText>
+      <ThemedText style={styles.title}>Mine ruter</ThemedText>
       <ThemedText style={styles.subtitle}>
-        Hei, {user.name ?? user.email}
+        Hei, {user.name ?? user.email}. Viser dagens og kommende tildelte ruter.
       </ThemedText>
 
       {error ? (
@@ -126,12 +165,50 @@ export default function HomeScreen() {
       ) : null}
       {actionError ? <Text style={styles.error}>{actionError}</Text> : null}
 
+      {routes.length > 1 ? (
+        <View style={styles.routePicker}>
+          <Text style={styles.sectionLabel}>Velg rute</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.routePickerScroll}>
+            {routes.map((r) => {
+              const selected = r.id === route?.id;
+              return (
+                <Pressable
+                  key={r.id}
+                  style={[
+                    styles.routeChip,
+                    selected && styles.routeChipActive,
+                  ]}
+                  onPress={() => setSelectedRouteId(r.id)}>
+                  <Text
+                    style={[
+                      styles.routeChipDate,
+                      selected && styles.routeChipDateActive,
+                    ]}>
+                    {formatPlannedDate(r.plannedDate)}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.routeChipStatus,
+                      selected && styles.routeChipStatusActive,
+                    ]}>
+                    {ROUTE_STATUS_LABELS[r.status]} · {r.stops.length} stopp
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+      ) : null}
+
       {!route ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Ingen rute i dag</Text>
+          <Text style={styles.cardTitle}>Ingen kommende ruter</Text>
           <Text style={styles.cardText}>
-            Når planlegger har tildelt deg en rute, vises den her. Dra ned for å
-            oppdatere.
+            Når planlegger har tildelt deg en rute (i dag eller fremover), vises
+            den her. Dra ned for å oppdatere.
           </Text>
         </View>
       ) : (
@@ -144,7 +221,7 @@ export default function HomeScreen() {
               <Text style={styles.badge}>{ROUTE_STATUS_LABELS[route.status]}</Text>
             </View>
             <Text style={styles.cardMeta}>
-              Planlagt {route.plannedDate.slice(0, 10)}
+              Planlagt {formatPlannedDate(route.plannedDate)}
               {route.totalDurationSeconds
                 ? ` · ca. ${formatDuration(route.totalDurationSeconds)}`
                 : ''}
@@ -155,6 +232,21 @@ export default function HomeScreen() {
               </Text>
             ) : null}
           </View>
+
+          {route.stops.length > 0 ? (
+            <Pressable
+              style={[styles.btnSecondary, styles.btnRouteMaps]}
+              disabled={busy}
+              onPress={() => {
+                openRouteInMaps(route).catch(() => {
+                  setActionError(`Kunne ikke åpne ${mapsAppLabel()}`);
+                });
+              }}>
+              <Text style={styles.btnSecondaryText}>
+                Åpne hele ruten i {mapsAppLabel()} ({route.stops.length} stopp)
+              </Text>
+            </Pressable>
+          ) : null}
 
           {(route.status === 'PLANNED' || route.status === 'ASSIGNED') && (
             <Pressable
@@ -194,14 +286,14 @@ export default function HomeScreen() {
                 <Pressable
                   style={styles.btnSecondary}
                   disabled={busy}
-                  onPress={() =>
-                    openMapsNavigation(
-                      nextStop.delivery.latitude,
-                      nextStop.delivery.longitude,
-                      nextStop.delivery.address,
-                    )
-                  }>
-                  <Text style={styles.btnSecondaryText}>Navigasjon</Text>
+                  onPress={() => {
+                    openRouteInMaps(route).catch(() => {
+                      setActionError(`Kunne ikke åpne ${mapsAppLabel()}`);
+                    });
+                  }}>
+                  <Text style={styles.btnSecondaryText}>
+                    Navigasjon ({mapsAppLabel()})
+                  </Text>
                 </Pressable>
                 <Pressable
                   style={[styles.btnPrimary, busy && styles.btnDisabled]}
@@ -262,7 +354,7 @@ export default function HomeScreen() {
                 runAction(async () => {
                   await api.finishRoute(route.id);
                   await queryClient.invalidateQueries({
-                    queryKey: ['my-route-today'],
+                    queryKey: MY_ROUTES_QUERY_KEY,
                   });
                   return null;
                 })
@@ -468,6 +560,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: authTheme.surface,
   },
+  btnRouteMaps: {
+    flex: undefined,
+    width: '100%',
+    marginBottom: 12,
+    paddingHorizontal: 16,
+  },
   btnSecondaryText: {
     color: authTheme.text,
     fontSize: 15,
@@ -524,6 +622,42 @@ const styles = StyleSheet.create({
     color: authTheme.primary,
     fontSize: 14,
     fontWeight: '600',
+  },
+  routePicker: {
+    marginBottom: 16,
+  },
+  routePickerScroll: {
+    gap: 10,
+    paddingVertical: 4,
+  },
+  routeChip: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: authTheme.radius,
+    borderWidth: 1,
+    borderColor: authTheme.border,
+    backgroundColor: authTheme.surface,
+    minWidth: 140,
+  },
+  routeChipActive: {
+    borderColor: authTheme.primary,
+    backgroundColor: `${authTheme.primary}14`,
+  },
+  routeChipDate: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: authTheme.text,
+  },
+  routeChipDateActive: {
+    color: authTheme.primary,
+  },
+  routeChipStatus: {
+    fontSize: 12,
+    color: authTheme.textMuted,
+    marginTop: 4,
+  },
+  routeChipStatusActive: {
+    color: authTheme.text,
   },
   modalBackdrop: {
     flex: 1,

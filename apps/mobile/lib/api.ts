@@ -88,6 +88,11 @@ export function getMe(): Promise<AuthUser> {
 
 export type { DriverRoute, RouteStop } from '@/types/routes';
 
+export function getMyRoutes(): Promise<DriverRoute[]> {
+  return request<DriverRoute[]>('/routes/me');
+}
+
+/** @deprecated Bruk getMyRoutes */
 export function getMyRouteToday(): Promise<DriverRoute | null> {
   return request<DriverRoute | null>('/routes/me/today');
 }

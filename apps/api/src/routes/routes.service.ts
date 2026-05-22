@@ -116,35 +116,49 @@ export class RoutesService {
     return toRouteResponse(row);
   }
 
-  async findMyToday(user: JwtPayload): Promise<RouteResponse | null> {
+  /** Dagens og fremtidige ruter for innlogget sjåfør. */
+  async findMyRoutes(user: JwtPayload): Promise<RouteResponse[]> {
     const driver = await this.driverScope.requireDriverForUser(user);
     const today = todayUtcDate();
 
-    const active = await this.prisma.route.findFirst({
+    const rows = await this.prisma.route.findMany({
       where: {
         organizationId: user.organizationId,
         driverId: driver.id,
-        status: RouteStatus.IN_PROGRESS,
+        OR: [
+          { status: RouteStatus.IN_PROGRESS },
+          {
+            plannedDate: { gte: today },
+            status: {
+              in: [RouteStatus.PLANNED, RouteStatus.ASSIGNED],
+            },
+          },
+        ],
       },
       include: routeInclude,
-      orderBy: { updatedAt: 'desc' },
-    });
-    if (active) {
-      return toRouteResponse(active);
-    }
-
-    const planned = await this.prisma.route.findFirst({
-      where: {
-        organizationId: user.organizationId,
-        driverId: driver.id,
-        plannedDate: today,
-        status: { in: [RouteStatus.PLANNED, RouteStatus.ASSIGNED] },
-      },
-      include: routeInclude,
-      orderBy: { createdAt: 'desc' },
     });
 
-    return planned ? toRouteResponse(planned) : null;
+    rows.sort((a, b) => {
+      if (a.status === RouteStatus.IN_PROGRESS && b.status !== RouteStatus.IN_PROGRESS) {
+        return -1;
+      }
+      if (b.status === RouteStatus.IN_PROGRESS && a.status !== RouteStatus.IN_PROGRESS) {
+        return 1;
+      }
+      const dateDiff = a.plannedDate.getTime() - b.plannedDate.getTime();
+      if (dateDiff !== 0) {
+        return dateDiff;
+      }
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+
+    return rows.map(toRouteResponse);
+  }
+
+  /** Bakoverkompatibel — første rute fra {@link findMyRoutes}. */
+  async findMyToday(user: JwtPayload): Promise<RouteResponse | null> {
+    const routes = await this.findMyRoutes(user);
+    return routes[0] ?? null;
   }
 
   async assign(

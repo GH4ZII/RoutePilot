@@ -6,6 +6,7 @@ export declare class RoutesController {
     private readonly routes;
     constructor(routes: RoutesService);
     findAll(user: JwtPayload, query: ListRoutesQueryDto): Promise<import("./routes.service").RouteResponse[]>;
+    findMyRoutes(user: JwtPayload): Promise<import("./routes.service").RouteResponse[]>;
     findMyToday(user: JwtPayload): Promise<import("./routes.service").RouteResponse | null>;
     findOne(user: JwtPayload, id: string): Promise<import("./routes.service").RouteResponse>;
     assign(user: JwtPayload, id: string, dto: AssignRouteDto): Promise<import("./routes.service").RouteResponse>;

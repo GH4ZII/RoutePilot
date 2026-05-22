@@ -31,6 +31,12 @@ export class RoutesController {
     return this.routes.findAll(user, query);
   }
 
+  @Get('me')
+  @Roles(UserRole.DRIVER)
+  findMyRoutes(@CurrentUser() user: JwtPayload) {
+    return this.routes.findMyRoutes(user);
+  }
+
   @Get('me/today')
   @Roles(UserRole.DRIVER)
   findMyToday(@CurrentUser() user: JwtPayload) {

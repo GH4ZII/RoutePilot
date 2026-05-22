@@ -30,6 +30,9 @@ let RoutesController = class RoutesController {
     findAll(user, query) {
         return this.routes.findAll(user, query);
     }
+    findMyRoutes(user) {
+        return this.routes.findMyRoutes(user);
+    }
     findMyToday(user) {
         return this.routes.findMyToday(user);
     }
@@ -56,6 +59,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, list_routes_query_dto_1.ListRoutesQueryDto]),
     __metadata("design:returntype", void 0)
 ], RoutesController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('me'),
+    (0, roles_decorator_1.Roles)(client_1.UserRole.DRIVER),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], RoutesController.prototype, "findMyRoutes", null);
 __decorate([
     (0, common_1.Get)('me/today'),
     (0, roles_decorator_1.Roles)(client_1.UserRole.DRIVER),

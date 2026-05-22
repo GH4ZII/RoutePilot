@@ -22,7 +22,7 @@ EXPO_PUBLIC_API_URL=http://<din-pc-ip>:3000
 2. Sjåfør logger inn i mobilappen med **organisasjon (slug)**, **e-post** og **passord** — ingen selvregistrering.
 2. **Hjem** henter `GET /routes/me/today`.
 3. **Start rute** → `POST /routes/:id/start`.
-4. **Navigasjon** åpner kart-app (Apple/Google Maps).
+4. **Navigasjon** åpner **Apple Maps** (iOS) eller **Google Maps** (Android) med hele ruten: depot → alle stopp → depot.
 5. **Levert** / **Kunne ikke levere** → `POST /route-stops/:id/complete|fail`.
 6. **Leveringsbevis** (foto + GPS) → `POST /route-stops/:id/proof`.
 7. **Fullfør rute** når alle stopp er behandlet.

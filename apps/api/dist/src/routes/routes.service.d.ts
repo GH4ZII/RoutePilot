@@ -62,6 +62,7 @@ export declare class RoutesService {
     constructor(prisma: PrismaService, orgScope: OrgScopeService, driverScope: DriverScopeService);
     findAll(user: JwtPayload, query: ListRoutesQueryDto): Promise<RouteResponse[]>;
     findOne(user: JwtPayload, id: string): Promise<RouteResponse>;
+    findMyRoutes(user: JwtPayload): Promise<RouteResponse[]>;
     findMyToday(user: JwtPayload): Promise<RouteResponse | null>;
     assign(user: JwtPayload, id: string, driverId: string): Promise<RouteResponse>;
     start(user: JwtPayload, id: string): Promise<RouteResponse>;

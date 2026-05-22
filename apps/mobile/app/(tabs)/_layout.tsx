@@ -27,7 +27,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: isDriver ? 'Hjem' : 'RoutePilot',
-          headerTitle: isDriver ? 'Min rute' : 'RoutePilot',
+          headerTitle: isDriver ? 'Mine ruter' : 'RoutePilot',
           tabBarIcon: ({ color }) => (
             <Ionicons name="map-outline" size={24} color={color} />
           ),

@@ -51,32 +51,43 @@ let RoutesService = class RoutesService {
         }
         return toRouteResponse(row);
     }
-    async findMyToday(user) {
+    async findMyRoutes(user) {
         const driver = await this.driverScope.requireDriverForUser(user);
         const today = todayUtcDate();
-        const active = await this.prisma.route.findFirst({
+        const rows = await this.prisma.route.findMany({
             where: {
                 organizationId: user.organizationId,
                 driverId: driver.id,
-                status: client_1.RouteStatus.IN_PROGRESS,
+                OR: [
+                    { status: client_1.RouteStatus.IN_PROGRESS },
+                    {
+                        plannedDate: { gte: today },
+                        status: {
+                            in: [client_1.RouteStatus.PLANNED, client_1.RouteStatus.ASSIGNED],
+                        },
+                    },
+                ],
             },
             include: routeInclude,
-            orderBy: { updatedAt: 'desc' },
         });
-        if (active) {
-            return toRouteResponse(active);
-        }
-        const planned = await this.prisma.route.findFirst({
-            where: {
-                organizationId: user.organizationId,
-                driverId: driver.id,
-                plannedDate: today,
-                status: { in: [client_1.RouteStatus.PLANNED, client_1.RouteStatus.ASSIGNED] },
-            },
-            include: routeInclude,
-            orderBy: { createdAt: 'desc' },
+        rows.sort((a, b) => {
+            if (a.status === client_1.RouteStatus.IN_PROGRESS && b.status !== client_1.RouteStatus.IN_PROGRESS) {
+                return -1;
+            }
+            if (b.status === client_1.RouteStatus.IN_PROGRESS && a.status !== client_1.RouteStatus.IN_PROGRESS) {
+                return 1;
+            }
+            const dateDiff = a.plannedDate.getTime() - b.plannedDate.getTime();
+            if (dateDiff !== 0) {
+                return dateDiff;
+            }
+            return b.createdAt.getTime() - a.createdAt.getTime();
         });
-        return planned ? toRouteResponse(planned) : null;
+        return rows.map(toRouteResponse);
+    }
+    async findMyToday(user) {
+        const routes = await this.findMyRoutes(user);
+        return routes[0] ?? null;
     }
     async assign(user, id, driverId) {
         this.assertStaff(user);
