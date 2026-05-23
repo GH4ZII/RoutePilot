@@ -15,23 +15,26 @@ const client_1 = require("../generated/prisma/client");
 const decimal_util_1 = require("../common/decimal.util");
 const driver_scope_service_1 = require("../common/driver-scope.service");
 const org_scope_service_1 = require("../common/org-scope.service");
+const events_service_1 = require("../events/events.service");
 const prisma_service_1 = require("../prisma/prisma.service");
 const routeInclude = {
     vehicle: true,
     driver: true,
     stops: {
         orderBy: { stopOrder: 'asc' },
-        include: { delivery: true },
+        include: { delivery: true, proofOfDelivery: true },
     },
 };
 let RoutesService = class RoutesService {
     prisma;
     orgScope;
     driverScope;
-    constructor(prisma, orgScope, driverScope) {
+    events;
+    constructor(prisma, orgScope, driverScope, events) {
         this.prisma = prisma;
         this.orgScope = orgScope;
         this.driverScope = driverScope;
+        this.events = events;
     }
     async findAll(user, query) {
         const rows = await this.prisma.route.findMany({
@@ -163,6 +166,10 @@ let RoutesService = class RoutesService {
             });
             return next;
         });
+        this.events.publish(user.organizationId, 'route.updated', {
+            routeId: route.id,
+            status: client_1.RouteStatus.IN_PROGRESS,
+        });
         return toRouteResponse(updated);
     }
     async finish(user, id) {
@@ -177,6 +184,10 @@ let RoutesService = class RoutesService {
             throw new common_1.BadRequestException('Alle stopp må være fullført eller markert som feilet før ruten avsluttes');
         }
         const driverId = route.driverId;
+        const finishedAt = new Date();
+        const actualDurationSeconds = route.startedAt != null
+            ? Math.round((finishedAt.getTime() - route.startedAt.getTime()) / 1000)
+            : null;
         const updated = await this.prisma.$transaction(async (tx) => {
             if (driverId) {
                 await tx.driver.update({
@@ -191,7 +202,9 @@ let RoutesService = class RoutesService {
                 where: { id: route.id },
                 data: {
                     status: client_1.RouteStatus.COMPLETED,
-                    finishedAt: new Date(),
+                    finishedAt,
+                    actualDurationSeconds,
+                    actualDistanceMeters: route.totalDistanceMeters,
                 },
                 include: routeInclude,
             });
@@ -202,6 +215,10 @@ let RoutesService = class RoutesService {
                 },
             });
             return next;
+        });
+        this.events.publish(user.organizationId, 'route.updated', {
+            routeId: route.id,
+            status: client_1.RouteStatus.COMPLETED,
         });
         return toRouteResponse(updated);
     }
@@ -288,7 +305,8 @@ exports.RoutesService = RoutesService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         org_scope_service_1.OrgScopeService,
-        driver_scope_service_1.DriverScopeService])
+        driver_scope_service_1.DriverScopeService,
+        events_service_1.EventsService])
 ], RoutesService);
 function todayUtcDate() {
     const now = new Date();
@@ -304,6 +322,8 @@ function toRouteResponse(route) {
         plannedDate: route.plannedDate,
         totalDistanceMeters: route.totalDistanceMeters,
         totalDurationSeconds: route.totalDurationSeconds,
+        actualDistanceMeters: route.actualDistanceMeters,
+        actualDurationSeconds: route.actualDurationSeconds,
         capacityUsedKg: route.capacityUsedKg != null
             ? (0, decimal_util_1.decimalToNumber)(route.capacityUsedKg)
             : null,
@@ -351,6 +371,21 @@ function toRouteResponse(route) {
                 status: stop.delivery.status,
                 priority: stop.delivery.priority,
             },
+            proofOfDelivery: stop.proofOfDelivery
+                ? {
+                    id: stop.proofOfDelivery.id,
+                    photoUrl: stop.proofOfDelivery.photoUrl,
+                    signatureUrl: stop.proofOfDelivery.signatureUrl,
+                    note: stop.proofOfDelivery.note,
+                    latitude: stop.proofOfDelivery.latitude != null
+                        ? (0, decimal_util_1.decimalToNumber)(stop.proofOfDelivery.latitude)
+                        : null,
+                    longitude: stop.proofOfDelivery.longitude != null
+                        ? (0, decimal_util_1.decimalToNumber)(stop.proofOfDelivery.longitude)
+                        : null,
+                    capturedAt: stop.proofOfDelivery.capturedAt,
+                }
+                : null,
         })),
     };
 }

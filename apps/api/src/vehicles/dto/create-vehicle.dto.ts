@@ -41,4 +41,8 @@ export class CreateVehicleDto {
   @IsOptional()
   @IsEnum(VehicleStatus)
   status?: VehicleStatus;
+
+  @IsOptional()
+  @IsString()
+  depotId?: string;
 }

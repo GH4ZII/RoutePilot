@@ -12,6 +12,7 @@ const auth_module_1 = require("../auth/auth.module");
 const osrm_service_1 = require("./osrm.service");
 const routing_controller_1 = require("./routing.controller");
 const routing_service_1 = require("./routing.service");
+const traffic_routing_service_1 = require("./traffic-routing.service");
 let RoutingModule = class RoutingModule {
 };
 exports.RoutingModule = RoutingModule;
@@ -20,8 +21,8 @@ exports.RoutingModule = RoutingModule = __decorate([
     (0, common_1.Module)({
         imports: [auth_module_1.AuthModule],
         controllers: [routing_controller_1.RoutingController],
-        providers: [osrm_service_1.OsrmService, routing_service_1.RoutingService],
-        exports: [routing_service_1.RoutingService, osrm_service_1.OsrmService],
+        providers: [osrm_service_1.OsrmService, traffic_routing_service_1.TrafficRoutingService, routing_service_1.RoutingService],
+        exports: [routing_service_1.RoutingService, osrm_service_1.OsrmService, traffic_routing_service_1.TrafficRoutingService],
     })
 ], RoutingModule);
 //# sourceMappingURL=routing.module.js.map

@@ -7,4 +7,5 @@ export declare class CreateVehicleDto {
     maxWeightKg: number;
     maxVolumeM3: number;
     status?: VehicleStatus;
+    depotId?: string;
 }

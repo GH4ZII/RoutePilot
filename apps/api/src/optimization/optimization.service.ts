@@ -17,6 +17,7 @@ import {
 } from '../generated/prisma/client';
 import type { JwtPayload } from '../auth/types/jwt-payload';
 import { decimalToNumber } from '../common/decimal.util';
+import { EventsService } from '../events/events.service';
 import { OrgScopeService } from '../common/org-scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RoutingService } from '../routing/routing.service';
@@ -75,6 +76,7 @@ export class OptimizationService {
     private readonly orgScope: OrgScopeService,
     private readonly routing: RoutingService,
     private readonly optimizer: OptimizerClientService,
+    private readonly events: EventsService,
     @InjectQueue(OPTIMIZATION_QUEUE) private readonly queue: Queue,
   ) {}
 
@@ -152,6 +154,10 @@ export class OptimizationService {
           result: result as object,
           completedAt: new Date(),
         },
+      });
+
+      this.events.publish(organizationId, 'optimization.completed', {
+        jobId,
       });
     } catch (err) {
       const message =
@@ -446,8 +452,14 @@ export class OptimizationService {
 
     for (let v = 0; v < vehicles.length; v += 1) {
       const vehicle = vehicles[v];
-      const startLat = decimalToNumber(vehicle.startLatitude)!;
-      const startLon = decimalToNumber(vehicle.startLongitude)!;
+      const startLat =
+        vehicle.depot != null
+          ? decimalToNumber(vehicle.depot.latitude)!
+          : decimalToNumber(vehicle.startLatitude)!;
+      const startLon =
+        vehicle.depot != null
+          ? decimalToNumber(vehicle.depot.longitude)!
+          : decimalToNumber(vehicle.startLongitude)!;
       const endLat = decimalToNumber(vehicle.endLatitude)!;
       const endLon = decimalToNumber(vehicle.endLongitude)!;
 
@@ -488,6 +500,7 @@ export class OptimizationService {
   ) {
     const vehicles = await this.prisma.vehicle.findMany({
       where: { organizationId, id: { in: vehicleIds } },
+      include: { depot: true },
     });
 
     if (vehicles.length !== vehicleIds.length) {

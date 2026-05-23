@@ -47,9 +47,28 @@ export type Driver = {
   updatedAt: string
 }
 
+export type Depot = {
+  id: string
+  organizationId: string
+  name: string
+  address: string
+  latitude: number
+  longitude: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type CreateDepotPayload = {
+  name: string
+  address: string
+}
+
+export type UpdateDepotPayload = Partial<CreateDepotPayload>
+
 export type Vehicle = {
   id: string
   organizationId: string
+  depotId: string | null
   name: string
   registrationNumber: string
   startAddress: string
@@ -130,6 +149,7 @@ export type CreateVehiclePayload = {
   maxWeightKg: number
   maxVolumeM3: number
   status?: VehicleStatus
+  depotId?: string
 }
 
 export type UpdateVehiclePayload = Partial<CreateVehiclePayload>
@@ -219,12 +239,23 @@ export type RouteStopStatus =
   | 'FAILED'
   | 'SKIPPED'
 
+export type ProofOfDeliveryDetail = {
+  id: string
+  photoUrl: string | null
+  signatureUrl: string | null
+  note: string | null
+  latitude: number | null
+  longitude: number | null
+  capturedAt: string
+}
+
 export type RouteStopDetail = {
   id: string
   stopOrder: number
   estimatedArrival: string | null
   actualArrival: string | null
   status: RouteStopStatus
+  proofOfDelivery: ProofOfDeliveryDetail | null
   delivery: {
     id: string
     customerName: string
@@ -249,6 +280,8 @@ export type RouteDetail = {
   plannedDate: string
   totalDistanceMeters: number | null
   totalDurationSeconds: number | null
+  actualDistanceMeters: number | null
+  actualDurationSeconds: number | null
   capacityUsedKg: number | null
   startedAt: string | null
   finishedAt: string | null
@@ -346,11 +379,20 @@ export type LiveRouteStop = {
   }
 }
 
+export type DriverLocationSnapshot = {
+  latitude: number
+  longitude: number
+  recordedAt: string
+  heading: number | null
+  speed: number | null
+}
+
 export type LiveRoute = {
   id: string
   status: RouteStatus
   plannedDate: string
   driver: { id: string; name: string; phone: string | null } | null
+  driverLocation: DriverLocationSnapshot | null
   vehicle: {
     id: string
     name: string
@@ -437,4 +479,37 @@ export type RouteEfficiencyReport = {
   from: string
   to: string
   routes: RouteEfficiencyRow[]
+}
+
+export type ImportCsvResult = {
+  created: Delivery[]
+  errors: Array<{ row: number; message: string }>
+}
+
+export type RouteSummary = {
+  routeId: string
+  summary: string
+  model: string | null
+  generatedAt: string
+}
+
+export type PlannedVsActualReport = {
+  from: string
+  to: string
+  routes: Array<{
+    routeId: string
+    plannedDate: string
+    plannedDistanceMeters: number | null
+    actualDistanceMeters: number | null
+    plannedDurationSeconds: number | null
+    actualDurationSeconds: number | null
+    stops: Array<{
+      stopId: string
+      stopOrder: number
+      customerName: string
+      estimatedArrival: string | null
+      actualArrival: string | null
+      deltaMinutes: number | null
+    }>
+  }>
 }

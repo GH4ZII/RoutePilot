@@ -227,6 +227,7 @@ export type DeliveryWhereInput = {
     updatedAt?: Prisma.DateTimeFilter<"Delivery"> | Date | string;
     organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>;
     routeStops?: Prisma.RouteStopListRelationFilter;
+    notifications?: Prisma.CustomerNotificationListRelationFilter;
 };
 export type DeliveryOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
@@ -248,6 +249,7 @@ export type DeliveryOrderByWithRelationInput = {
     updatedAt?: Prisma.SortOrder;
     organization?: Prisma.OrganizationOrderByWithRelationInput;
     routeStops?: Prisma.RouteStopOrderByRelationAggregateInput;
+    notifications?: Prisma.CustomerNotificationOrderByRelationAggregateInput;
 };
 export type DeliveryWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
@@ -272,6 +274,7 @@ export type DeliveryWhereUniqueInput = Prisma.AtLeast<{
     updatedAt?: Prisma.DateTimeFilter<"Delivery"> | Date | string;
     organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>;
     routeStops?: Prisma.RouteStopListRelationFilter;
+    notifications?: Prisma.CustomerNotificationListRelationFilter;
 }, "id">;
 export type DeliveryOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
@@ -338,6 +341,7 @@ export type DeliveryCreateInput = {
     updatedAt?: Date | string;
     organization: Prisma.OrganizationCreateNestedOneWithoutDeliveriesInput;
     routeStops?: Prisma.RouteStopCreateNestedManyWithoutDeliveryInput;
+    notifications?: Prisma.CustomerNotificationCreateNestedManyWithoutDeliveryInput;
 };
 export type DeliveryUncheckedCreateInput = {
     id?: string;
@@ -358,6 +362,7 @@ export type DeliveryUncheckedCreateInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     routeStops?: Prisma.RouteStopUncheckedCreateNestedManyWithoutDeliveryInput;
+    notifications?: Prisma.CustomerNotificationUncheckedCreateNestedManyWithoutDeliveryInput;
 };
 export type DeliveryUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -378,6 +383,7 @@ export type DeliveryUpdateInput = {
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     organization?: Prisma.OrganizationUpdateOneRequiredWithoutDeliveriesNestedInput;
     routeStops?: Prisma.RouteStopUpdateManyWithoutDeliveryNestedInput;
+    notifications?: Prisma.CustomerNotificationUpdateManyWithoutDeliveryNestedInput;
 };
 export type DeliveryUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -398,6 +404,7 @@ export type DeliveryUncheckedUpdateInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     routeStops?: Prisma.RouteStopUncheckedUpdateManyWithoutDeliveryNestedInput;
+    notifications?: Prisma.CustomerNotificationUncheckedUpdateManyWithoutDeliveryNestedInput;
 };
 export type DeliveryCreateManyInput = {
     id?: string;
@@ -574,13 +581,6 @@ export type DeliveryUncheckedUpdateManyWithoutOrganizationNestedInput = {
     updateMany?: Prisma.DeliveryUpdateManyWithWhereWithoutOrganizationInput | Prisma.DeliveryUpdateManyWithWhereWithoutOrganizationInput[];
     deleteMany?: Prisma.DeliveryScalarWhereInput | Prisma.DeliveryScalarWhereInput[];
 };
-export type NullableDecimalFieldUpdateOperationsInput = {
-    set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-    increment?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-    decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-    multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-    divide?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-};
 export type EnumDeliveryPriorityFieldUpdateOperationsInput = {
     set?: $Enums.DeliveryPriority;
 };
@@ -602,6 +602,18 @@ export type DeliveryUpdateOneRequiredWithoutRouteStopsNestedInput = {
     connect?: Prisma.DeliveryWhereUniqueInput;
     update?: Prisma.XOR<Prisma.XOR<Prisma.DeliveryUpdateToOneWithWhereWithoutRouteStopsInput, Prisma.DeliveryUpdateWithoutRouteStopsInput>, Prisma.DeliveryUncheckedUpdateWithoutRouteStopsInput>;
 };
+export type DeliveryCreateNestedOneWithoutNotificationsInput = {
+    create?: Prisma.XOR<Prisma.DeliveryCreateWithoutNotificationsInput, Prisma.DeliveryUncheckedCreateWithoutNotificationsInput>;
+    connectOrCreate?: Prisma.DeliveryCreateOrConnectWithoutNotificationsInput;
+    connect?: Prisma.DeliveryWhereUniqueInput;
+};
+export type DeliveryUpdateOneRequiredWithoutNotificationsNestedInput = {
+    create?: Prisma.XOR<Prisma.DeliveryCreateWithoutNotificationsInput, Prisma.DeliveryUncheckedCreateWithoutNotificationsInput>;
+    connectOrCreate?: Prisma.DeliveryCreateOrConnectWithoutNotificationsInput;
+    upsert?: Prisma.DeliveryUpsertWithoutNotificationsInput;
+    connect?: Prisma.DeliveryWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.DeliveryUpdateToOneWithWhereWithoutNotificationsInput, Prisma.DeliveryUpdateWithoutNotificationsInput>, Prisma.DeliveryUncheckedUpdateWithoutNotificationsInput>;
+};
 export type DeliveryCreateWithoutOrganizationInput = {
     id?: string;
     customerName: string;
@@ -620,6 +632,7 @@ export type DeliveryCreateWithoutOrganizationInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     routeStops?: Prisma.RouteStopCreateNestedManyWithoutDeliveryInput;
+    notifications?: Prisma.CustomerNotificationCreateNestedManyWithoutDeliveryInput;
 };
 export type DeliveryUncheckedCreateWithoutOrganizationInput = {
     id?: string;
@@ -639,6 +652,7 @@ export type DeliveryUncheckedCreateWithoutOrganizationInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     routeStops?: Prisma.RouteStopUncheckedCreateNestedManyWithoutDeliveryInput;
+    notifications?: Prisma.CustomerNotificationUncheckedCreateNestedManyWithoutDeliveryInput;
 };
 export type DeliveryCreateOrConnectWithoutOrganizationInput = {
     where: Prisma.DeliveryWhereUniqueInput;
@@ -701,6 +715,7 @@ export type DeliveryCreateWithoutRouteStopsInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     organization: Prisma.OrganizationCreateNestedOneWithoutDeliveriesInput;
+    notifications?: Prisma.CustomerNotificationCreateNestedManyWithoutDeliveryInput;
 };
 export type DeliveryUncheckedCreateWithoutRouteStopsInput = {
     id?: string;
@@ -720,6 +735,7 @@ export type DeliveryUncheckedCreateWithoutRouteStopsInput = {
     status?: $Enums.DeliveryStatus;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    notifications?: Prisma.CustomerNotificationUncheckedCreateNestedManyWithoutDeliveryInput;
 };
 export type DeliveryCreateOrConnectWithoutRouteStopsInput = {
     where: Prisma.DeliveryWhereUniqueInput;
@@ -752,6 +768,7 @@ export type DeliveryUpdateWithoutRouteStopsInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     organization?: Prisma.OrganizationUpdateOneRequiredWithoutDeliveriesNestedInput;
+    notifications?: Prisma.CustomerNotificationUpdateManyWithoutDeliveryNestedInput;
 };
 export type DeliveryUncheckedUpdateWithoutRouteStopsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -771,6 +788,100 @@ export type DeliveryUncheckedUpdateWithoutRouteStopsInput = {
     status?: Prisma.EnumDeliveryStatusFieldUpdateOperationsInput | $Enums.DeliveryStatus;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    notifications?: Prisma.CustomerNotificationUncheckedUpdateManyWithoutDeliveryNestedInput;
+};
+export type DeliveryCreateWithoutNotificationsInput = {
+    id?: string;
+    customerName: string;
+    phone?: string | null;
+    address: string;
+    latitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    longitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    weightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    volumeM3?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    priority?: $Enums.DeliveryPriority;
+    deadline?: Date | string | null;
+    timeWindowStart?: Date | string | null;
+    timeWindowEnd?: Date | string | null;
+    notes?: string | null;
+    status?: $Enums.DeliveryStatus;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    organization: Prisma.OrganizationCreateNestedOneWithoutDeliveriesInput;
+    routeStops?: Prisma.RouteStopCreateNestedManyWithoutDeliveryInput;
+};
+export type DeliveryUncheckedCreateWithoutNotificationsInput = {
+    id?: string;
+    organizationId: string;
+    customerName: string;
+    phone?: string | null;
+    address: string;
+    latitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    longitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    weightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    volumeM3?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    priority?: $Enums.DeliveryPriority;
+    deadline?: Date | string | null;
+    timeWindowStart?: Date | string | null;
+    timeWindowEnd?: Date | string | null;
+    notes?: string | null;
+    status?: $Enums.DeliveryStatus;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    routeStops?: Prisma.RouteStopUncheckedCreateNestedManyWithoutDeliveryInput;
+};
+export type DeliveryCreateOrConnectWithoutNotificationsInput = {
+    where: Prisma.DeliveryWhereUniqueInput;
+    create: Prisma.XOR<Prisma.DeliveryCreateWithoutNotificationsInput, Prisma.DeliveryUncheckedCreateWithoutNotificationsInput>;
+};
+export type DeliveryUpsertWithoutNotificationsInput = {
+    update: Prisma.XOR<Prisma.DeliveryUpdateWithoutNotificationsInput, Prisma.DeliveryUncheckedUpdateWithoutNotificationsInput>;
+    create: Prisma.XOR<Prisma.DeliveryCreateWithoutNotificationsInput, Prisma.DeliveryUncheckedCreateWithoutNotificationsInput>;
+    where?: Prisma.DeliveryWhereInput;
+};
+export type DeliveryUpdateToOneWithWhereWithoutNotificationsInput = {
+    where?: Prisma.DeliveryWhereInput;
+    data: Prisma.XOR<Prisma.DeliveryUpdateWithoutNotificationsInput, Prisma.DeliveryUncheckedUpdateWithoutNotificationsInput>;
+};
+export type DeliveryUpdateWithoutNotificationsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    customerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
+    latitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    longitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    weightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    volumeM3?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    priority?: Prisma.EnumDeliveryPriorityFieldUpdateOperationsInput | $Enums.DeliveryPriority;
+    deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    timeWindowStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    timeWindowEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    status?: Prisma.EnumDeliveryStatusFieldUpdateOperationsInput | $Enums.DeliveryStatus;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    organization?: Prisma.OrganizationUpdateOneRequiredWithoutDeliveriesNestedInput;
+    routeStops?: Prisma.RouteStopUpdateManyWithoutDeliveryNestedInput;
+};
+export type DeliveryUncheckedUpdateWithoutNotificationsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
+    customerName?: Prisma.StringFieldUpdateOperationsInput | string;
+    phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
+    latitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    longitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    weightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    volumeM3?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    priority?: Prisma.EnumDeliveryPriorityFieldUpdateOperationsInput | $Enums.DeliveryPriority;
+    deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    timeWindowStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    timeWindowEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    status?: Prisma.EnumDeliveryStatusFieldUpdateOperationsInput | $Enums.DeliveryStatus;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    routeStops?: Prisma.RouteStopUncheckedUpdateManyWithoutDeliveryNestedInput;
 };
 export type DeliveryCreateManyOrganizationInput = {
     id?: string;
@@ -808,6 +919,7 @@ export type DeliveryUpdateWithoutOrganizationInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     routeStops?: Prisma.RouteStopUpdateManyWithoutDeliveryNestedInput;
+    notifications?: Prisma.CustomerNotificationUpdateManyWithoutDeliveryNestedInput;
 };
 export type DeliveryUncheckedUpdateWithoutOrganizationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -827,6 +939,7 @@ export type DeliveryUncheckedUpdateWithoutOrganizationInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     routeStops?: Prisma.RouteStopUncheckedUpdateManyWithoutDeliveryNestedInput;
+    notifications?: Prisma.CustomerNotificationUncheckedUpdateManyWithoutDeliveryNestedInput;
 };
 export type DeliveryUncheckedUpdateManyWithoutOrganizationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -848,15 +961,20 @@ export type DeliveryUncheckedUpdateManyWithoutOrganizationInput = {
 };
 export type DeliveryCountOutputType = {
     routeStops: number;
+    notifications: number;
 };
 export type DeliveryCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     routeStops?: boolean | DeliveryCountOutputTypeCountRouteStopsArgs;
+    notifications?: boolean | DeliveryCountOutputTypeCountNotificationsArgs;
 };
 export type DeliveryCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.DeliveryCountOutputTypeSelect<ExtArgs> | null;
 };
 export type DeliveryCountOutputTypeCountRouteStopsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     where?: Prisma.RouteStopWhereInput;
+};
+export type DeliveryCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.CustomerNotificationWhereInput;
 };
 export type DeliverySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
@@ -878,6 +996,7 @@ export type DeliverySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
     updatedAt?: boolean;
     organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>;
     routeStops?: boolean | Prisma.Delivery$routeStopsArgs<ExtArgs>;
+    notifications?: boolean | Prisma.Delivery$notificationsArgs<ExtArgs>;
     _count?: boolean | Prisma.DeliveryCountOutputTypeDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["delivery"]>;
 export type DeliverySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -943,6 +1062,7 @@ export type DeliveryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 export type DeliveryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>;
     routeStops?: boolean | Prisma.Delivery$routeStopsArgs<ExtArgs>;
+    notifications?: boolean | Prisma.Delivery$notificationsArgs<ExtArgs>;
     _count?: boolean | Prisma.DeliveryCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type DeliveryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -956,6 +1076,7 @@ export type $DeliveryPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     objects: {
         organization: Prisma.$OrganizationPayload<ExtArgs>;
         routeStops: Prisma.$RouteStopPayload<ExtArgs>[];
+        notifications: Prisma.$CustomerNotificationPayload<ExtArgs>[];
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
@@ -1029,6 +1150,7 @@ export interface Prisma__DeliveryClient<T, Null = never, ExtArgs extends runtime
     readonly [Symbol.toStringTag]: "PrismaPromise";
     organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
     routeStops<T extends Prisma.Delivery$routeStopsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Delivery$routeStopsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    notifications<T extends Prisma.Delivery$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Delivery$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CustomerNotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): runtime.Types.Utils.JsPromise<TResult1 | TResult2>;
     catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): runtime.Types.Utils.JsPromise<T | TResult>;
     finally(onfinally?: (() => void) | undefined | null): runtime.Types.Utils.JsPromise<T>;
@@ -1162,6 +1284,17 @@ export type Delivery$routeStopsArgs<ExtArgs extends runtime.Types.Extensions.Int
     take?: number;
     skip?: number;
     distinct?: Prisma.RouteStopScalarFieldEnum | Prisma.RouteStopScalarFieldEnum[];
+};
+export type Delivery$notificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.CustomerNotificationSelect<ExtArgs> | null;
+    omit?: Prisma.CustomerNotificationOmit<ExtArgs> | null;
+    include?: Prisma.CustomerNotificationInclude<ExtArgs> | null;
+    where?: Prisma.CustomerNotificationWhereInput;
+    orderBy?: Prisma.CustomerNotificationOrderByWithRelationInput | Prisma.CustomerNotificationOrderByWithRelationInput[];
+    cursor?: Prisma.CustomerNotificationWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.CustomerNotificationScalarFieldEnum | Prisma.CustomerNotificationScalarFieldEnum[];
 };
 export type DeliveryDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.DeliverySelect<ExtArgs> | null;

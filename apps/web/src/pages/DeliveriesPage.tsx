@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AddressAutocomplete from '../components/AddressAutocomplete'
 import FormModal from '../components/FormModal'
@@ -27,6 +27,7 @@ import type {
   Delivery,
   DeliveryPriority,
   DeliveryStatus,
+  ImportCsvResult,
   OptimizationJob,
 } from '../types/domain'
 import type { RoutesPageState } from './RoutesPage'
@@ -63,6 +64,9 @@ export default function DeliveriesPage() {
   const [statusFilter, setStatusFilter] = useState<DeliveryStatus | ''>('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
   const [completedJob, setCompletedJob] = useState<OptimizationJob | null>(null)
+  const [importResult, setImportResult] = useState<ImportCsvResult | null>(null)
+  const [importing, setImporting] = useState(false)
+  const csvInputRef = useRef<HTMLInputElement>(null)
 
   const { data: deliveries, error, isLoading, reload, setError } = useAsync(
     () => api.listDeliveries(statusFilter || undefined),
@@ -72,6 +76,20 @@ export default function DeliveriesPage() {
   const { data: routes } = useAsync(() => api.listRoutes(), [])
   const { data: vehicles } = useAsync(() => api.listVehicles(), [])
   const { data: drivers } = useAsync(() => api.listDrivers(), [])
+
+  async function handleCsvImport(file: File) {
+    setImporting(true)
+    setError(null)
+    try {
+      const result = await api.importDeliveriesCsv(file)
+      setImportResult(result)
+      reload()
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'CSV-import feilet')
+    } finally {
+      setImporting(false)
+    }
+  }
 
   const archivedDeliveryIds = useMemo(
     () => getArchivedDeliveryIds(routes ?? []),
@@ -232,11 +250,51 @@ export default function DeliveriesPage() {
         title="Leveranser"
         description="Kunder, adresser, status og leveringsvinduer."
         action={
-          <button type="button" className="btn-primary" onClick={openCreate}>
-            Legg til leveranse
-          </button>
+          <div className="toolbar-actions">
+            <input
+              ref={csvInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) void handleCsvImport(file)
+                e.target.value = ''
+              }}
+            />
+            <button
+              type="button"
+              className="btn-secondary"
+              disabled={importing}
+              onClick={() => csvInputRef.current?.click()}
+            >
+              {importing ? 'Importerer…' : 'Importer CSV'}
+            </button>
+            <button type="button" className="btn-primary" onClick={openCreate}>
+              Legg til leveranse
+            </button>
+          </div>
         }
       />
+
+      {importResult && (
+        <div className="import-result" role="status">
+          <p>
+            Importert {importResult.created.length} leveranse(r).
+            {importResult.errors.length > 0 &&
+              ` ${importResult.errors.length} feil.`}
+          </p>
+          {importResult.errors.length > 0 && (
+            <ul>
+              {importResult.errors.map((err) => (
+                <li key={`${err.row}-${err.message}`}>
+                  Rad {err.row}: {err.message}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       <div className="filter-bar">
         <label>
@@ -265,7 +323,9 @@ export default function DeliveriesPage() {
         onSelectAllPending={selectAllPending}
         onClearSelection={clearSelection}
         onJobComplete={handleJobComplete}
-        onReloadDeliveries={reload}
+        onReloadDeliveries={async () => {
+          await reload()
+        }}
       />
 
       {completedJob && completedRoutes.length > 0 ? (

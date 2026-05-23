@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from '../auth/auth.module';
+import { EventsModule } from '../events/events.module';
 import { OptimizationController } from './optimization.controller';
 import { OptimizationProcessor } from './optimization.processor';
 import {
@@ -13,6 +14,7 @@ import { OptimizerClientService } from './optimizer-client.service';
 @Module({
   imports: [
     AuthModule,
+    EventsModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -31,6 +33,6 @@ import { OptimizerClientService } from './optimizer-client.service';
     OptimizationProcessor,
     OptimizerClientService,
   ],
-  exports: [OptimizationService],
+  exports: [OptimizationService, OptimizerClientService],
 })
 export class OptimizationModule {}

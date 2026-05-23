@@ -21,11 +21,18 @@ const roles_guard_1 = require("../auth/guards/roles.guard");
 const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
 const assign_route_dto_1 = require("./dto/assign-route.dto");
 const list_routes_query_dto_1 = require("./dto/list-routes-query.dto");
+const reoptimize_route_query_dto_1 = require("./dto/reoptimize-route-query.dto");
+const route_summary_service_1 = require("./route-summary.service");
+const routes_reoptimize_service_1 = require("./routes-reoptimize.service");
 const routes_service_1 = require("./routes.service");
 let RoutesController = class RoutesController {
     routes;
-    constructor(routes) {
+    reoptimize;
+    summaries;
+    constructor(routes, reoptimize, summaries) {
         this.routes = routes;
+        this.reoptimize = reoptimize;
+        this.summaries = summaries;
     }
     findAll(user, query) {
         return this.routes.findAll(user, query);
@@ -47,6 +54,15 @@ let RoutesController = class RoutesController {
     }
     finish(user, id) {
         return this.routes.finish(user, id);
+    }
+    reoptimizeRoute(user, id, query) {
+        return this.reoptimize.reoptimize(user, id, query.includeDeliveryIds ?? []);
+    }
+    getSummary(user, id) {
+        return this.summaries.getSummary(user, id);
+    }
+    generateSummary(user, id) {
+        return this.summaries.generateSummary(user, id);
     }
     remove(user, id) {
         return this.routes.remove(user, id);
@@ -116,6 +132,34 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], RoutesController.prototype, "finish", null);
 __decorate([
+    (0, common_1.Post)(':id/reoptimize'),
+    (0, roles_decorator_1.Roles)(client_1.UserRole.ADMIN, client_1.UserRole.DISPATCHER),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, reoptimize_route_query_dto_1.ReoptimizeRouteQueryDto]),
+    __metadata("design:returntype", void 0)
+], RoutesController.prototype, "reoptimizeRoute", null);
+__decorate([
+    (0, common_1.Get)(':id/summary'),
+    (0, roles_decorator_1.Roles)(client_1.UserRole.ADMIN, client_1.UserRole.DISPATCHER),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], RoutesController.prototype, "getSummary", null);
+__decorate([
+    (0, common_1.Post)(':id/summary'),
+    (0, roles_decorator_1.Roles)(client_1.UserRole.ADMIN, client_1.UserRole.DISPATCHER),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], RoutesController.prototype, "generateSummary", null);
+__decorate([
     (0, common_1.Delete)(':id'),
     (0, roles_decorator_1.Roles)(client_1.UserRole.ADMIN, client_1.UserRole.DISPATCHER),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
@@ -127,6 +171,8 @@ __decorate([
 exports.RoutesController = RoutesController = __decorate([
     (0, common_1.Controller)('routes'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    __metadata("design:paramtypes", [routes_service_1.RoutesService])
+    __metadata("design:paramtypes", [routes_service_1.RoutesService,
+        routes_reoptimize_service_1.RoutesReoptimizeService,
+        route_summary_service_1.RouteSummaryService])
 ], RoutesController);
 //# sourceMappingURL=routes.controller.js.map

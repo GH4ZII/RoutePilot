@@ -31,6 +31,12 @@ import type {
   DailyReport,
   DriverPerformanceReport,
   RouteEfficiencyReport,
+  Depot,
+  CreateDepotPayload,
+  UpdateDepotPayload,
+  ImportCsvResult,
+  RouteSummary,
+  PlannedVsActualReport,
 } from '../types/domain'
 import { getStoredToken } from './auth-storage'
 
@@ -320,6 +326,117 @@ export function getReportsRouteEfficiency(params?: {
   return request<RouteEfficiencyReport>(
     `/reports/route-efficiency${buildQuery(params ?? {})}`,
   )
+}
+
+export function importDeliveriesCsv(file: File): Promise<ImportCsvResult> {
+  const form = new FormData()
+  form.append('file', file)
+  const token = getStoredToken()
+  return fetch(`${API_BASE_URL}/deliveries/import-csv`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  }).then(async (response) => {
+    if (!response.ok) {
+      throw new ApiError(await parseErrorMessage(response), response.status)
+    }
+    return response.json() as Promise<ImportCsvResult>
+  })
+}
+
+export function listDepots(): Promise<Depot[]> {
+  return request<Depot[]>('/depots')
+}
+
+export function createDepot(payload: CreateDepotPayload): Promise<Depot> {
+  return request<Depot>('/depots', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function updateDepot(
+  id: string,
+  payload: UpdateDepotPayload,
+): Promise<Depot> {
+  return request<Depot>(`/depots/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function deleteDepot(id: string): Promise<void> {
+  return request<void>(`/depots/${id}`, { method: 'DELETE' })
+}
+
+export function reoptimizeRoute(
+  routeId: string,
+  includeDeliveryIds?: string[],
+): Promise<RouteDetail> {
+  const params = new URLSearchParams()
+  if (includeDeliveryIds?.length) {
+    params.set('includeDeliveryIds', includeDeliveryIds.join(','))
+  }
+  const q = params.toString()
+  return request<RouteDetail>(`/routes/${routeId}/reoptimize${q ? `?${q}` : ''}`, {
+    method: 'POST',
+  })
+}
+
+export function getRouteSummary(routeId: string): Promise<RouteSummary> {
+  return request<RouteSummary>(`/routes/${routeId}/summary`)
+}
+
+export function generateRouteSummary(routeId: string): Promise<RouteSummary> {
+  return request<RouteSummary>(`/routes/${routeId}/summary`, { method: 'POST' })
+}
+
+export function getReportsPlannedVsActual(params?: {
+  from?: string
+  to?: string
+  driverId?: string
+}): Promise<PlannedVsActualReport> {
+  return request<PlannedVsActualReport>(
+    `/reports/planned-vs-actual${buildQuery(params ?? {})}`,
+  )
+}
+
+export async function downloadReportCsv(
+  path: string,
+  filename: string,
+): Promise<void> {
+  const token = getStoredToken()
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!response.ok) {
+    throw new ApiError(await parseErrorMessage(response), response.status)
+  }
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export async function downloadRoutePdf(routeId: string): Promise<void> {
+  const token = getStoredToken()
+  const response = await fetch(
+    `${API_BASE_URL}/reports/routes/${routeId}/export.pdf`,
+    { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+  )
+  if (!response.ok) {
+    throw new ApiError(await parseErrorMessage(response), response.status)
+  }
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `route-${routeId}.pdf`
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 export async function pollOptimizationJob(

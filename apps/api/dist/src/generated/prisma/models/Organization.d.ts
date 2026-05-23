@@ -99,9 +99,11 @@ export type OrganizationWhereInput = {
     users?: Prisma.UserListRelationFilter;
     drivers?: Prisma.DriverListRelationFilter;
     vehicles?: Prisma.VehicleListRelationFilter;
+    depots?: Prisma.DepotListRelationFilter;
     deliveries?: Prisma.DeliveryListRelationFilter;
     routes?: Prisma.RouteListRelationFilter;
     optimizationJobs?: Prisma.OptimizationJobListRelationFilter;
+    customerNotifications?: Prisma.CustomerNotificationListRelationFilter;
 };
 export type OrganizationOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
@@ -112,9 +114,11 @@ export type OrganizationOrderByWithRelationInput = {
     users?: Prisma.UserOrderByRelationAggregateInput;
     drivers?: Prisma.DriverOrderByRelationAggregateInput;
     vehicles?: Prisma.VehicleOrderByRelationAggregateInput;
+    depots?: Prisma.DepotOrderByRelationAggregateInput;
     deliveries?: Prisma.DeliveryOrderByRelationAggregateInput;
     routes?: Prisma.RouteOrderByRelationAggregateInput;
     optimizationJobs?: Prisma.OptimizationJobOrderByRelationAggregateInput;
+    customerNotifications?: Prisma.CustomerNotificationOrderByRelationAggregateInput;
 };
 export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
@@ -128,9 +132,11 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
     users?: Prisma.UserListRelationFilter;
     drivers?: Prisma.DriverListRelationFilter;
     vehicles?: Prisma.VehicleListRelationFilter;
+    depots?: Prisma.DepotListRelationFilter;
     deliveries?: Prisma.DeliveryListRelationFilter;
     routes?: Prisma.RouteListRelationFilter;
     optimizationJobs?: Prisma.OptimizationJobListRelationFilter;
+    customerNotifications?: Prisma.CustomerNotificationListRelationFilter;
 }, "id" | "slug">;
 export type OrganizationOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
@@ -161,9 +167,11 @@ export type OrganizationCreateInput = {
     users?: Prisma.UserCreateNestedManyWithoutOrganizationInput;
     drivers?: Prisma.DriverCreateNestedManyWithoutOrganizationInput;
     vehicles?: Prisma.VehicleCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotCreateNestedManyWithoutOrganizationInput;
     deliveries?: Prisma.DeliveryCreateNestedManyWithoutOrganizationInput;
     routes?: Prisma.RouteCreateNestedManyWithoutOrganizationInput;
     optimizationJobs?: Prisma.OptimizationJobCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationUncheckedCreateInput = {
     id?: string;
@@ -174,9 +182,11 @@ export type OrganizationUncheckedCreateInput = {
     users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput;
     drivers?: Prisma.DriverUncheckedCreateNestedManyWithoutOrganizationInput;
     vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotUncheckedCreateNestedManyWithoutOrganizationInput;
     deliveries?: Prisma.DeliveryUncheckedCreateNestedManyWithoutOrganizationInput;
     routes?: Prisma.RouteUncheckedCreateNestedManyWithoutOrganizationInput;
     optimizationJobs?: Prisma.OptimizationJobUncheckedCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -187,9 +197,11 @@ export type OrganizationUpdateInput = {
     users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput;
     drivers?: Prisma.DriverUpdateManyWithoutOrganizationNestedInput;
     vehicles?: Prisma.VehicleUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUpdateManyWithoutOrganizationNestedInput;
     deliveries?: Prisma.DeliveryUpdateManyWithoutOrganizationNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutOrganizationNestedInput;
     optimizationJobs?: Prisma.OptimizationJobUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -200,9 +212,11 @@ export type OrganizationUncheckedUpdateInput = {
     users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput;
     drivers?: Prisma.DriverUncheckedUpdateManyWithoutOrganizationNestedInput;
     vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUncheckedUpdateManyWithoutOrganizationNestedInput;
     deliveries?: Prisma.DeliveryUncheckedUpdateManyWithoutOrganizationNestedInput;
     routes?: Prisma.RouteUncheckedUpdateManyWithoutOrganizationNestedInput;
     optimizationJobs?: Prisma.OptimizationJobUncheckedUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationCreateManyInput = {
     id?: string;
@@ -280,6 +294,18 @@ export type OrganizationUpdateOneRequiredWithoutDriversNestedInput = {
     connect?: Prisma.OrganizationWhereUniqueInput;
     update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutDriversInput, Prisma.OrganizationUpdateWithoutDriversInput>, Prisma.OrganizationUncheckedUpdateWithoutDriversInput>;
 };
+export type OrganizationCreateNestedOneWithoutDepotsInput = {
+    create?: Prisma.XOR<Prisma.OrganizationCreateWithoutDepotsInput, Prisma.OrganizationUncheckedCreateWithoutDepotsInput>;
+    connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutDepotsInput;
+    connect?: Prisma.OrganizationWhereUniqueInput;
+};
+export type OrganizationUpdateOneRequiredWithoutDepotsNestedInput = {
+    create?: Prisma.XOR<Prisma.OrganizationCreateWithoutDepotsInput, Prisma.OrganizationUncheckedCreateWithoutDepotsInput>;
+    connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutDepotsInput;
+    upsert?: Prisma.OrganizationUpsertWithoutDepotsInput;
+    connect?: Prisma.OrganizationWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutDepotsInput, Prisma.OrganizationUpdateWithoutDepotsInput>, Prisma.OrganizationUncheckedUpdateWithoutDepotsInput>;
+};
 export type OrganizationCreateNestedOneWithoutVehiclesInput = {
     create?: Prisma.XOR<Prisma.OrganizationCreateWithoutVehiclesInput, Prisma.OrganizationUncheckedCreateWithoutVehiclesInput>;
     connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutVehiclesInput;
@@ -316,6 +342,18 @@ export type OrganizationUpdateOneRequiredWithoutRoutesNestedInput = {
     connect?: Prisma.OrganizationWhereUniqueInput;
     update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutRoutesInput, Prisma.OrganizationUpdateWithoutRoutesInput>, Prisma.OrganizationUncheckedUpdateWithoutRoutesInput>;
 };
+export type OrganizationCreateNestedOneWithoutCustomerNotificationsInput = {
+    create?: Prisma.XOR<Prisma.OrganizationCreateWithoutCustomerNotificationsInput, Prisma.OrganizationUncheckedCreateWithoutCustomerNotificationsInput>;
+    connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutCustomerNotificationsInput;
+    connect?: Prisma.OrganizationWhereUniqueInput;
+};
+export type OrganizationUpdateOneRequiredWithoutCustomerNotificationsNestedInput = {
+    create?: Prisma.XOR<Prisma.OrganizationCreateWithoutCustomerNotificationsInput, Prisma.OrganizationUncheckedCreateWithoutCustomerNotificationsInput>;
+    connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutCustomerNotificationsInput;
+    upsert?: Prisma.OrganizationUpsertWithoutCustomerNotificationsInput;
+    connect?: Prisma.OrganizationWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutCustomerNotificationsInput, Prisma.OrganizationUpdateWithoutCustomerNotificationsInput>, Prisma.OrganizationUncheckedUpdateWithoutCustomerNotificationsInput>;
+};
 export type OrganizationCreateNestedOneWithoutOptimizationJobsInput = {
     create?: Prisma.XOR<Prisma.OrganizationCreateWithoutOptimizationJobsInput, Prisma.OrganizationUncheckedCreateWithoutOptimizationJobsInput>;
     connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutOptimizationJobsInput;
@@ -336,9 +374,11 @@ export type OrganizationCreateWithoutUsersInput = {
     updatedAt?: Date | string;
     drivers?: Prisma.DriverCreateNestedManyWithoutOrganizationInput;
     vehicles?: Prisma.VehicleCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotCreateNestedManyWithoutOrganizationInput;
     deliveries?: Prisma.DeliveryCreateNestedManyWithoutOrganizationInput;
     routes?: Prisma.RouteCreateNestedManyWithoutOrganizationInput;
     optimizationJobs?: Prisma.OptimizationJobCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationUncheckedCreateWithoutUsersInput = {
     id?: string;
@@ -348,9 +388,11 @@ export type OrganizationUncheckedCreateWithoutUsersInput = {
     updatedAt?: Date | string;
     drivers?: Prisma.DriverUncheckedCreateNestedManyWithoutOrganizationInput;
     vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotUncheckedCreateNestedManyWithoutOrganizationInput;
     deliveries?: Prisma.DeliveryUncheckedCreateNestedManyWithoutOrganizationInput;
     routes?: Prisma.RouteUncheckedCreateNestedManyWithoutOrganizationInput;
     optimizationJobs?: Prisma.OptimizationJobUncheckedCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationCreateOrConnectWithoutUsersInput = {
     where: Prisma.OrganizationWhereUniqueInput;
@@ -373,9 +415,11 @@ export type OrganizationUpdateWithoutUsersInput = {
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     drivers?: Prisma.DriverUpdateManyWithoutOrganizationNestedInput;
     vehicles?: Prisma.VehicleUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUpdateManyWithoutOrganizationNestedInput;
     deliveries?: Prisma.DeliveryUpdateManyWithoutOrganizationNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutOrganizationNestedInput;
     optimizationJobs?: Prisma.OptimizationJobUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationUncheckedUpdateWithoutUsersInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -385,9 +429,11 @@ export type OrganizationUncheckedUpdateWithoutUsersInput = {
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     drivers?: Prisma.DriverUncheckedUpdateManyWithoutOrganizationNestedInput;
     vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUncheckedUpdateManyWithoutOrganizationNestedInput;
     deliveries?: Prisma.DeliveryUncheckedUpdateManyWithoutOrganizationNestedInput;
     routes?: Prisma.RouteUncheckedUpdateManyWithoutOrganizationNestedInput;
     optimizationJobs?: Prisma.OptimizationJobUncheckedUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationCreateWithoutDriversInput = {
     id?: string;
@@ -397,9 +443,11 @@ export type OrganizationCreateWithoutDriversInput = {
     updatedAt?: Date | string;
     users?: Prisma.UserCreateNestedManyWithoutOrganizationInput;
     vehicles?: Prisma.VehicleCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotCreateNestedManyWithoutOrganizationInput;
     deliveries?: Prisma.DeliveryCreateNestedManyWithoutOrganizationInput;
     routes?: Prisma.RouteCreateNestedManyWithoutOrganizationInput;
     optimizationJobs?: Prisma.OptimizationJobCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationUncheckedCreateWithoutDriversInput = {
     id?: string;
@@ -409,9 +457,11 @@ export type OrganizationUncheckedCreateWithoutDriversInput = {
     updatedAt?: Date | string;
     users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput;
     vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotUncheckedCreateNestedManyWithoutOrganizationInput;
     deliveries?: Prisma.DeliveryUncheckedCreateNestedManyWithoutOrganizationInput;
     routes?: Prisma.RouteUncheckedCreateNestedManyWithoutOrganizationInput;
     optimizationJobs?: Prisma.OptimizationJobUncheckedCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationCreateOrConnectWithoutDriversInput = {
     where: Prisma.OrganizationWhereUniqueInput;
@@ -434,9 +484,11 @@ export type OrganizationUpdateWithoutDriversInput = {
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput;
     vehicles?: Prisma.VehicleUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUpdateManyWithoutOrganizationNestedInput;
     deliveries?: Prisma.DeliveryUpdateManyWithoutOrganizationNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutOrganizationNestedInput;
     optimizationJobs?: Prisma.OptimizationJobUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationUncheckedUpdateWithoutDriversInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -446,9 +498,80 @@ export type OrganizationUncheckedUpdateWithoutDriversInput = {
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput;
     vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUncheckedUpdateManyWithoutOrganizationNestedInput;
     deliveries?: Prisma.DeliveryUncheckedUpdateManyWithoutOrganizationNestedInput;
     routes?: Prisma.RouteUncheckedUpdateManyWithoutOrganizationNestedInput;
     optimizationJobs?: Prisma.OptimizationJobUncheckedUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedUpdateManyWithoutOrganizationNestedInput;
+};
+export type OrganizationCreateWithoutDepotsInput = {
+    id?: string;
+    name: string;
+    slug: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    users?: Prisma.UserCreateNestedManyWithoutOrganizationInput;
+    drivers?: Prisma.DriverCreateNestedManyWithoutOrganizationInput;
+    vehicles?: Prisma.VehicleCreateNestedManyWithoutOrganizationInput;
+    deliveries?: Prisma.DeliveryCreateNestedManyWithoutOrganizationInput;
+    routes?: Prisma.RouteCreateNestedManyWithoutOrganizationInput;
+    optimizationJobs?: Prisma.OptimizationJobCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationCreateNestedManyWithoutOrganizationInput;
+};
+export type OrganizationUncheckedCreateWithoutDepotsInput = {
+    id?: string;
+    name: string;
+    slug: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput;
+    drivers?: Prisma.DriverUncheckedCreateNestedManyWithoutOrganizationInput;
+    vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutOrganizationInput;
+    deliveries?: Prisma.DeliveryUncheckedCreateNestedManyWithoutOrganizationInput;
+    routes?: Prisma.RouteUncheckedCreateNestedManyWithoutOrganizationInput;
+    optimizationJobs?: Prisma.OptimizationJobUncheckedCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedCreateNestedManyWithoutOrganizationInput;
+};
+export type OrganizationCreateOrConnectWithoutDepotsInput = {
+    where: Prisma.OrganizationWhereUniqueInput;
+    create: Prisma.XOR<Prisma.OrganizationCreateWithoutDepotsInput, Prisma.OrganizationUncheckedCreateWithoutDepotsInput>;
+};
+export type OrganizationUpsertWithoutDepotsInput = {
+    update: Prisma.XOR<Prisma.OrganizationUpdateWithoutDepotsInput, Prisma.OrganizationUncheckedUpdateWithoutDepotsInput>;
+    create: Prisma.XOR<Prisma.OrganizationCreateWithoutDepotsInput, Prisma.OrganizationUncheckedCreateWithoutDepotsInput>;
+    where?: Prisma.OrganizationWhereInput;
+};
+export type OrganizationUpdateToOneWithWhereWithoutDepotsInput = {
+    where?: Prisma.OrganizationWhereInput;
+    data: Prisma.XOR<Prisma.OrganizationUpdateWithoutDepotsInput, Prisma.OrganizationUncheckedUpdateWithoutDepotsInput>;
+};
+export type OrganizationUpdateWithoutDepotsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    slug?: Prisma.StringFieldUpdateOperationsInput | string;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput;
+    drivers?: Prisma.DriverUpdateManyWithoutOrganizationNestedInput;
+    vehicles?: Prisma.VehicleUpdateManyWithoutOrganizationNestedInput;
+    deliveries?: Prisma.DeliveryUpdateManyWithoutOrganizationNestedInput;
+    routes?: Prisma.RouteUpdateManyWithoutOrganizationNestedInput;
+    optimizationJobs?: Prisma.OptimizationJobUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUpdateManyWithoutOrganizationNestedInput;
+};
+export type OrganizationUncheckedUpdateWithoutDepotsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    slug?: Prisma.StringFieldUpdateOperationsInput | string;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput;
+    drivers?: Prisma.DriverUncheckedUpdateManyWithoutOrganizationNestedInput;
+    vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutOrganizationNestedInput;
+    deliveries?: Prisma.DeliveryUncheckedUpdateManyWithoutOrganizationNestedInput;
+    routes?: Prisma.RouteUncheckedUpdateManyWithoutOrganizationNestedInput;
+    optimizationJobs?: Prisma.OptimizationJobUncheckedUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationCreateWithoutVehiclesInput = {
     id?: string;
@@ -458,9 +581,11 @@ export type OrganizationCreateWithoutVehiclesInput = {
     updatedAt?: Date | string;
     users?: Prisma.UserCreateNestedManyWithoutOrganizationInput;
     drivers?: Prisma.DriverCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotCreateNestedManyWithoutOrganizationInput;
     deliveries?: Prisma.DeliveryCreateNestedManyWithoutOrganizationInput;
     routes?: Prisma.RouteCreateNestedManyWithoutOrganizationInput;
     optimizationJobs?: Prisma.OptimizationJobCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationUncheckedCreateWithoutVehiclesInput = {
     id?: string;
@@ -470,9 +595,11 @@ export type OrganizationUncheckedCreateWithoutVehiclesInput = {
     updatedAt?: Date | string;
     users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput;
     drivers?: Prisma.DriverUncheckedCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotUncheckedCreateNestedManyWithoutOrganizationInput;
     deliveries?: Prisma.DeliveryUncheckedCreateNestedManyWithoutOrganizationInput;
     routes?: Prisma.RouteUncheckedCreateNestedManyWithoutOrganizationInput;
     optimizationJobs?: Prisma.OptimizationJobUncheckedCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationCreateOrConnectWithoutVehiclesInput = {
     where: Prisma.OrganizationWhereUniqueInput;
@@ -495,9 +622,11 @@ export type OrganizationUpdateWithoutVehiclesInput = {
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput;
     drivers?: Prisma.DriverUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUpdateManyWithoutOrganizationNestedInput;
     deliveries?: Prisma.DeliveryUpdateManyWithoutOrganizationNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutOrganizationNestedInput;
     optimizationJobs?: Prisma.OptimizationJobUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationUncheckedUpdateWithoutVehiclesInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -507,9 +636,11 @@ export type OrganizationUncheckedUpdateWithoutVehiclesInput = {
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput;
     drivers?: Prisma.DriverUncheckedUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUncheckedUpdateManyWithoutOrganizationNestedInput;
     deliveries?: Prisma.DeliveryUncheckedUpdateManyWithoutOrganizationNestedInput;
     routes?: Prisma.RouteUncheckedUpdateManyWithoutOrganizationNestedInput;
     optimizationJobs?: Prisma.OptimizationJobUncheckedUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationCreateWithoutDeliveriesInput = {
     id?: string;
@@ -520,8 +651,10 @@ export type OrganizationCreateWithoutDeliveriesInput = {
     users?: Prisma.UserCreateNestedManyWithoutOrganizationInput;
     drivers?: Prisma.DriverCreateNestedManyWithoutOrganizationInput;
     vehicles?: Prisma.VehicleCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotCreateNestedManyWithoutOrganizationInput;
     routes?: Prisma.RouteCreateNestedManyWithoutOrganizationInput;
     optimizationJobs?: Prisma.OptimizationJobCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationUncheckedCreateWithoutDeliveriesInput = {
     id?: string;
@@ -532,8 +665,10 @@ export type OrganizationUncheckedCreateWithoutDeliveriesInput = {
     users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput;
     drivers?: Prisma.DriverUncheckedCreateNestedManyWithoutOrganizationInput;
     vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotUncheckedCreateNestedManyWithoutOrganizationInput;
     routes?: Prisma.RouteUncheckedCreateNestedManyWithoutOrganizationInput;
     optimizationJobs?: Prisma.OptimizationJobUncheckedCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationCreateOrConnectWithoutDeliveriesInput = {
     where: Prisma.OrganizationWhereUniqueInput;
@@ -557,8 +692,10 @@ export type OrganizationUpdateWithoutDeliveriesInput = {
     users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput;
     drivers?: Prisma.DriverUpdateManyWithoutOrganizationNestedInput;
     vehicles?: Prisma.VehicleUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUpdateManyWithoutOrganizationNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutOrganizationNestedInput;
     optimizationJobs?: Prisma.OptimizationJobUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationUncheckedUpdateWithoutDeliveriesInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -569,8 +706,10 @@ export type OrganizationUncheckedUpdateWithoutDeliveriesInput = {
     users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput;
     drivers?: Prisma.DriverUncheckedUpdateManyWithoutOrganizationNestedInput;
     vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUncheckedUpdateManyWithoutOrganizationNestedInput;
     routes?: Prisma.RouteUncheckedUpdateManyWithoutOrganizationNestedInput;
     optimizationJobs?: Prisma.OptimizationJobUncheckedUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationCreateWithoutRoutesInput = {
     id?: string;
@@ -581,8 +720,10 @@ export type OrganizationCreateWithoutRoutesInput = {
     users?: Prisma.UserCreateNestedManyWithoutOrganizationInput;
     drivers?: Prisma.DriverCreateNestedManyWithoutOrganizationInput;
     vehicles?: Prisma.VehicleCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotCreateNestedManyWithoutOrganizationInput;
     deliveries?: Prisma.DeliveryCreateNestedManyWithoutOrganizationInput;
     optimizationJobs?: Prisma.OptimizationJobCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationUncheckedCreateWithoutRoutesInput = {
     id?: string;
@@ -593,8 +734,10 @@ export type OrganizationUncheckedCreateWithoutRoutesInput = {
     users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput;
     drivers?: Prisma.DriverUncheckedCreateNestedManyWithoutOrganizationInput;
     vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotUncheckedCreateNestedManyWithoutOrganizationInput;
     deliveries?: Prisma.DeliveryUncheckedCreateNestedManyWithoutOrganizationInput;
     optimizationJobs?: Prisma.OptimizationJobUncheckedCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationCreateOrConnectWithoutRoutesInput = {
     where: Prisma.OrganizationWhereUniqueInput;
@@ -618,8 +761,10 @@ export type OrganizationUpdateWithoutRoutesInput = {
     users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput;
     drivers?: Prisma.DriverUpdateManyWithoutOrganizationNestedInput;
     vehicles?: Prisma.VehicleUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUpdateManyWithoutOrganizationNestedInput;
     deliveries?: Prisma.DeliveryUpdateManyWithoutOrganizationNestedInput;
     optimizationJobs?: Prisma.OptimizationJobUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationUncheckedUpdateWithoutRoutesInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -630,7 +775,78 @@ export type OrganizationUncheckedUpdateWithoutRoutesInput = {
     users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput;
     drivers?: Prisma.DriverUncheckedUpdateManyWithoutOrganizationNestedInput;
     vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUncheckedUpdateManyWithoutOrganizationNestedInput;
     deliveries?: Prisma.DeliveryUncheckedUpdateManyWithoutOrganizationNestedInput;
+    optimizationJobs?: Prisma.OptimizationJobUncheckedUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedUpdateManyWithoutOrganizationNestedInput;
+};
+export type OrganizationCreateWithoutCustomerNotificationsInput = {
+    id?: string;
+    name: string;
+    slug: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    users?: Prisma.UserCreateNestedManyWithoutOrganizationInput;
+    drivers?: Prisma.DriverCreateNestedManyWithoutOrganizationInput;
+    vehicles?: Prisma.VehicleCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotCreateNestedManyWithoutOrganizationInput;
+    deliveries?: Prisma.DeliveryCreateNestedManyWithoutOrganizationInput;
+    routes?: Prisma.RouteCreateNestedManyWithoutOrganizationInput;
+    optimizationJobs?: Prisma.OptimizationJobCreateNestedManyWithoutOrganizationInput;
+};
+export type OrganizationUncheckedCreateWithoutCustomerNotificationsInput = {
+    id?: string;
+    name: string;
+    slug: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput;
+    drivers?: Prisma.DriverUncheckedCreateNestedManyWithoutOrganizationInput;
+    vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotUncheckedCreateNestedManyWithoutOrganizationInput;
+    deliveries?: Prisma.DeliveryUncheckedCreateNestedManyWithoutOrganizationInput;
+    routes?: Prisma.RouteUncheckedCreateNestedManyWithoutOrganizationInput;
+    optimizationJobs?: Prisma.OptimizationJobUncheckedCreateNestedManyWithoutOrganizationInput;
+};
+export type OrganizationCreateOrConnectWithoutCustomerNotificationsInput = {
+    where: Prisma.OrganizationWhereUniqueInput;
+    create: Prisma.XOR<Prisma.OrganizationCreateWithoutCustomerNotificationsInput, Prisma.OrganizationUncheckedCreateWithoutCustomerNotificationsInput>;
+};
+export type OrganizationUpsertWithoutCustomerNotificationsInput = {
+    update: Prisma.XOR<Prisma.OrganizationUpdateWithoutCustomerNotificationsInput, Prisma.OrganizationUncheckedUpdateWithoutCustomerNotificationsInput>;
+    create: Prisma.XOR<Prisma.OrganizationCreateWithoutCustomerNotificationsInput, Prisma.OrganizationUncheckedCreateWithoutCustomerNotificationsInput>;
+    where?: Prisma.OrganizationWhereInput;
+};
+export type OrganizationUpdateToOneWithWhereWithoutCustomerNotificationsInput = {
+    where?: Prisma.OrganizationWhereInput;
+    data: Prisma.XOR<Prisma.OrganizationUpdateWithoutCustomerNotificationsInput, Prisma.OrganizationUncheckedUpdateWithoutCustomerNotificationsInput>;
+};
+export type OrganizationUpdateWithoutCustomerNotificationsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    slug?: Prisma.StringFieldUpdateOperationsInput | string;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput;
+    drivers?: Prisma.DriverUpdateManyWithoutOrganizationNestedInput;
+    vehicles?: Prisma.VehicleUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUpdateManyWithoutOrganizationNestedInput;
+    deliveries?: Prisma.DeliveryUpdateManyWithoutOrganizationNestedInput;
+    routes?: Prisma.RouteUpdateManyWithoutOrganizationNestedInput;
+    optimizationJobs?: Prisma.OptimizationJobUpdateManyWithoutOrganizationNestedInput;
+};
+export type OrganizationUncheckedUpdateWithoutCustomerNotificationsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    slug?: Prisma.StringFieldUpdateOperationsInput | string;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput;
+    drivers?: Prisma.DriverUncheckedUpdateManyWithoutOrganizationNestedInput;
+    vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUncheckedUpdateManyWithoutOrganizationNestedInput;
+    deliveries?: Prisma.DeliveryUncheckedUpdateManyWithoutOrganizationNestedInput;
+    routes?: Prisma.RouteUncheckedUpdateManyWithoutOrganizationNestedInput;
     optimizationJobs?: Prisma.OptimizationJobUncheckedUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationCreateWithoutOptimizationJobsInput = {
@@ -642,8 +858,10 @@ export type OrganizationCreateWithoutOptimizationJobsInput = {
     users?: Prisma.UserCreateNestedManyWithoutOrganizationInput;
     drivers?: Prisma.DriverCreateNestedManyWithoutOrganizationInput;
     vehicles?: Prisma.VehicleCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotCreateNestedManyWithoutOrganizationInput;
     deliveries?: Prisma.DeliveryCreateNestedManyWithoutOrganizationInput;
     routes?: Prisma.RouteCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationUncheckedCreateWithoutOptimizationJobsInput = {
     id?: string;
@@ -654,8 +872,10 @@ export type OrganizationUncheckedCreateWithoutOptimizationJobsInput = {
     users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput;
     drivers?: Prisma.DriverUncheckedCreateNestedManyWithoutOrganizationInput;
     vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutOrganizationInput;
+    depots?: Prisma.DepotUncheckedCreateNestedManyWithoutOrganizationInput;
     deliveries?: Prisma.DeliveryUncheckedCreateNestedManyWithoutOrganizationInput;
     routes?: Prisma.RouteUncheckedCreateNestedManyWithoutOrganizationInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedCreateNestedManyWithoutOrganizationInput;
 };
 export type OrganizationCreateOrConnectWithoutOptimizationJobsInput = {
     where: Prisma.OrganizationWhereUniqueInput;
@@ -679,8 +899,10 @@ export type OrganizationUpdateWithoutOptimizationJobsInput = {
     users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput;
     drivers?: Prisma.DriverUpdateManyWithoutOrganizationNestedInput;
     vehicles?: Prisma.VehicleUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUpdateManyWithoutOrganizationNestedInput;
     deliveries?: Prisma.DeliveryUpdateManyWithoutOrganizationNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationUncheckedUpdateWithoutOptimizationJobsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -691,24 +913,30 @@ export type OrganizationUncheckedUpdateWithoutOptimizationJobsInput = {
     users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput;
     drivers?: Prisma.DriverUncheckedUpdateManyWithoutOrganizationNestedInput;
     vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutOrganizationNestedInput;
+    depots?: Prisma.DepotUncheckedUpdateManyWithoutOrganizationNestedInput;
     deliveries?: Prisma.DeliveryUncheckedUpdateManyWithoutOrganizationNestedInput;
     routes?: Prisma.RouteUncheckedUpdateManyWithoutOrganizationNestedInput;
+    customerNotifications?: Prisma.CustomerNotificationUncheckedUpdateManyWithoutOrganizationNestedInput;
 };
 export type OrganizationCountOutputType = {
     users: number;
     drivers: number;
     vehicles: number;
+    depots: number;
     deliveries: number;
     routes: number;
     optimizationJobs: number;
+    customerNotifications: number;
 };
 export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     users?: boolean | OrganizationCountOutputTypeCountUsersArgs;
     drivers?: boolean | OrganizationCountOutputTypeCountDriversArgs;
     vehicles?: boolean | OrganizationCountOutputTypeCountVehiclesArgs;
+    depots?: boolean | OrganizationCountOutputTypeCountDepotsArgs;
     deliveries?: boolean | OrganizationCountOutputTypeCountDeliveriesArgs;
     routes?: boolean | OrganizationCountOutputTypeCountRoutesArgs;
     optimizationJobs?: boolean | OrganizationCountOutputTypeCountOptimizationJobsArgs;
+    customerNotifications?: boolean | OrganizationCountOutputTypeCountCustomerNotificationsArgs;
 };
 export type OrganizationCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.OrganizationCountOutputTypeSelect<ExtArgs> | null;
@@ -722,6 +950,9 @@ export type OrganizationCountOutputTypeCountDriversArgs<ExtArgs extends runtime.
 export type OrganizationCountOutputTypeCountVehiclesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     where?: Prisma.VehicleWhereInput;
 };
+export type OrganizationCountOutputTypeCountDepotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.DepotWhereInput;
+};
 export type OrganizationCountOutputTypeCountDeliveriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     where?: Prisma.DeliveryWhereInput;
 };
@@ -730,6 +961,9 @@ export type OrganizationCountOutputTypeCountRoutesArgs<ExtArgs extends runtime.T
 };
 export type OrganizationCountOutputTypeCountOptimizationJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     where?: Prisma.OptimizationJobWhereInput;
+};
+export type OrganizationCountOutputTypeCountCustomerNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.CustomerNotificationWhereInput;
 };
 export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
@@ -740,9 +974,11 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
     users?: boolean | Prisma.Organization$usersArgs<ExtArgs>;
     drivers?: boolean | Prisma.Organization$driversArgs<ExtArgs>;
     vehicles?: boolean | Prisma.Organization$vehiclesArgs<ExtArgs>;
+    depots?: boolean | Prisma.Organization$depotsArgs<ExtArgs>;
     deliveries?: boolean | Prisma.Organization$deliveriesArgs<ExtArgs>;
     routes?: boolean | Prisma.Organization$routesArgs<ExtArgs>;
     optimizationJobs?: boolean | Prisma.Organization$optimizationJobsArgs<ExtArgs>;
+    customerNotifications?: boolean | Prisma.Organization$customerNotificationsArgs<ExtArgs>;
     _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["organization"]>;
 export type OrganizationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -771,9 +1007,11 @@ export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.Interna
     users?: boolean | Prisma.Organization$usersArgs<ExtArgs>;
     drivers?: boolean | Prisma.Organization$driversArgs<ExtArgs>;
     vehicles?: boolean | Prisma.Organization$vehiclesArgs<ExtArgs>;
+    depots?: boolean | Prisma.Organization$depotsArgs<ExtArgs>;
     deliveries?: boolean | Prisma.Organization$deliveriesArgs<ExtArgs>;
     routes?: boolean | Prisma.Organization$routesArgs<ExtArgs>;
     optimizationJobs?: boolean | Prisma.Organization$optimizationJobsArgs<ExtArgs>;
+    customerNotifications?: boolean | Prisma.Organization$customerNotificationsArgs<ExtArgs>;
     _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {};
@@ -784,9 +1022,11 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
         users: Prisma.$UserPayload<ExtArgs>[];
         drivers: Prisma.$DriverPayload<ExtArgs>[];
         vehicles: Prisma.$VehiclePayload<ExtArgs>[];
+        depots: Prisma.$DepotPayload<ExtArgs>[];
         deliveries: Prisma.$DeliveryPayload<ExtArgs>[];
         routes: Prisma.$RoutePayload<ExtArgs>[];
         optimizationJobs: Prisma.$OptimizationJobPayload<ExtArgs>[];
+        customerNotifications: Prisma.$CustomerNotificationPayload<ExtArgs>[];
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
@@ -849,9 +1089,11 @@ export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends run
     users<T extends Prisma.Organization$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     drivers<T extends Prisma.Organization$driversArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$driversArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DriverPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     vehicles<T extends Prisma.Organization$vehiclesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$vehiclesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VehiclePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    depots<T extends Prisma.Organization$depotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$depotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DepotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     deliveries<T extends Prisma.Organization$deliveriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$deliveriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeliveryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     routes<T extends Prisma.Organization$routesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$routesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RoutePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     optimizationJobs<T extends Prisma.Organization$optimizationJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$optimizationJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OptimizationJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    customerNotifications<T extends Prisma.Organization$customerNotificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$customerNotificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CustomerNotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): runtime.Types.Utils.JsPromise<TResult1 | TResult2>;
     catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): runtime.Types.Utils.JsPromise<T | TResult>;
     finally(onfinally?: (() => void) | undefined | null): runtime.Types.Utils.JsPromise<T>;
@@ -994,6 +1236,17 @@ export type Organization$vehiclesArgs<ExtArgs extends runtime.Types.Extensions.I
     skip?: number;
     distinct?: Prisma.VehicleScalarFieldEnum | Prisma.VehicleScalarFieldEnum[];
 };
+export type Organization$depotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.DepotSelect<ExtArgs> | null;
+    omit?: Prisma.DepotOmit<ExtArgs> | null;
+    include?: Prisma.DepotInclude<ExtArgs> | null;
+    where?: Prisma.DepotWhereInput;
+    orderBy?: Prisma.DepotOrderByWithRelationInput | Prisma.DepotOrderByWithRelationInput[];
+    cursor?: Prisma.DepotWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.DepotScalarFieldEnum | Prisma.DepotScalarFieldEnum[];
+};
 export type Organization$deliveriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.DeliverySelect<ExtArgs> | null;
     omit?: Prisma.DeliveryOmit<ExtArgs> | null;
@@ -1026,6 +1279,17 @@ export type Organization$optimizationJobsArgs<ExtArgs extends runtime.Types.Exte
     take?: number;
     skip?: number;
     distinct?: Prisma.OptimizationJobScalarFieldEnum | Prisma.OptimizationJobScalarFieldEnum[];
+};
+export type Organization$customerNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.CustomerNotificationSelect<ExtArgs> | null;
+    omit?: Prisma.CustomerNotificationOmit<ExtArgs> | null;
+    include?: Prisma.CustomerNotificationInclude<ExtArgs> | null;
+    where?: Prisma.CustomerNotificationWhereInput;
+    orderBy?: Prisma.CustomerNotificationOrderByWithRelationInput | Prisma.CustomerNotificationOrderByWithRelationInput[];
+    cursor?: Prisma.CustomerNotificationWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.CustomerNotificationScalarFieldEnum | Prisma.CustomerNotificationScalarFieldEnum[];
 };
 export type OrganizationDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.OrganizationSelect<ExtArgs> | null;

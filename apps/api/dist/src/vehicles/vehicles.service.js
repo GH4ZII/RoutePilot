@@ -41,17 +41,23 @@ let VehiclesService = class VehiclesService {
         const registrationNumber = dto.registrationNumber.trim();
         const startAddress = dto.startAddress.trim();
         const endAddress = dto.endAddress.trim();
+        const depotCoords = dto.depotId
+            ? await this.resolveDepotCoords(user, dto.depotId)
+            : null;
         const [start, end] = await Promise.all([
-            this.geocoding.geocode(startAddress),
+            depotCoords
+                ? Promise.resolve(depotCoords)
+                : this.geocoding.geocode(startAddress),
             this.geocoding.geocode(endAddress),
         ]);
         try {
             const created = await this.prisma.vehicle.create({
                 data: {
                     organizationId,
+                    depotId: dto.depotId,
                     name: dto.name,
                     registrationNumber,
-                    startAddress,
+                    startAddress: depotCoords ? depotCoords.address : startAddress,
                     endAddress,
                     maxWeightKg: dto.maxWeightKg,
                     maxVolumeM3: dto.maxVolumeM3,
@@ -93,10 +99,16 @@ let VehiclesService = class VehiclesService {
             endLatitude = end.latitude;
             endLongitude = end.longitude;
         }
+        if (dto.depotId) {
+            const depotCoords = await this.resolveDepotCoords(user, dto.depotId);
+            startLatitude = depotCoords.latitude;
+            startLongitude = depotCoords.longitude;
+        }
         try {
             const updated = await this.prisma.vehicle.update({
                 where: { id },
                 data: {
+                    ...(dto.depotId !== undefined && { depotId: dto.depotId }),
                     ...(dto.name !== undefined && { name: dto.name }),
                     ...(dto.registrationNumber !== undefined && {
                         registrationNumber: dto.registrationNumber.trim(),
@@ -143,6 +155,19 @@ let VehiclesService = class VehiclesService {
         }
         await this.prisma.vehicle.delete({ where: { id } });
     }
+    async resolveDepotCoords(user, depotId) {
+        const depot = await this.prisma.depot.findFirst({
+            where: this.orgScope.forOrganization(user, { id: depotId }),
+        });
+        if (!depot) {
+            throw new common_1.BadRequestException('Depot ikke funnet');
+        }
+        return {
+            latitude: (0, decimal_util_1.decimalToNumber)(depot.latitude),
+            longitude: (0, decimal_util_1.decimalToNumber)(depot.longitude),
+            address: depot.address,
+        };
+    }
     async findScopedOrThrow(user, id) {
         const row = await this.prisma.vehicle.findFirst({
             where: this.orgScope.forOrganization(user, { id }),
@@ -164,6 +189,7 @@ function toVehicleResponse(vehicle) {
     return {
         id: vehicle.id,
         organizationId: vehicle.organizationId,
+        depotId: vehicle.depotId ?? null,
         name: vehicle.name,
         registrationNumber: vehicle.registrationNumber,
         startAddress: vehicle.startAddress,

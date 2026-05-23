@@ -19,6 +19,9 @@ import { DeliveriesModule } from './deliveries/deliveries.module';
 import { RouteStopsModule } from './route-stops/route-stops.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ReportsModule } from './reports/reports.module';
+import { EventsModule } from './events/events.module';
+import { DepotsModule } from './depots/depots.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -45,6 +48,9 @@ import { ReportsModule } from './reports/reports.module';
     RouteStopsModule,
     DashboardModule,
     ReportsModule,
+    EventsModule,
+    DepotsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

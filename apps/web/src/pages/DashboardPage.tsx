@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import DeliveryMap, {
   type DepotPoint,
+  type DriverMarker,
   type NumberedStop,
   type RouteLine,
 } from '../components/DeliveryMap'
@@ -15,6 +16,7 @@ import {
 import { LIVE_ROUTE_COLORS } from '../lib/map-colors'
 import { fetchDrivingRouteGeometry } from '../lib/osrm-route'
 import { buildLiveRouteWaypoints } from '../lib/route-waypoints'
+import { subscribeToEvents } from '../lib/sse'
 import { useAsync } from '../lib/useAsync'
 import type {
   DashboardAlert,
@@ -66,7 +68,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const id = window.setInterval(() => reload(), POLL_MS)
-    return () => window.clearInterval(id)
+    const unsubscribe = subscribeToEvents(
+      () => reload(),
+      () => reload(),
+    )
+    return () => {
+      window.clearInterval(id)
+      unsubscribe()
+    }
   }, [reload])
 
   const liveRoutes = useMemo(
@@ -175,6 +184,20 @@ export default function DashboardPage() {
       }
     })
     return stops
+  }, [visibleRoutes])
+
+  const driverMarkers: DriverMarker[] = useMemo(() => {
+    const markers: DriverMarker[] = []
+    for (const route of visibleRoutes) {
+      if (!route.driver || !route.driverLocation) continue
+      markers.push({
+        id: route.driver.id,
+        label: route.driver.name,
+        latitude: route.driverLocation.latitude,
+        longitude: route.driverLocation.longitude,
+      })
+    }
+    return markers
   }, [visibleRoutes])
 
   const depots: DepotPoint[] = useMemo(() => {
@@ -411,6 +434,7 @@ export default function DashboardPage() {
         <DeliveryMap
           deliveries={mapDeliveries}
           depots={depots}
+          driverMarkers={driverMarkers}
           routeLines={routeLines}
           numberedStops={numberedStops}
           className="dashboard-map"

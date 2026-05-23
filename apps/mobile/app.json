@@ -37,7 +37,9 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "RoutePilot trenger posisjon for leveringsbevis."
+          "locationWhenInUsePermission": "RoutePilot trenger posisjon for leveringsbevis og live sporing under rute.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
         }
       ],
       [

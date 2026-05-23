@@ -54,6 +54,13 @@ export type LiveRouteStop = {
         phone: string | null;
     };
 };
+export type DriverLocationSnapshot = {
+    latitude: number;
+    longitude: number;
+    recordedAt: Date;
+    heading: number | null;
+    speed: number | null;
+};
 export type LiveRouteResponse = {
     id: string;
     status: RouteStatus;
@@ -63,6 +70,7 @@ export type LiveRouteResponse = {
         name: string;
         phone: string | null;
     } | null;
+    driverLocation: DriverLocationSnapshot | null;
     vehicle: {
         id: string;
         name: string;

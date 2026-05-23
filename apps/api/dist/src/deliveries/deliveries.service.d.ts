@@ -6,6 +6,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { ListDeliveriesQueryDto } from './dto/list-deliveries-query.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
+export type ImportCsvResult = {
+    created: DeliveryResponse[];
+    errors: Array<{
+        row: number;
+        message: string;
+    }>;
+};
 export type DeliveryResponse = {
     id: string;
     organizationId: string;
@@ -34,6 +41,8 @@ export declare class DeliveriesService {
     findOne(user: JwtPayload, id: string): Promise<DeliveryResponse>;
     create(user: JwtPayload, dto: CreateDeliveryDto): Promise<DeliveryResponse>;
     update(user: JwtPayload, id: string, dto: UpdateDeliveryDto): Promise<DeliveryResponse>;
+    importCsv(user: JwtPayload, csvContent: string): Promise<ImportCsvResult>;
+    private createFromCsvRow;
     remove(user: JwtPayload, id: string): Promise<void>;
     private findScopedOrThrow;
     private assertTimeWindow;

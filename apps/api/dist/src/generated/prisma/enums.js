@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RouteEventType = exports.OptimizationObjective = exports.OptimizationJobStatus = exports.RouteStopStatus = exports.RouteStatus = exports.DeliveryPriority = exports.DeliveryStatus = exports.VehicleStatus = exports.DriverStatus = exports.UserRole = void 0;
+exports.NotificationStatus = exports.NotificationType = exports.NotificationChannel = exports.RouteEventType = exports.OptimizationObjective = exports.OptimizationJobStatus = exports.RouteStopStatus = exports.RouteStatus = exports.DeliveryPriority = exports.DeliveryStatus = exports.VehicleStatus = exports.DriverStatus = exports.UserRole = void 0;
 exports.UserRole = {
     ADMIN: 'ADMIN',
     DISPATCHER: 'DISPATCHER',
@@ -65,5 +65,19 @@ exports.RouteEventType = {
     STOP_FAILED: 'STOP_FAILED',
     ROUTE_FINISHED: 'ROUTE_FINISHED',
     DRIVER_DELAYED: 'DRIVER_DELAYED'
+};
+exports.NotificationChannel = {
+    SMS: 'SMS',
+    EMAIL: 'EMAIL'
+};
+exports.NotificationType = {
+    ETA: 'ETA',
+    DELIVERED: 'DELIVERED',
+    FAILED: 'FAILED'
+};
+exports.NotificationStatus = {
+    PENDING: 'PENDING',
+    SENT: 'SENT',
+    FAILED: 'FAILED'
 };
 //# sourceMappingURL=enums.js.map

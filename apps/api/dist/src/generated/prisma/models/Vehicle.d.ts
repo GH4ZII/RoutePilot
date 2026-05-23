@@ -28,6 +28,7 @@ export type VehicleSumAggregateOutputType = {
 export type VehicleMinAggregateOutputType = {
     id: string | null;
     organizationId: string | null;
+    depotId: string | null;
     name: string | null;
     registrationNumber: string | null;
     startAddress: string | null;
@@ -45,6 +46,7 @@ export type VehicleMinAggregateOutputType = {
 export type VehicleMaxAggregateOutputType = {
     id: string | null;
     organizationId: string | null;
+    depotId: string | null;
     name: string | null;
     registrationNumber: string | null;
     startAddress: string | null;
@@ -62,6 +64,7 @@ export type VehicleMaxAggregateOutputType = {
 export type VehicleCountAggregateOutputType = {
     id: number;
     organizationId: number;
+    depotId: number;
     name: number;
     registrationNumber: number;
     startAddress: number;
@@ -96,6 +99,7 @@ export type VehicleSumAggregateInputType = {
 export type VehicleMinAggregateInputType = {
     id?: true;
     organizationId?: true;
+    depotId?: true;
     name?: true;
     registrationNumber?: true;
     startAddress?: true;
@@ -113,6 +117,7 @@ export type VehicleMinAggregateInputType = {
 export type VehicleMaxAggregateInputType = {
     id?: true;
     organizationId?: true;
+    depotId?: true;
     name?: true;
     registrationNumber?: true;
     startAddress?: true;
@@ -130,6 +135,7 @@ export type VehicleMaxAggregateInputType = {
 export type VehicleCountAggregateInputType = {
     id?: true;
     organizationId?: true;
+    depotId?: true;
     name?: true;
     registrationNumber?: true;
     startAddress?: true;
@@ -176,6 +182,7 @@ export type VehicleGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 export type VehicleGroupByOutputType = {
     id: string;
     organizationId: string;
+    depotId: string | null;
     name: string;
     registrationNumber: string;
     startAddress: string;
@@ -204,6 +211,7 @@ export type VehicleWhereInput = {
     NOT?: Prisma.VehicleWhereInput | Prisma.VehicleWhereInput[];
     id?: Prisma.StringFilter<"Vehicle"> | string;
     organizationId?: Prisma.StringFilter<"Vehicle"> | string;
+    depotId?: Prisma.StringNullableFilter<"Vehicle"> | string | null;
     name?: Prisma.StringFilter<"Vehicle"> | string;
     registrationNumber?: Prisma.StringFilter<"Vehicle"> | string;
     startAddress?: Prisma.StringFilter<"Vehicle"> | string;
@@ -218,12 +226,14 @@ export type VehicleWhereInput = {
     createdAt?: Prisma.DateTimeFilter<"Vehicle"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Vehicle"> | Date | string;
     organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>;
+    depot?: Prisma.XOR<Prisma.DepotNullableScalarRelationFilter, Prisma.DepotWhereInput> | null;
     drivers?: Prisma.DriverListRelationFilter;
     routes?: Prisma.RouteListRelationFilter;
 };
 export type VehicleOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
     organizationId?: Prisma.SortOrder;
+    depotId?: Prisma.SortOrderInput | Prisma.SortOrder;
     name?: Prisma.SortOrder;
     registrationNumber?: Prisma.SortOrder;
     startAddress?: Prisma.SortOrder;
@@ -238,6 +248,7 @@ export type VehicleOrderByWithRelationInput = {
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     organization?: Prisma.OrganizationOrderByWithRelationInput;
+    depot?: Prisma.DepotOrderByWithRelationInput;
     drivers?: Prisma.DriverOrderByRelationAggregateInput;
     routes?: Prisma.RouteOrderByRelationAggregateInput;
 };
@@ -248,6 +259,7 @@ export type VehicleWhereUniqueInput = Prisma.AtLeast<{
     OR?: Prisma.VehicleWhereInput[];
     NOT?: Prisma.VehicleWhereInput | Prisma.VehicleWhereInput[];
     organizationId?: Prisma.StringFilter<"Vehicle"> | string;
+    depotId?: Prisma.StringNullableFilter<"Vehicle"> | string | null;
     name?: Prisma.StringFilter<"Vehicle"> | string;
     registrationNumber?: Prisma.StringFilter<"Vehicle"> | string;
     startAddress?: Prisma.StringFilter<"Vehicle"> | string;
@@ -262,12 +274,14 @@ export type VehicleWhereUniqueInput = Prisma.AtLeast<{
     createdAt?: Prisma.DateTimeFilter<"Vehicle"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Vehicle"> | Date | string;
     organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>;
+    depot?: Prisma.XOR<Prisma.DepotNullableScalarRelationFilter, Prisma.DepotWhereInput> | null;
     drivers?: Prisma.DriverListRelationFilter;
     routes?: Prisma.RouteListRelationFilter;
 }, "id" | "organizationId_registrationNumber">;
 export type VehicleOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
     organizationId?: Prisma.SortOrder;
+    depotId?: Prisma.SortOrderInput | Prisma.SortOrder;
     name?: Prisma.SortOrder;
     registrationNumber?: Prisma.SortOrder;
     startAddress?: Prisma.SortOrder;
@@ -293,6 +307,7 @@ export type VehicleScalarWhereWithAggregatesInput = {
     NOT?: Prisma.VehicleScalarWhereWithAggregatesInput | Prisma.VehicleScalarWhereWithAggregatesInput[];
     id?: Prisma.StringWithAggregatesFilter<"Vehicle"> | string;
     organizationId?: Prisma.StringWithAggregatesFilter<"Vehicle"> | string;
+    depotId?: Prisma.StringNullableWithAggregatesFilter<"Vehicle"> | string | null;
     name?: Prisma.StringWithAggregatesFilter<"Vehicle"> | string;
     registrationNumber?: Prisma.StringWithAggregatesFilter<"Vehicle"> | string;
     startAddress?: Prisma.StringWithAggregatesFilter<"Vehicle"> | string;
@@ -323,12 +338,14 @@ export type VehicleCreateInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     organization: Prisma.OrganizationCreateNestedOneWithoutVehiclesInput;
+    depot?: Prisma.DepotCreateNestedOneWithoutVehiclesInput;
     drivers?: Prisma.DriverCreateNestedManyWithoutVehicleInput;
     routes?: Prisma.RouteCreateNestedManyWithoutVehicleInput;
 };
 export type VehicleUncheckedCreateInput = {
     id?: string;
     organizationId: string;
+    depotId?: string | null;
     name: string;
     registrationNumber: string;
     startAddress: string;
@@ -361,12 +378,14 @@ export type VehicleUpdateInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     organization?: Prisma.OrganizationUpdateOneRequiredWithoutVehiclesNestedInput;
+    depot?: Prisma.DepotUpdateOneWithoutVehiclesNestedInput;
     drivers?: Prisma.DriverUpdateManyWithoutVehicleNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutVehicleNestedInput;
 };
 export type VehicleUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
+    depotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
     startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -386,6 +405,7 @@ export type VehicleUncheckedUpdateInput = {
 export type VehicleCreateManyInput = {
     id?: string;
     organizationId: string;
+    depotId?: string | null;
     name: string;
     registrationNumber: string;
     startAddress: string;
@@ -419,6 +439,7 @@ export type VehicleUpdateManyMutationInput = {
 export type VehicleUncheckedUpdateManyInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
+    depotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
     startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -452,6 +473,7 @@ export type VehicleOrganizationIdRegistrationNumberCompoundUniqueInput = {
 export type VehicleCountOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     organizationId?: Prisma.SortOrder;
+    depotId?: Prisma.SortOrder;
     name?: Prisma.SortOrder;
     registrationNumber?: Prisma.SortOrder;
     startAddress?: Prisma.SortOrder;
@@ -477,6 +499,7 @@ export type VehicleAvgOrderByAggregateInput = {
 export type VehicleMaxOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     organizationId?: Prisma.SortOrder;
+    depotId?: Prisma.SortOrder;
     name?: Prisma.SortOrder;
     registrationNumber?: Prisma.SortOrder;
     startAddress?: Prisma.SortOrder;
@@ -494,6 +517,7 @@ export type VehicleMaxOrderByAggregateInput = {
 export type VehicleMinOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     organizationId?: Prisma.SortOrder;
+    depotId?: Prisma.SortOrder;
     name?: Prisma.SortOrder;
     registrationNumber?: Prisma.SortOrder;
     startAddress?: Prisma.SortOrder;
@@ -568,12 +592,43 @@ export type VehicleUpdateOneWithoutDriversNestedInput = {
     connect?: Prisma.VehicleWhereUniqueInput;
     update?: Prisma.XOR<Prisma.XOR<Prisma.VehicleUpdateToOneWithWhereWithoutDriversInput, Prisma.VehicleUpdateWithoutDriversInput>, Prisma.VehicleUncheckedUpdateWithoutDriversInput>;
 };
-export type DecimalFieldUpdateOperationsInput = {
-    set?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-    increment?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-    decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-    multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-    divide?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+export type VehicleCreateNestedManyWithoutDepotInput = {
+    create?: Prisma.XOR<Prisma.VehicleCreateWithoutDepotInput, Prisma.VehicleUncheckedCreateWithoutDepotInput> | Prisma.VehicleCreateWithoutDepotInput[] | Prisma.VehicleUncheckedCreateWithoutDepotInput[];
+    connectOrCreate?: Prisma.VehicleCreateOrConnectWithoutDepotInput | Prisma.VehicleCreateOrConnectWithoutDepotInput[];
+    createMany?: Prisma.VehicleCreateManyDepotInputEnvelope;
+    connect?: Prisma.VehicleWhereUniqueInput | Prisma.VehicleWhereUniqueInput[];
+};
+export type VehicleUncheckedCreateNestedManyWithoutDepotInput = {
+    create?: Prisma.XOR<Prisma.VehicleCreateWithoutDepotInput, Prisma.VehicleUncheckedCreateWithoutDepotInput> | Prisma.VehicleCreateWithoutDepotInput[] | Prisma.VehicleUncheckedCreateWithoutDepotInput[];
+    connectOrCreate?: Prisma.VehicleCreateOrConnectWithoutDepotInput | Prisma.VehicleCreateOrConnectWithoutDepotInput[];
+    createMany?: Prisma.VehicleCreateManyDepotInputEnvelope;
+    connect?: Prisma.VehicleWhereUniqueInput | Prisma.VehicleWhereUniqueInput[];
+};
+export type VehicleUpdateManyWithoutDepotNestedInput = {
+    create?: Prisma.XOR<Prisma.VehicleCreateWithoutDepotInput, Prisma.VehicleUncheckedCreateWithoutDepotInput> | Prisma.VehicleCreateWithoutDepotInput[] | Prisma.VehicleUncheckedCreateWithoutDepotInput[];
+    connectOrCreate?: Prisma.VehicleCreateOrConnectWithoutDepotInput | Prisma.VehicleCreateOrConnectWithoutDepotInput[];
+    upsert?: Prisma.VehicleUpsertWithWhereUniqueWithoutDepotInput | Prisma.VehicleUpsertWithWhereUniqueWithoutDepotInput[];
+    createMany?: Prisma.VehicleCreateManyDepotInputEnvelope;
+    set?: Prisma.VehicleWhereUniqueInput | Prisma.VehicleWhereUniqueInput[];
+    disconnect?: Prisma.VehicleWhereUniqueInput | Prisma.VehicleWhereUniqueInput[];
+    delete?: Prisma.VehicleWhereUniqueInput | Prisma.VehicleWhereUniqueInput[];
+    connect?: Prisma.VehicleWhereUniqueInput | Prisma.VehicleWhereUniqueInput[];
+    update?: Prisma.VehicleUpdateWithWhereUniqueWithoutDepotInput | Prisma.VehicleUpdateWithWhereUniqueWithoutDepotInput[];
+    updateMany?: Prisma.VehicleUpdateManyWithWhereWithoutDepotInput | Prisma.VehicleUpdateManyWithWhereWithoutDepotInput[];
+    deleteMany?: Prisma.VehicleScalarWhereInput | Prisma.VehicleScalarWhereInput[];
+};
+export type VehicleUncheckedUpdateManyWithoutDepotNestedInput = {
+    create?: Prisma.XOR<Prisma.VehicleCreateWithoutDepotInput, Prisma.VehicleUncheckedCreateWithoutDepotInput> | Prisma.VehicleCreateWithoutDepotInput[] | Prisma.VehicleUncheckedCreateWithoutDepotInput[];
+    connectOrCreate?: Prisma.VehicleCreateOrConnectWithoutDepotInput | Prisma.VehicleCreateOrConnectWithoutDepotInput[];
+    upsert?: Prisma.VehicleUpsertWithWhereUniqueWithoutDepotInput | Prisma.VehicleUpsertWithWhereUniqueWithoutDepotInput[];
+    createMany?: Prisma.VehicleCreateManyDepotInputEnvelope;
+    set?: Prisma.VehicleWhereUniqueInput | Prisma.VehicleWhereUniqueInput[];
+    disconnect?: Prisma.VehicleWhereUniqueInput | Prisma.VehicleWhereUniqueInput[];
+    delete?: Prisma.VehicleWhereUniqueInput | Prisma.VehicleWhereUniqueInput[];
+    connect?: Prisma.VehicleWhereUniqueInput | Prisma.VehicleWhereUniqueInput[];
+    update?: Prisma.VehicleUpdateWithWhereUniqueWithoutDepotInput | Prisma.VehicleUpdateWithWhereUniqueWithoutDepotInput[];
+    updateMany?: Prisma.VehicleUpdateManyWithWhereWithoutDepotInput | Prisma.VehicleUpdateManyWithWhereWithoutDepotInput[];
+    deleteMany?: Prisma.VehicleScalarWhereInput | Prisma.VehicleScalarWhereInput[];
 };
 export type EnumVehicleStatusFieldUpdateOperationsInput = {
     set?: $Enums.VehicleStatus;
@@ -607,11 +662,13 @@ export type VehicleCreateWithoutOrganizationInput = {
     status?: $Enums.VehicleStatus;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    depot?: Prisma.DepotCreateNestedOneWithoutVehiclesInput;
     drivers?: Prisma.DriverCreateNestedManyWithoutVehicleInput;
     routes?: Prisma.RouteCreateNestedManyWithoutVehicleInput;
 };
 export type VehicleUncheckedCreateWithoutOrganizationInput = {
     id?: string;
+    depotId?: string | null;
     name: string;
     registrationNumber: string;
     startAddress: string;
@@ -655,6 +712,7 @@ export type VehicleScalarWhereInput = {
     NOT?: Prisma.VehicleScalarWhereInput | Prisma.VehicleScalarWhereInput[];
     id?: Prisma.StringFilter<"Vehicle"> | string;
     organizationId?: Prisma.StringFilter<"Vehicle"> | string;
+    depotId?: Prisma.StringNullableFilter<"Vehicle"> | string | null;
     name?: Prisma.StringFilter<"Vehicle"> | string;
     registrationNumber?: Prisma.StringFilter<"Vehicle"> | string;
     startAddress?: Prisma.StringFilter<"Vehicle"> | string;
@@ -685,11 +743,13 @@ export type VehicleCreateWithoutDriversInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     organization: Prisma.OrganizationCreateNestedOneWithoutVehiclesInput;
+    depot?: Prisma.DepotCreateNestedOneWithoutVehiclesInput;
     routes?: Prisma.RouteCreateNestedManyWithoutVehicleInput;
 };
 export type VehicleUncheckedCreateWithoutDriversInput = {
     id?: string;
     organizationId: string;
+    depotId?: string | null;
     name: string;
     registrationNumber: string;
     startAddress: string;
@@ -734,11 +794,13 @@ export type VehicleUpdateWithoutDriversInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     organization?: Prisma.OrganizationUpdateOneRequiredWithoutVehiclesNestedInput;
+    depot?: Prisma.DepotUpdateOneWithoutVehiclesNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutVehicleNestedInput;
 };
 export type VehicleUncheckedUpdateWithoutDriversInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
+    depotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
     startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -753,6 +815,65 @@ export type VehicleUncheckedUpdateWithoutDriversInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     routes?: Prisma.RouteUncheckedUpdateManyWithoutVehicleNestedInput;
+};
+export type VehicleCreateWithoutDepotInput = {
+    id?: string;
+    name: string;
+    registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
+    maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    startLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    endLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    endLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    status?: $Enums.VehicleStatus;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    organization: Prisma.OrganizationCreateNestedOneWithoutVehiclesInput;
+    drivers?: Prisma.DriverCreateNestedManyWithoutVehicleInput;
+    routes?: Prisma.RouteCreateNestedManyWithoutVehicleInput;
+};
+export type VehicleUncheckedCreateWithoutDepotInput = {
+    id?: string;
+    organizationId: string;
+    name: string;
+    registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
+    maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    startLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    endLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    endLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    status?: $Enums.VehicleStatus;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    drivers?: Prisma.DriverUncheckedCreateNestedManyWithoutVehicleInput;
+    routes?: Prisma.RouteUncheckedCreateNestedManyWithoutVehicleInput;
+};
+export type VehicleCreateOrConnectWithoutDepotInput = {
+    where: Prisma.VehicleWhereUniqueInput;
+    create: Prisma.XOR<Prisma.VehicleCreateWithoutDepotInput, Prisma.VehicleUncheckedCreateWithoutDepotInput>;
+};
+export type VehicleCreateManyDepotInputEnvelope = {
+    data: Prisma.VehicleCreateManyDepotInput | Prisma.VehicleCreateManyDepotInput[];
+    skipDuplicates?: boolean;
+};
+export type VehicleUpsertWithWhereUniqueWithoutDepotInput = {
+    where: Prisma.VehicleWhereUniqueInput;
+    update: Prisma.XOR<Prisma.VehicleUpdateWithoutDepotInput, Prisma.VehicleUncheckedUpdateWithoutDepotInput>;
+    create: Prisma.XOR<Prisma.VehicleCreateWithoutDepotInput, Prisma.VehicleUncheckedCreateWithoutDepotInput>;
+};
+export type VehicleUpdateWithWhereUniqueWithoutDepotInput = {
+    where: Prisma.VehicleWhereUniqueInput;
+    data: Prisma.XOR<Prisma.VehicleUpdateWithoutDepotInput, Prisma.VehicleUncheckedUpdateWithoutDepotInput>;
+};
+export type VehicleUpdateManyWithWhereWithoutDepotInput = {
+    where: Prisma.VehicleScalarWhereInput;
+    data: Prisma.XOR<Prisma.VehicleUpdateManyMutationInput, Prisma.VehicleUncheckedUpdateManyWithoutDepotInput>;
 };
 export type VehicleCreateWithoutRoutesInput = {
     id?: string;
@@ -770,11 +891,13 @@ export type VehicleCreateWithoutRoutesInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     organization: Prisma.OrganizationCreateNestedOneWithoutVehiclesInput;
+    depot?: Prisma.DepotCreateNestedOneWithoutVehiclesInput;
     drivers?: Prisma.DriverCreateNestedManyWithoutVehicleInput;
 };
 export type VehicleUncheckedCreateWithoutRoutesInput = {
     id?: string;
     organizationId: string;
+    depotId?: string | null;
     name: string;
     registrationNumber: string;
     startAddress: string;
@@ -819,11 +942,13 @@ export type VehicleUpdateWithoutRoutesInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     organization?: Prisma.OrganizationUpdateOneRequiredWithoutVehiclesNestedInput;
+    depot?: Prisma.DepotUpdateOneWithoutVehiclesNestedInput;
     drivers?: Prisma.DriverUpdateManyWithoutVehicleNestedInput;
 };
 export type VehicleUncheckedUpdateWithoutRoutesInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
+    depotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
     startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -841,6 +966,7 @@ export type VehicleUncheckedUpdateWithoutRoutesInput = {
 };
 export type VehicleCreateManyOrganizationInput = {
     id?: string;
+    depotId?: string | null;
     name: string;
     registrationNumber: string;
     startAddress: string;
@@ -870,11 +996,13 @@ export type VehicleUpdateWithoutOrganizationInput = {
     status?: Prisma.EnumVehicleStatusFieldUpdateOperationsInput | $Enums.VehicleStatus;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    depot?: Prisma.DepotUpdateOneWithoutVehiclesNestedInput;
     drivers?: Prisma.DriverUpdateManyWithoutVehicleNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutVehicleNestedInput;
 };
 export type VehicleUncheckedUpdateWithoutOrganizationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
+    depotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
     startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -893,6 +1021,79 @@ export type VehicleUncheckedUpdateWithoutOrganizationInput = {
 };
 export type VehicleUncheckedUpdateManyWithoutOrganizationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
+    depotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    startLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    endLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    endLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    status?: Prisma.EnumVehicleStatusFieldUpdateOperationsInput | $Enums.VehicleStatus;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+export type VehicleCreateManyDepotInput = {
+    id?: string;
+    organizationId: string;
+    name: string;
+    registrationNumber: string;
+    startAddress: string;
+    endAddress: string;
+    maxWeightKg: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    maxVolumeM3: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    startLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    startLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    endLatitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    endLongitude: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    status?: $Enums.VehicleStatus;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+};
+export type VehicleUpdateWithoutDepotInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    startLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    endLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    endLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    status?: Prisma.EnumVehicleStatusFieldUpdateOperationsInput | $Enums.VehicleStatus;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    organization?: Prisma.OrganizationUpdateOneRequiredWithoutVehiclesNestedInput;
+    drivers?: Prisma.DriverUpdateManyWithoutVehicleNestedInput;
+    routes?: Prisma.RouteUpdateManyWithoutVehicleNestedInput;
+};
+export type VehicleUncheckedUpdateWithoutDepotInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    endAddress?: Prisma.StringFieldUpdateOperationsInput | string;
+    maxWeightKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    maxVolumeM3?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    startLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    startLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    endLatitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    endLongitude?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    status?: Prisma.EnumVehicleStatusFieldUpdateOperationsInput | $Enums.VehicleStatus;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    drivers?: Prisma.DriverUncheckedUpdateManyWithoutVehicleNestedInput;
+    routes?: Prisma.RouteUncheckedUpdateManyWithoutVehicleNestedInput;
+};
+export type VehicleUncheckedUpdateManyWithoutDepotInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     registrationNumber?: Prisma.StringFieldUpdateOperationsInput | string;
     startAddress?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -927,6 +1128,7 @@ export type VehicleCountOutputTypeCountRoutesArgs<ExtArgs extends runtime.Types.
 export type VehicleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
     organizationId?: boolean;
+    depotId?: boolean;
     name?: boolean;
     registrationNumber?: boolean;
     startAddress?: boolean;
@@ -941,6 +1143,7 @@ export type VehicleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     createdAt?: boolean;
     updatedAt?: boolean;
     organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>;
+    depot?: boolean | Prisma.Vehicle$depotArgs<ExtArgs>;
     drivers?: boolean | Prisma.Vehicle$driversArgs<ExtArgs>;
     routes?: boolean | Prisma.Vehicle$routesArgs<ExtArgs>;
     _count?: boolean | Prisma.VehicleCountOutputTypeDefaultArgs<ExtArgs>;
@@ -948,6 +1151,7 @@ export type VehicleSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
 export type VehicleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
     organizationId?: boolean;
+    depotId?: boolean;
     name?: boolean;
     registrationNumber?: boolean;
     startAddress?: boolean;
@@ -962,10 +1166,12 @@ export type VehicleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
     createdAt?: boolean;
     updatedAt?: boolean;
     organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>;
+    depot?: boolean | Prisma.Vehicle$depotArgs<ExtArgs>;
 }, ExtArgs["result"]["vehicle"]>;
 export type VehicleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
     organizationId?: boolean;
+    depotId?: boolean;
     name?: boolean;
     registrationNumber?: boolean;
     startAddress?: boolean;
@@ -980,10 +1186,12 @@ export type VehicleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
     createdAt?: boolean;
     updatedAt?: boolean;
     organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>;
+    depot?: boolean | Prisma.Vehicle$depotArgs<ExtArgs>;
 }, ExtArgs["result"]["vehicle"]>;
 export type VehicleSelectScalar = {
     id?: boolean;
     organizationId?: boolean;
+    depotId?: boolean;
     name?: boolean;
     registrationNumber?: boolean;
     startAddress?: boolean;
@@ -998,29 +1206,34 @@ export type VehicleSelectScalar = {
     createdAt?: boolean;
     updatedAt?: boolean;
 };
-export type VehicleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "registrationNumber" | "startAddress" | "endAddress" | "maxWeightKg" | "maxVolumeM3" | "startLatitude" | "startLongitude" | "endLatitude" | "endLongitude" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["vehicle"]>;
+export type VehicleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "depotId" | "name" | "registrationNumber" | "startAddress" | "endAddress" | "maxWeightKg" | "maxVolumeM3" | "startLatitude" | "startLongitude" | "endLatitude" | "endLongitude" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["vehicle"]>;
 export type VehicleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>;
+    depot?: boolean | Prisma.Vehicle$depotArgs<ExtArgs>;
     drivers?: boolean | Prisma.Vehicle$driversArgs<ExtArgs>;
     routes?: boolean | Prisma.Vehicle$routesArgs<ExtArgs>;
     _count?: boolean | Prisma.VehicleCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type VehicleIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>;
+    depot?: boolean | Prisma.Vehicle$depotArgs<ExtArgs>;
 };
 export type VehicleIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>;
+    depot?: boolean | Prisma.Vehicle$depotArgs<ExtArgs>;
 };
 export type $VehiclePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     name: "Vehicle";
     objects: {
         organization: Prisma.$OrganizationPayload<ExtArgs>;
+        depot: Prisma.$DepotPayload<ExtArgs> | null;
         drivers: Prisma.$DriverPayload<ExtArgs>[];
         routes: Prisma.$RoutePayload<ExtArgs>[];
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
         organizationId: string;
+        depotId: string | null;
         name: string;
         registrationNumber: string;
         startAddress: string;
@@ -1087,6 +1300,7 @@ export interface VehicleDelegate<ExtArgs extends runtime.Types.Extensions.Intern
 export interface Prisma__VehicleClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise";
     organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
+    depot<T extends Prisma.Vehicle$depotArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Vehicle$depotArgs<ExtArgs>>): Prisma.Prisma__DepotClient<runtime.Types.Result.GetResult<Prisma.$DepotPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     drivers<T extends Prisma.Vehicle$driversArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Vehicle$driversArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DriverPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     routes<T extends Prisma.Vehicle$routesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Vehicle$routesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RoutePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): runtime.Types.Utils.JsPromise<TResult1 | TResult2>;
@@ -1096,6 +1310,7 @@ export interface Prisma__VehicleClient<T, Null = never, ExtArgs extends runtime.
 export interface VehicleFieldRefs {
     readonly id: Prisma.FieldRef<"Vehicle", 'String'>;
     readonly organizationId: Prisma.FieldRef<"Vehicle", 'String'>;
+    readonly depotId: Prisma.FieldRef<"Vehicle", 'String'>;
     readonly name: Prisma.FieldRef<"Vehicle", 'String'>;
     readonly registrationNumber: Prisma.FieldRef<"Vehicle", 'String'>;
     readonly startAddress: Prisma.FieldRef<"Vehicle", 'String'>;
@@ -1209,6 +1424,12 @@ export type VehicleDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 export type VehicleDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     where?: Prisma.VehicleWhereInput;
     limit?: number;
+};
+export type Vehicle$depotArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.DepotSelect<ExtArgs> | null;
+    omit?: Prisma.DepotOmit<ExtArgs> | null;
+    include?: Prisma.DepotInclude<ExtArgs> | null;
+    where?: Prisma.DepotWhereInput;
 };
 export type Vehicle$driversArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.DriverSelect<ExtArgs> | null;

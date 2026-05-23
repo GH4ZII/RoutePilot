@@ -15,6 +15,7 @@ import * as Location from 'expo-location';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 
+import SignaturePad from '@/components/SignaturePad';
 import { authTheme } from '@/constants/authTheme';
 import * as api from '@/lib/api';
 import { ApiError } from '@/lib/api';
@@ -25,6 +26,7 @@ export default function ProofOfDeliveryScreen() {
   const queryClient = useQueryClient();
   const [note, setNote] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [signatureUri, setSignatureUri] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,6 +72,8 @@ export default function ProofOfDeliveryScreen() {
         latitude,
         longitude,
         photoUrl: photoUri ?? undefined,
+        signatureUrl: signatureUri ?? undefined,
+        capturedAt: new Date().toISOString(),
       });
 
       await queryClient.invalidateQueries({ queryKey: ['my-routes'] });
@@ -90,7 +94,8 @@ export default function ProofOfDeliveryScreen() {
         style={styles.container}
         contentContainerStyle={styles.content}>
         <Text style={styles.intro}>
-          Ta bilde og registrer GPS-posisjon som dokumentasjon på leveringen.
+          Ta bilde, signer og registrer GPS-posisjon som dokumentasjon på
+          leveringen.
         </Text>
 
         {photoUri ? (
@@ -104,6 +109,9 @@ export default function ProofOfDeliveryScreen() {
         <Pressable style={styles.btnSecondary} onPress={capturePhoto}>
           <Text style={styles.btnSecondaryText}>Ta bilde</Text>
         </Pressable>
+
+        <Text style={styles.label}>Signatur</Text>
+        <SignaturePad onChange={setSignatureUri} />
 
         <Text style={styles.label}>Notat (valgfritt)</Text>
         <TextInput

@@ -16,6 +16,15 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { ListDeliveriesQueryDto } from './dto/list-deliveries-query.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
+import {
+  parseDeliveriesCsv,
+  type CsvDeliveryRow,
+} from './deliveries-import.util';
+
+export type ImportCsvResult = {
+  created: DeliveryResponse[];
+  errors: Array<{ row: number; message: string }>;
+};
 
 export type DeliveryResponse = {
   id: string;
@@ -156,6 +165,62 @@ export class DeliveriesService {
       },
     });
     return toDeliveryResponse(updated);
+  }
+
+  async importCsv(
+    user: JwtPayload,
+    csvContent: string,
+  ): Promise<ImportCsvResult> {
+    const { rows, errors: parseErrors } = parseDeliveriesCsv(csvContent);
+    const created: DeliveryResponse[] = [];
+    const errors = [...parseErrors];
+
+    const batchSize = 5;
+    for (let i = 0; i < rows.length; i += batchSize) {
+      const batch = rows.slice(i, i + batchSize);
+      const results = await Promise.all(
+        batch.map((row) => this.createFromCsvRow(user, row)),
+      );
+      for (const result of results) {
+        if (result.error) {
+          errors.push({ row: result.row, message: result.error });
+        } else if (result.delivery) {
+          created.push(result.delivery);
+        }
+      }
+    }
+
+    return { created, errors };
+  }
+
+  private async createFromCsvRow(
+    user: JwtPayload,
+    row: CsvDeliveryRow,
+  ): Promise<{
+    row: number;
+    delivery?: DeliveryResponse;
+    error?: string;
+  }> {
+    try {
+      const delivery = await this.create(user, {
+        customerName: row.customerName,
+        phone: row.phone,
+        address: row.address,
+        weightKg: row.weightKg,
+        volumeM3: row.volumeM3,
+        priority: row.priority,
+        deadline: row.deadline,
+        timeWindowStart: row.timeWindowStart,
+        timeWindowEnd: row.timeWindowEnd,
+        notes: row.notes,
+      });
+      return { row: row.row, delivery };
+    } catch (err) {
+      return {
+        row: row.row,
+        error: err instanceof Error ? err.message : 'Import feilet',
+      };
+    }
   }
 
   async remove(user: JwtPayload, id: string): Promise<void> {

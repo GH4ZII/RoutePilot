@@ -161,17 +161,17 @@ Basert på produktkrav og implementasjon i monorepoet. Oppsett og arkitektur: [R
 
 ## Etter MVP (Advanced scope)
 
-- [ ] CSV-import av leveringer (`POST /deliveries/import-csv`)
-- [ ] Proof of delivery: foto, signatur, GPS, tidsstempel (`POST /route-stops/:id/proof`)
-- [ ] Sanntidsoppdateringer (WebSocket, SSE, Supabase Realtime eller polling)
-- [ ] Live sjåførposisjon på kart
-- [ ] Re-optimalisering i løpet av dagen
-- [ ] Kundenotifikasjoner
-- [ ] Rapporter og analytics (planlagt vs. faktisk distanse/tid)
-- [ ] PDF/CSV-eksport
-- [ ] Multi-depot routing
-- [ ] Trafikkbevisst routing
-- [ ] AI-generert rutesammendrag
+- [x] CSV-import av leveringer (`POST /deliveries/import-csv`)
+- [x] Proof of delivery: foto, signatur, GPS, tidsstempel (`POST /route-stops/:id/proof`)
+- [x] Sanntidsoppdateringer (WebSocket, SSE, Supabase Realtime eller polling)
+- [x] Live sjåførposisjon på kart
+- [x] Re-optimalisering i løpet av dagen
+- [x] Kundenotifikasjoner
+- [x] Rapporter og analytics (planlagt vs. faktisk distanse/tid)
+- [x] PDF/CSV-eksport
+- [x] Multi-depot routing
+- [x] Trafikkbevisst routing
+- [x] AI-generert rutesammendrag
 
 ---
 

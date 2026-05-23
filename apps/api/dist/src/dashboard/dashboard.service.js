@@ -70,6 +70,15 @@ let DashboardService = class DashboardService {
             include: liveRouteInclude,
             orderBy: [{ status: 'asc' }, { updatedAt: 'desc' }],
         });
+        const driverIds = rows
+            .map((r) => r.driverId)
+            .filter((id) => id != null);
+        const locations = driverIds.length
+            ? await this.prisma.driverLocation.findMany({
+                where: { driverId: { in: driverIds } },
+            })
+            : [];
+        const locationByDriver = new Map(locations.map((loc) => [loc.driverId, loc]));
         return rows.map((route) => {
             const stops = route.stops.map((stop) => ({
                 id: stop.id,
@@ -100,6 +109,20 @@ let DashboardService = class DashboardService {
                         phone: route.driver.phone,
                     }
                     : null,
+                driverLocation: (() => {
+                    if (!route.driverId)
+                        return null;
+                    const loc = locationByDriver.get(route.driverId);
+                    if (!loc)
+                        return null;
+                    return {
+                        latitude: (0, decimal_util_1.decimalToNumber)(loc.latitude),
+                        longitude: (0, decimal_util_1.decimalToNumber)(loc.longitude),
+                        recordedAt: loc.recordedAt,
+                        heading: loc.heading != null ? (0, decimal_util_1.decimalToNumber)(loc.heading) : null,
+                        speed: loc.speed != null ? (0, decimal_util_1.decimalToNumber)(loc.speed) : null,
+                    };
+                })(),
                 vehicle: route.vehicle
                     ? {
                         id: route.vehicle.id,

@@ -1,5 +1,12 @@
-import { IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 import { IsPodPhotoUrl } from '../validators/is-pod-photo-url.validator';
+import { IsPodSignatureUrl } from '../validators/is-pod-signature-url.validator';
 
 export class ProofOfDeliveryDto {
   @IsOptional()
@@ -15,9 +22,17 @@ export class ProofOfDeliveryDto {
   @IsNumber()
   longitude?: number;
 
-  /** JPEG/PNG data-URI (maks 500 KB dekodet). */
+  @IsOptional()
+  @IsDateString()
+  capturedAt?: string;
+
   @IsOptional()
   @IsString()
   @IsPodPhotoUrl()
   photoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsPodSignatureUrl()
+  signatureUrl?: string;
 }

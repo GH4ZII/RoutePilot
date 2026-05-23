@@ -130,10 +130,29 @@ export function submitProofOfDelivery(
     latitude?: number;
     longitude?: number;
     photoUrl?: string;
+    signatureUrl?: string;
+    capturedAt?: string;
   },
 ): Promise<DriverRoute> {
   return request<DriverRoute>(`/route-stops/${stopId}/proof`, {
     method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateDriverLocation(payload: {
+  latitude: number;
+  longitude: number;
+  heading?: number;
+  speed?: number;
+}): Promise<{
+  driverId: string;
+  latitude: number;
+  longitude: number;
+  recordedAt: string;
+}> {
+  return request('/drivers/me/location', {
+    method: 'PATCH',
     body: JSON.stringify(payload),
   });
 }

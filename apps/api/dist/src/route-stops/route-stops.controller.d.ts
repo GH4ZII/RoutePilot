@@ -7,5 +7,6 @@ export declare class RouteStopsController {
     constructor(routeStops: RouteStopsService);
     complete(user: JwtPayload, id: string): Promise<import("../routes/routes.service").RouteResponse>;
     fail(user: JwtPayload, id: string, dto: FailRouteStopDto): Promise<import("../routes/routes.service").RouteResponse>;
+    getProof(user: JwtPayload, id: string): Promise<import("./route-stops.service").ProofOfDeliveryResponse>;
     proof(user: JwtPayload, id: string, dto: ProofOfDeliveryDto): Promise<import("../routes/routes.service").RouteResponse>;
 }

@@ -20,6 +20,7 @@ class CreateVehicleDto {
     maxWeightKg;
     maxVolumeM3;
     status;
+    depotId;
 }
 exports.CreateVehicleDto = CreateVehicleDto;
 __decorate([
@@ -61,4 +62,9 @@ __decorate([
     (0, class_validator_1.IsEnum)(client_1.VehicleStatus),
     __metadata("design:type", String)
 ], CreateVehicleDto.prototype, "status", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateVehicleDto.prototype, "depotId", void 0);
 //# sourceMappingURL=create-vehicle.dto.js.map

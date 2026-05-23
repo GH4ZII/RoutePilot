@@ -12,11 +12,15 @@ export type AggregateRoute = {
 export type RouteAvgAggregateOutputType = {
     totalDistanceMeters: number | null;
     totalDurationSeconds: number | null;
+    actualDistanceMeters: number | null;
+    actualDurationSeconds: number | null;
     capacityUsedKg: runtime.Decimal | null;
 };
 export type RouteSumAggregateOutputType = {
     totalDistanceMeters: number | null;
     totalDurationSeconds: number | null;
+    actualDistanceMeters: number | null;
+    actualDurationSeconds: number | null;
     capacityUsedKg: runtime.Decimal | null;
 };
 export type RouteMinAggregateOutputType = {
@@ -28,6 +32,8 @@ export type RouteMinAggregateOutputType = {
     plannedDate: Date | null;
     totalDistanceMeters: number | null;
     totalDurationSeconds: number | null;
+    actualDistanceMeters: number | null;
+    actualDurationSeconds: number | null;
     capacityUsedKg: runtime.Decimal | null;
     startedAt: Date | null;
     finishedAt: Date | null;
@@ -43,6 +49,8 @@ export type RouteMaxAggregateOutputType = {
     plannedDate: Date | null;
     totalDistanceMeters: number | null;
     totalDurationSeconds: number | null;
+    actualDistanceMeters: number | null;
+    actualDurationSeconds: number | null;
     capacityUsedKg: runtime.Decimal | null;
     startedAt: Date | null;
     finishedAt: Date | null;
@@ -58,6 +66,8 @@ export type RouteCountAggregateOutputType = {
     plannedDate: number;
     totalDistanceMeters: number;
     totalDurationSeconds: number;
+    actualDistanceMeters: number;
+    actualDurationSeconds: number;
     capacityUsedKg: number;
     startedAt: number;
     finishedAt: number;
@@ -68,11 +78,15 @@ export type RouteCountAggregateOutputType = {
 export type RouteAvgAggregateInputType = {
     totalDistanceMeters?: true;
     totalDurationSeconds?: true;
+    actualDistanceMeters?: true;
+    actualDurationSeconds?: true;
     capacityUsedKg?: true;
 };
 export type RouteSumAggregateInputType = {
     totalDistanceMeters?: true;
     totalDurationSeconds?: true;
+    actualDistanceMeters?: true;
+    actualDurationSeconds?: true;
     capacityUsedKg?: true;
 };
 export type RouteMinAggregateInputType = {
@@ -84,6 +98,8 @@ export type RouteMinAggregateInputType = {
     plannedDate?: true;
     totalDistanceMeters?: true;
     totalDurationSeconds?: true;
+    actualDistanceMeters?: true;
+    actualDurationSeconds?: true;
     capacityUsedKg?: true;
     startedAt?: true;
     finishedAt?: true;
@@ -99,6 +115,8 @@ export type RouteMaxAggregateInputType = {
     plannedDate?: true;
     totalDistanceMeters?: true;
     totalDurationSeconds?: true;
+    actualDistanceMeters?: true;
+    actualDurationSeconds?: true;
     capacityUsedKg?: true;
     startedAt?: true;
     finishedAt?: true;
@@ -114,6 +132,8 @@ export type RouteCountAggregateInputType = {
     plannedDate?: true;
     totalDistanceMeters?: true;
     totalDurationSeconds?: true;
+    actualDistanceMeters?: true;
+    actualDurationSeconds?: true;
     capacityUsedKg?: true;
     startedAt?: true;
     finishedAt?: true;
@@ -158,6 +178,8 @@ export type RouteGroupByOutputType = {
     plannedDate: Date;
     totalDistanceMeters: number | null;
     totalDurationSeconds: number | null;
+    actualDistanceMeters: number | null;
+    actualDurationSeconds: number | null;
     capacityUsedKg: runtime.Decimal | null;
     startedAt: Date | null;
     finishedAt: Date | null;
@@ -184,6 +206,8 @@ export type RouteWhereInput = {
     plannedDate?: Prisma.DateTimeFilter<"Route"> | Date | string;
     totalDistanceMeters?: Prisma.IntNullableFilter<"Route"> | number | null;
     totalDurationSeconds?: Prisma.IntNullableFilter<"Route"> | number | null;
+    actualDistanceMeters?: Prisma.IntNullableFilter<"Route"> | number | null;
+    actualDurationSeconds?: Prisma.IntNullableFilter<"Route"> | number | null;
     capacityUsedKg?: Prisma.DecimalNullableFilter<"Route"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.DateTimeNullableFilter<"Route"> | Date | string | null;
     finishedAt?: Prisma.DateTimeNullableFilter<"Route"> | Date | string | null;
@@ -195,6 +219,7 @@ export type RouteWhereInput = {
     activeDriver?: Prisma.XOR<Prisma.DriverNullableScalarRelationFilter, Prisma.DriverWhereInput> | null;
     stops?: Prisma.RouteStopListRelationFilter;
     events?: Prisma.RouteEventListRelationFilter;
+    summary?: Prisma.XOR<Prisma.RouteSummaryNullableScalarRelationFilter, Prisma.RouteSummaryWhereInput> | null;
 };
 export type RouteOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
@@ -205,6 +230,8 @@ export type RouteOrderByWithRelationInput = {
     plannedDate?: Prisma.SortOrder;
     totalDistanceMeters?: Prisma.SortOrderInput | Prisma.SortOrder;
     totalDurationSeconds?: Prisma.SortOrderInput | Prisma.SortOrder;
+    actualDistanceMeters?: Prisma.SortOrderInput | Prisma.SortOrder;
+    actualDurationSeconds?: Prisma.SortOrderInput | Prisma.SortOrder;
     capacityUsedKg?: Prisma.SortOrderInput | Prisma.SortOrder;
     startedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
     finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -216,6 +243,7 @@ export type RouteOrderByWithRelationInput = {
     activeDriver?: Prisma.DriverOrderByWithRelationInput;
     stops?: Prisma.RouteStopOrderByRelationAggregateInput;
     events?: Prisma.RouteEventOrderByRelationAggregateInput;
+    summary?: Prisma.RouteSummaryOrderByWithRelationInput;
 };
 export type RouteWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
@@ -229,6 +257,8 @@ export type RouteWhereUniqueInput = Prisma.AtLeast<{
     plannedDate?: Prisma.DateTimeFilter<"Route"> | Date | string;
     totalDistanceMeters?: Prisma.IntNullableFilter<"Route"> | number | null;
     totalDurationSeconds?: Prisma.IntNullableFilter<"Route"> | number | null;
+    actualDistanceMeters?: Prisma.IntNullableFilter<"Route"> | number | null;
+    actualDurationSeconds?: Prisma.IntNullableFilter<"Route"> | number | null;
     capacityUsedKg?: Prisma.DecimalNullableFilter<"Route"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.DateTimeNullableFilter<"Route"> | Date | string | null;
     finishedAt?: Prisma.DateTimeNullableFilter<"Route"> | Date | string | null;
@@ -240,6 +270,7 @@ export type RouteWhereUniqueInput = Prisma.AtLeast<{
     activeDriver?: Prisma.XOR<Prisma.DriverNullableScalarRelationFilter, Prisma.DriverWhereInput> | null;
     stops?: Prisma.RouteStopListRelationFilter;
     events?: Prisma.RouteEventListRelationFilter;
+    summary?: Prisma.XOR<Prisma.RouteSummaryNullableScalarRelationFilter, Prisma.RouteSummaryWhereInput> | null;
 }, "id">;
 export type RouteOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
@@ -250,6 +281,8 @@ export type RouteOrderByWithAggregationInput = {
     plannedDate?: Prisma.SortOrder;
     totalDistanceMeters?: Prisma.SortOrderInput | Prisma.SortOrder;
     totalDurationSeconds?: Prisma.SortOrderInput | Prisma.SortOrder;
+    actualDistanceMeters?: Prisma.SortOrderInput | Prisma.SortOrder;
+    actualDurationSeconds?: Prisma.SortOrderInput | Prisma.SortOrder;
     capacityUsedKg?: Prisma.SortOrderInput | Prisma.SortOrder;
     startedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
     finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -273,6 +306,8 @@ export type RouteScalarWhereWithAggregatesInput = {
     plannedDate?: Prisma.DateTimeWithAggregatesFilter<"Route"> | Date | string;
     totalDistanceMeters?: Prisma.IntNullableWithAggregatesFilter<"Route"> | number | null;
     totalDurationSeconds?: Prisma.IntNullableWithAggregatesFilter<"Route"> | number | null;
+    actualDistanceMeters?: Prisma.IntNullableWithAggregatesFilter<"Route"> | number | null;
+    actualDurationSeconds?: Prisma.IntNullableWithAggregatesFilter<"Route"> | number | null;
     capacityUsedKg?: Prisma.DecimalNullableWithAggregatesFilter<"Route"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Route"> | Date | string | null;
     finishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Route"> | Date | string | null;
@@ -285,6 +320,8 @@ export type RouteCreateInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -296,6 +333,7 @@ export type RouteCreateInput = {
     activeDriver?: Prisma.DriverCreateNestedOneWithoutActiveRouteInput;
     stops?: Prisma.RouteStopCreateNestedManyWithoutRouteInput;
     events?: Prisma.RouteEventCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryCreateNestedOneWithoutRouteInput;
 };
 export type RouteUncheckedCreateInput = {
     id?: string;
@@ -306,6 +344,8 @@ export type RouteUncheckedCreateInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -314,6 +354,7 @@ export type RouteUncheckedCreateInput = {
     activeDriver?: Prisma.DriverUncheckedCreateNestedOneWithoutActiveRouteInput;
     stops?: Prisma.RouteStopUncheckedCreateNestedManyWithoutRouteInput;
     events?: Prisma.RouteEventUncheckedCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryUncheckedCreateNestedOneWithoutRouteInput;
 };
 export type RouteUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -321,6 +362,8 @@ export type RouteUpdateInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -332,6 +375,7 @@ export type RouteUpdateInput = {
     activeDriver?: Prisma.DriverUpdateOneWithoutActiveRouteNestedInput;
     stops?: Prisma.RouteStopUpdateManyWithoutRouteNestedInput;
     events?: Prisma.RouteEventUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUpdateOneWithoutRouteNestedInput;
 };
 export type RouteUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -342,6 +386,8 @@ export type RouteUncheckedUpdateInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -350,6 +396,7 @@ export type RouteUncheckedUpdateInput = {
     activeDriver?: Prisma.DriverUncheckedUpdateOneWithoutActiveRouteNestedInput;
     stops?: Prisma.RouteStopUncheckedUpdateManyWithoutRouteNestedInput;
     events?: Prisma.RouteEventUncheckedUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUncheckedUpdateOneWithoutRouteNestedInput;
 };
 export type RouteCreateManyInput = {
     id?: string;
@@ -360,6 +407,8 @@ export type RouteCreateManyInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -372,6 +421,8 @@ export type RouteUpdateManyMutationInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -387,6 +438,8 @@ export type RouteUncheckedUpdateManyInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -414,6 +467,8 @@ export type RouteCountOrderByAggregateInput = {
     plannedDate?: Prisma.SortOrder;
     totalDistanceMeters?: Prisma.SortOrder;
     totalDurationSeconds?: Prisma.SortOrder;
+    actualDistanceMeters?: Prisma.SortOrder;
+    actualDurationSeconds?: Prisma.SortOrder;
     capacityUsedKg?: Prisma.SortOrder;
     startedAt?: Prisma.SortOrder;
     finishedAt?: Prisma.SortOrder;
@@ -423,6 +478,8 @@ export type RouteCountOrderByAggregateInput = {
 export type RouteAvgOrderByAggregateInput = {
     totalDistanceMeters?: Prisma.SortOrder;
     totalDurationSeconds?: Prisma.SortOrder;
+    actualDistanceMeters?: Prisma.SortOrder;
+    actualDurationSeconds?: Prisma.SortOrder;
     capacityUsedKg?: Prisma.SortOrder;
 };
 export type RouteMaxOrderByAggregateInput = {
@@ -434,6 +491,8 @@ export type RouteMaxOrderByAggregateInput = {
     plannedDate?: Prisma.SortOrder;
     totalDistanceMeters?: Prisma.SortOrder;
     totalDurationSeconds?: Prisma.SortOrder;
+    actualDistanceMeters?: Prisma.SortOrder;
+    actualDurationSeconds?: Prisma.SortOrder;
     capacityUsedKg?: Prisma.SortOrder;
     startedAt?: Prisma.SortOrder;
     finishedAt?: Prisma.SortOrder;
@@ -449,6 +508,8 @@ export type RouteMinOrderByAggregateInput = {
     plannedDate?: Prisma.SortOrder;
     totalDistanceMeters?: Prisma.SortOrder;
     totalDurationSeconds?: Prisma.SortOrder;
+    actualDistanceMeters?: Prisma.SortOrder;
+    actualDurationSeconds?: Prisma.SortOrder;
     capacityUsedKg?: Prisma.SortOrder;
     startedAt?: Prisma.SortOrder;
     finishedAt?: Prisma.SortOrder;
@@ -458,6 +519,8 @@ export type RouteMinOrderByAggregateInput = {
 export type RouteSumOrderByAggregateInput = {
     totalDistanceMeters?: Prisma.SortOrder;
     totalDurationSeconds?: Prisma.SortOrder;
+    actualDistanceMeters?: Prisma.SortOrder;
+    actualDurationSeconds?: Prisma.SortOrder;
     capacityUsedKg?: Prisma.SortOrder;
 };
 export type RouteScalarRelationFilter = {
@@ -626,12 +689,26 @@ export type RouteUpdateOneRequiredWithoutEventsNestedInput = {
     connect?: Prisma.RouteWhereUniqueInput;
     update?: Prisma.XOR<Prisma.XOR<Prisma.RouteUpdateToOneWithWhereWithoutEventsInput, Prisma.RouteUpdateWithoutEventsInput>, Prisma.RouteUncheckedUpdateWithoutEventsInput>;
 };
+export type RouteCreateNestedOneWithoutSummaryInput = {
+    create?: Prisma.XOR<Prisma.RouteCreateWithoutSummaryInput, Prisma.RouteUncheckedCreateWithoutSummaryInput>;
+    connectOrCreate?: Prisma.RouteCreateOrConnectWithoutSummaryInput;
+    connect?: Prisma.RouteWhereUniqueInput;
+};
+export type RouteUpdateOneRequiredWithoutSummaryNestedInput = {
+    create?: Prisma.XOR<Prisma.RouteCreateWithoutSummaryInput, Prisma.RouteUncheckedCreateWithoutSummaryInput>;
+    connectOrCreate?: Prisma.RouteCreateOrConnectWithoutSummaryInput;
+    upsert?: Prisma.RouteUpsertWithoutSummaryInput;
+    connect?: Prisma.RouteWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.RouteUpdateToOneWithWhereWithoutSummaryInput, Prisma.RouteUpdateWithoutSummaryInput>, Prisma.RouteUncheckedUpdateWithoutSummaryInput>;
+};
 export type RouteCreateWithoutOrganizationInput = {
     id?: string;
     status?: $Enums.RouteStatus;
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -642,6 +719,7 @@ export type RouteCreateWithoutOrganizationInput = {
     activeDriver?: Prisma.DriverCreateNestedOneWithoutActiveRouteInput;
     stops?: Prisma.RouteStopCreateNestedManyWithoutRouteInput;
     events?: Prisma.RouteEventCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryCreateNestedOneWithoutRouteInput;
 };
 export type RouteUncheckedCreateWithoutOrganizationInput = {
     id?: string;
@@ -651,6 +729,8 @@ export type RouteUncheckedCreateWithoutOrganizationInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -659,6 +739,7 @@ export type RouteUncheckedCreateWithoutOrganizationInput = {
     activeDriver?: Prisma.DriverUncheckedCreateNestedOneWithoutActiveRouteInput;
     stops?: Prisma.RouteStopUncheckedCreateNestedManyWithoutRouteInput;
     events?: Prisma.RouteEventUncheckedCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryUncheckedCreateNestedOneWithoutRouteInput;
 };
 export type RouteCreateOrConnectWithoutOrganizationInput = {
     where: Prisma.RouteWhereUniqueInput;
@@ -693,6 +774,8 @@ export type RouteScalarWhereInput = {
     plannedDate?: Prisma.DateTimeFilter<"Route"> | Date | string;
     totalDistanceMeters?: Prisma.IntNullableFilter<"Route"> | number | null;
     totalDurationSeconds?: Prisma.IntNullableFilter<"Route"> | number | null;
+    actualDistanceMeters?: Prisma.IntNullableFilter<"Route"> | number | null;
+    actualDurationSeconds?: Prisma.IntNullableFilter<"Route"> | number | null;
     capacityUsedKg?: Prisma.DecimalNullableFilter<"Route"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.DateTimeNullableFilter<"Route"> | Date | string | null;
     finishedAt?: Prisma.DateTimeNullableFilter<"Route"> | Date | string | null;
@@ -705,6 +788,8 @@ export type RouteCreateWithoutActiveDriverInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -715,6 +800,7 @@ export type RouteCreateWithoutActiveDriverInput = {
     vehicle?: Prisma.VehicleCreateNestedOneWithoutRoutesInput;
     stops?: Prisma.RouteStopCreateNestedManyWithoutRouteInput;
     events?: Prisma.RouteEventCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryCreateNestedOneWithoutRouteInput;
 };
 export type RouteUncheckedCreateWithoutActiveDriverInput = {
     id?: string;
@@ -725,6 +811,8 @@ export type RouteUncheckedCreateWithoutActiveDriverInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -732,6 +820,7 @@ export type RouteUncheckedCreateWithoutActiveDriverInput = {
     updatedAt?: Date | string;
     stops?: Prisma.RouteStopUncheckedCreateNestedManyWithoutRouteInput;
     events?: Prisma.RouteEventUncheckedCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryUncheckedCreateNestedOneWithoutRouteInput;
 };
 export type RouteCreateOrConnectWithoutActiveDriverInput = {
     where: Prisma.RouteWhereUniqueInput;
@@ -743,6 +832,8 @@ export type RouteCreateWithoutDriverInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -753,6 +844,7 @@ export type RouteCreateWithoutDriverInput = {
     activeDriver?: Prisma.DriverCreateNestedOneWithoutActiveRouteInput;
     stops?: Prisma.RouteStopCreateNestedManyWithoutRouteInput;
     events?: Prisma.RouteEventCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryCreateNestedOneWithoutRouteInput;
 };
 export type RouteUncheckedCreateWithoutDriverInput = {
     id?: string;
@@ -762,6 +854,8 @@ export type RouteUncheckedCreateWithoutDriverInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -770,6 +864,7 @@ export type RouteUncheckedCreateWithoutDriverInput = {
     activeDriver?: Prisma.DriverUncheckedCreateNestedOneWithoutActiveRouteInput;
     stops?: Prisma.RouteStopUncheckedCreateNestedManyWithoutRouteInput;
     events?: Prisma.RouteEventUncheckedCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryUncheckedCreateNestedOneWithoutRouteInput;
 };
 export type RouteCreateOrConnectWithoutDriverInput = {
     where: Prisma.RouteWhereUniqueInput;
@@ -794,6 +889,8 @@ export type RouteUpdateWithoutActiveDriverInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -804,6 +901,7 @@ export type RouteUpdateWithoutActiveDriverInput = {
     vehicle?: Prisma.VehicleUpdateOneWithoutRoutesNestedInput;
     stops?: Prisma.RouteStopUpdateManyWithoutRouteNestedInput;
     events?: Prisma.RouteEventUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUpdateOneWithoutRouteNestedInput;
 };
 export type RouteUncheckedUpdateWithoutActiveDriverInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -814,6 +912,8 @@ export type RouteUncheckedUpdateWithoutActiveDriverInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -821,6 +921,7 @@ export type RouteUncheckedUpdateWithoutActiveDriverInput = {
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     stops?: Prisma.RouteStopUncheckedUpdateManyWithoutRouteNestedInput;
     events?: Prisma.RouteEventUncheckedUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUncheckedUpdateOneWithoutRouteNestedInput;
 };
 export type RouteUpsertWithWhereUniqueWithoutDriverInput = {
     where: Prisma.RouteWhereUniqueInput;
@@ -841,6 +942,8 @@ export type RouteCreateWithoutVehicleInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -851,6 +954,7 @@ export type RouteCreateWithoutVehicleInput = {
     activeDriver?: Prisma.DriverCreateNestedOneWithoutActiveRouteInput;
     stops?: Prisma.RouteStopCreateNestedManyWithoutRouteInput;
     events?: Prisma.RouteEventCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryCreateNestedOneWithoutRouteInput;
 };
 export type RouteUncheckedCreateWithoutVehicleInput = {
     id?: string;
@@ -860,6 +964,8 @@ export type RouteUncheckedCreateWithoutVehicleInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -868,6 +974,7 @@ export type RouteUncheckedCreateWithoutVehicleInput = {
     activeDriver?: Prisma.DriverUncheckedCreateNestedOneWithoutActiveRouteInput;
     stops?: Prisma.RouteStopUncheckedCreateNestedManyWithoutRouteInput;
     events?: Prisma.RouteEventUncheckedCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryUncheckedCreateNestedOneWithoutRouteInput;
 };
 export type RouteCreateOrConnectWithoutVehicleInput = {
     where: Prisma.RouteWhereUniqueInput;
@@ -896,6 +1003,8 @@ export type RouteCreateWithoutStopsInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -906,6 +1015,7 @@ export type RouteCreateWithoutStopsInput = {
     vehicle?: Prisma.VehicleCreateNestedOneWithoutRoutesInput;
     activeDriver?: Prisma.DriverCreateNestedOneWithoutActiveRouteInput;
     events?: Prisma.RouteEventCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryCreateNestedOneWithoutRouteInput;
 };
 export type RouteUncheckedCreateWithoutStopsInput = {
     id?: string;
@@ -916,6 +1026,8 @@ export type RouteUncheckedCreateWithoutStopsInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -923,6 +1035,7 @@ export type RouteUncheckedCreateWithoutStopsInput = {
     updatedAt?: Date | string;
     activeDriver?: Prisma.DriverUncheckedCreateNestedOneWithoutActiveRouteInput;
     events?: Prisma.RouteEventUncheckedCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryUncheckedCreateNestedOneWithoutRouteInput;
 };
 export type RouteCreateOrConnectWithoutStopsInput = {
     where: Prisma.RouteWhereUniqueInput;
@@ -943,6 +1056,8 @@ export type RouteUpdateWithoutStopsInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -953,6 +1068,7 @@ export type RouteUpdateWithoutStopsInput = {
     vehicle?: Prisma.VehicleUpdateOneWithoutRoutesNestedInput;
     activeDriver?: Prisma.DriverUpdateOneWithoutActiveRouteNestedInput;
     events?: Prisma.RouteEventUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUpdateOneWithoutRouteNestedInput;
 };
 export type RouteUncheckedUpdateWithoutStopsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -963,6 +1079,8 @@ export type RouteUncheckedUpdateWithoutStopsInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -970,6 +1088,7 @@ export type RouteUncheckedUpdateWithoutStopsInput = {
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     activeDriver?: Prisma.DriverUncheckedUpdateOneWithoutActiveRouteNestedInput;
     events?: Prisma.RouteEventUncheckedUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUncheckedUpdateOneWithoutRouteNestedInput;
 };
 export type RouteCreateWithoutEventsInput = {
     id?: string;
@@ -977,6 +1096,8 @@ export type RouteCreateWithoutEventsInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -987,6 +1108,7 @@ export type RouteCreateWithoutEventsInput = {
     vehicle?: Prisma.VehicleCreateNestedOneWithoutRoutesInput;
     activeDriver?: Prisma.DriverCreateNestedOneWithoutActiveRouteInput;
     stops?: Prisma.RouteStopCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryCreateNestedOneWithoutRouteInput;
 };
 export type RouteUncheckedCreateWithoutEventsInput = {
     id?: string;
@@ -997,6 +1119,8 @@ export type RouteUncheckedCreateWithoutEventsInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -1004,6 +1128,7 @@ export type RouteUncheckedCreateWithoutEventsInput = {
     updatedAt?: Date | string;
     activeDriver?: Prisma.DriverUncheckedCreateNestedOneWithoutActiveRouteInput;
     stops?: Prisma.RouteStopUncheckedCreateNestedManyWithoutRouteInput;
+    summary?: Prisma.RouteSummaryUncheckedCreateNestedOneWithoutRouteInput;
 };
 export type RouteCreateOrConnectWithoutEventsInput = {
     where: Prisma.RouteWhereUniqueInput;
@@ -1024,6 +1149,8 @@ export type RouteUpdateWithoutEventsInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1034,6 +1161,7 @@ export type RouteUpdateWithoutEventsInput = {
     vehicle?: Prisma.VehicleUpdateOneWithoutRoutesNestedInput;
     activeDriver?: Prisma.DriverUpdateOneWithoutActiveRouteNestedInput;
     stops?: Prisma.RouteStopUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUpdateOneWithoutRouteNestedInput;
 };
 export type RouteUncheckedUpdateWithoutEventsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1044,6 +1172,8 @@ export type RouteUncheckedUpdateWithoutEventsInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1051,6 +1181,100 @@ export type RouteUncheckedUpdateWithoutEventsInput = {
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     activeDriver?: Prisma.DriverUncheckedUpdateOneWithoutActiveRouteNestedInput;
     stops?: Prisma.RouteStopUncheckedUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUncheckedUpdateOneWithoutRouteNestedInput;
+};
+export type RouteCreateWithoutSummaryInput = {
+    id?: string;
+    status?: $Enums.RouteStatus;
+    plannedDate: Date | string;
+    totalDistanceMeters?: number | null;
+    totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
+    capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    startedAt?: Date | string | null;
+    finishedAt?: Date | string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    organization: Prisma.OrganizationCreateNestedOneWithoutRoutesInput;
+    driver?: Prisma.DriverCreateNestedOneWithoutRoutesInput;
+    vehicle?: Prisma.VehicleCreateNestedOneWithoutRoutesInput;
+    activeDriver?: Prisma.DriverCreateNestedOneWithoutActiveRouteInput;
+    stops?: Prisma.RouteStopCreateNestedManyWithoutRouteInput;
+    events?: Prisma.RouteEventCreateNestedManyWithoutRouteInput;
+};
+export type RouteUncheckedCreateWithoutSummaryInput = {
+    id?: string;
+    organizationId: string;
+    driverId?: string | null;
+    vehicleId?: string | null;
+    status?: $Enums.RouteStatus;
+    plannedDate: Date | string;
+    totalDistanceMeters?: number | null;
+    totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
+    capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    startedAt?: Date | string | null;
+    finishedAt?: Date | string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    activeDriver?: Prisma.DriverUncheckedCreateNestedOneWithoutActiveRouteInput;
+    stops?: Prisma.RouteStopUncheckedCreateNestedManyWithoutRouteInput;
+    events?: Prisma.RouteEventUncheckedCreateNestedManyWithoutRouteInput;
+};
+export type RouteCreateOrConnectWithoutSummaryInput = {
+    where: Prisma.RouteWhereUniqueInput;
+    create: Prisma.XOR<Prisma.RouteCreateWithoutSummaryInput, Prisma.RouteUncheckedCreateWithoutSummaryInput>;
+};
+export type RouteUpsertWithoutSummaryInput = {
+    update: Prisma.XOR<Prisma.RouteUpdateWithoutSummaryInput, Prisma.RouteUncheckedUpdateWithoutSummaryInput>;
+    create: Prisma.XOR<Prisma.RouteCreateWithoutSummaryInput, Prisma.RouteUncheckedCreateWithoutSummaryInput>;
+    where?: Prisma.RouteWhereInput;
+};
+export type RouteUpdateToOneWithWhereWithoutSummaryInput = {
+    where?: Prisma.RouteWhereInput;
+    data: Prisma.XOR<Prisma.RouteUpdateWithoutSummaryInput, Prisma.RouteUncheckedUpdateWithoutSummaryInput>;
+};
+export type RouteUpdateWithoutSummaryInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    status?: Prisma.EnumRouteStatusFieldUpdateOperationsInput | $Enums.RouteStatus;
+    plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    organization?: Prisma.OrganizationUpdateOneRequiredWithoutRoutesNestedInput;
+    driver?: Prisma.DriverUpdateOneWithoutRoutesNestedInput;
+    vehicle?: Prisma.VehicleUpdateOneWithoutRoutesNestedInput;
+    activeDriver?: Prisma.DriverUpdateOneWithoutActiveRouteNestedInput;
+    stops?: Prisma.RouteStopUpdateManyWithoutRouteNestedInput;
+    events?: Prisma.RouteEventUpdateManyWithoutRouteNestedInput;
+};
+export type RouteUncheckedUpdateWithoutSummaryInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
+    driverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    vehicleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    status?: Prisma.EnumRouteStatusFieldUpdateOperationsInput | $Enums.RouteStatus;
+    plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    activeDriver?: Prisma.DriverUncheckedUpdateOneWithoutActiveRouteNestedInput;
+    stops?: Prisma.RouteStopUncheckedUpdateManyWithoutRouteNestedInput;
+    events?: Prisma.RouteEventUncheckedUpdateManyWithoutRouteNestedInput;
 };
 export type RouteCreateManyOrganizationInput = {
     id?: string;
@@ -1060,6 +1284,8 @@ export type RouteCreateManyOrganizationInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -1072,6 +1298,8 @@ export type RouteUpdateWithoutOrganizationInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1082,6 +1310,7 @@ export type RouteUpdateWithoutOrganizationInput = {
     activeDriver?: Prisma.DriverUpdateOneWithoutActiveRouteNestedInput;
     stops?: Prisma.RouteStopUpdateManyWithoutRouteNestedInput;
     events?: Prisma.RouteEventUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUpdateOneWithoutRouteNestedInput;
 };
 export type RouteUncheckedUpdateWithoutOrganizationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1091,6 +1320,8 @@ export type RouteUncheckedUpdateWithoutOrganizationInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1099,6 +1330,7 @@ export type RouteUncheckedUpdateWithoutOrganizationInput = {
     activeDriver?: Prisma.DriverUncheckedUpdateOneWithoutActiveRouteNestedInput;
     stops?: Prisma.RouteStopUncheckedUpdateManyWithoutRouteNestedInput;
     events?: Prisma.RouteEventUncheckedUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUncheckedUpdateOneWithoutRouteNestedInput;
 };
 export type RouteUncheckedUpdateManyWithoutOrganizationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1108,6 +1340,8 @@ export type RouteUncheckedUpdateManyWithoutOrganizationInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1122,6 +1356,8 @@ export type RouteCreateManyDriverInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -1134,6 +1370,8 @@ export type RouteUpdateWithoutDriverInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1144,6 +1382,7 @@ export type RouteUpdateWithoutDriverInput = {
     activeDriver?: Prisma.DriverUpdateOneWithoutActiveRouteNestedInput;
     stops?: Prisma.RouteStopUpdateManyWithoutRouteNestedInput;
     events?: Prisma.RouteEventUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUpdateOneWithoutRouteNestedInput;
 };
 export type RouteUncheckedUpdateWithoutDriverInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1153,6 +1392,8 @@ export type RouteUncheckedUpdateWithoutDriverInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1161,6 +1402,7 @@ export type RouteUncheckedUpdateWithoutDriverInput = {
     activeDriver?: Prisma.DriverUncheckedUpdateOneWithoutActiveRouteNestedInput;
     stops?: Prisma.RouteStopUncheckedUpdateManyWithoutRouteNestedInput;
     events?: Prisma.RouteEventUncheckedUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUncheckedUpdateOneWithoutRouteNestedInput;
 };
 export type RouteUncheckedUpdateManyWithoutDriverInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1170,6 +1412,8 @@ export type RouteUncheckedUpdateManyWithoutDriverInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1184,6 +1428,8 @@ export type RouteCreateManyVehicleInput = {
     plannedDate: Date | string;
     totalDistanceMeters?: number | null;
     totalDurationSeconds?: number | null;
+    actualDistanceMeters?: number | null;
+    actualDurationSeconds?: number | null;
     capacityUsedKg?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Date | string | null;
     finishedAt?: Date | string | null;
@@ -1196,6 +1442,8 @@ export type RouteUpdateWithoutVehicleInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1206,6 +1454,7 @@ export type RouteUpdateWithoutVehicleInput = {
     activeDriver?: Prisma.DriverUpdateOneWithoutActiveRouteNestedInput;
     stops?: Prisma.RouteStopUpdateManyWithoutRouteNestedInput;
     events?: Prisma.RouteEventUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUpdateOneWithoutRouteNestedInput;
 };
 export type RouteUncheckedUpdateWithoutVehicleInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1215,6 +1464,8 @@ export type RouteUncheckedUpdateWithoutVehicleInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1223,6 +1474,7 @@ export type RouteUncheckedUpdateWithoutVehicleInput = {
     activeDriver?: Prisma.DriverUncheckedUpdateOneWithoutActiveRouteNestedInput;
     stops?: Prisma.RouteStopUncheckedUpdateManyWithoutRouteNestedInput;
     events?: Prisma.RouteEventUncheckedUpdateManyWithoutRouteNestedInput;
+    summary?: Prisma.RouteSummaryUncheckedUpdateOneWithoutRouteNestedInput;
 };
 export type RouteUncheckedUpdateManyWithoutVehicleInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1232,6 +1484,8 @@ export type RouteUncheckedUpdateManyWithoutVehicleInput = {
     plannedDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     totalDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     totalDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDistanceMeters?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
+    actualDurationSeconds?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
     capacityUsedKg?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
@@ -1264,6 +1518,8 @@ export type RouteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     plannedDate?: boolean;
     totalDistanceMeters?: boolean;
     totalDurationSeconds?: boolean;
+    actualDistanceMeters?: boolean;
+    actualDurationSeconds?: boolean;
     capacityUsedKg?: boolean;
     startedAt?: boolean;
     finishedAt?: boolean;
@@ -1275,6 +1531,7 @@ export type RouteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     activeDriver?: boolean | Prisma.Route$activeDriverArgs<ExtArgs>;
     stops?: boolean | Prisma.Route$stopsArgs<ExtArgs>;
     events?: boolean | Prisma.Route$eventsArgs<ExtArgs>;
+    summary?: boolean | Prisma.Route$summaryArgs<ExtArgs>;
     _count?: boolean | Prisma.RouteCountOutputTypeDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["route"]>;
 export type RouteSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1286,6 +1543,8 @@ export type RouteSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
     plannedDate?: boolean;
     totalDistanceMeters?: boolean;
     totalDurationSeconds?: boolean;
+    actualDistanceMeters?: boolean;
+    actualDurationSeconds?: boolean;
     capacityUsedKg?: boolean;
     startedAt?: boolean;
     finishedAt?: boolean;
@@ -1304,6 +1563,8 @@ export type RouteSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
     plannedDate?: boolean;
     totalDistanceMeters?: boolean;
     totalDurationSeconds?: boolean;
+    actualDistanceMeters?: boolean;
+    actualDurationSeconds?: boolean;
     capacityUsedKg?: boolean;
     startedAt?: boolean;
     finishedAt?: boolean;
@@ -1322,13 +1583,15 @@ export type RouteSelectScalar = {
     plannedDate?: boolean;
     totalDistanceMeters?: boolean;
     totalDurationSeconds?: boolean;
+    actualDistanceMeters?: boolean;
+    actualDurationSeconds?: boolean;
     capacityUsedKg?: boolean;
     startedAt?: boolean;
     finishedAt?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
 };
-export type RouteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "driverId" | "vehicleId" | "status" | "plannedDate" | "totalDistanceMeters" | "totalDurationSeconds" | "capacityUsedKg" | "startedAt" | "finishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["route"]>;
+export type RouteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "driverId" | "vehicleId" | "status" | "plannedDate" | "totalDistanceMeters" | "totalDurationSeconds" | "actualDistanceMeters" | "actualDurationSeconds" | "capacityUsedKg" | "startedAt" | "finishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["route"]>;
 export type RouteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>;
     driver?: boolean | Prisma.Route$driverArgs<ExtArgs>;
@@ -1336,6 +1599,7 @@ export type RouteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     activeDriver?: boolean | Prisma.Route$activeDriverArgs<ExtArgs>;
     stops?: boolean | Prisma.Route$stopsArgs<ExtArgs>;
     events?: boolean | Prisma.Route$eventsArgs<ExtArgs>;
+    summary?: boolean | Prisma.Route$summaryArgs<ExtArgs>;
     _count?: boolean | Prisma.RouteCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type RouteIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1357,6 +1621,7 @@ export type $RoutePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
         activeDriver: Prisma.$DriverPayload<ExtArgs> | null;
         stops: Prisma.$RouteStopPayload<ExtArgs>[];
         events: Prisma.$RouteEventPayload<ExtArgs>[];
+        summary: Prisma.$RouteSummaryPayload<ExtArgs> | null;
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
@@ -1367,6 +1632,8 @@ export type $RoutePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
         plannedDate: Date;
         totalDistanceMeters: number | null;
         totalDurationSeconds: number | null;
+        actualDistanceMeters: number | null;
+        actualDurationSeconds: number | null;
         capacityUsedKg: runtime.Decimal | null;
         startedAt: Date | null;
         finishedAt: Date | null;
@@ -1430,6 +1697,7 @@ export interface Prisma__RouteClient<T, Null = never, ExtArgs extends runtime.Ty
     activeDriver<T extends Prisma.Route$activeDriverArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Route$activeDriverArgs<ExtArgs>>): Prisma.Prisma__DriverClient<runtime.Types.Result.GetResult<Prisma.$DriverPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     stops<T extends Prisma.Route$stopsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Route$stopsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     events<T extends Prisma.Route$eventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Route$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    summary<T extends Prisma.Route$summaryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Route$summaryArgs<ExtArgs>>): Prisma.Prisma__RouteSummaryClient<runtime.Types.Result.GetResult<Prisma.$RouteSummaryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): runtime.Types.Utils.JsPromise<TResult1 | TResult2>;
     catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): runtime.Types.Utils.JsPromise<T | TResult>;
     finally(onfinally?: (() => void) | undefined | null): runtime.Types.Utils.JsPromise<T>;
@@ -1443,6 +1711,8 @@ export interface RouteFieldRefs {
     readonly plannedDate: Prisma.FieldRef<"Route", 'DateTime'>;
     readonly totalDistanceMeters: Prisma.FieldRef<"Route", 'Int'>;
     readonly totalDurationSeconds: Prisma.FieldRef<"Route", 'Int'>;
+    readonly actualDistanceMeters: Prisma.FieldRef<"Route", 'Int'>;
+    readonly actualDurationSeconds: Prisma.FieldRef<"Route", 'Int'>;
     readonly capacityUsedKg: Prisma.FieldRef<"Route", 'Decimal'>;
     readonly startedAt: Prisma.FieldRef<"Route", 'DateTime'>;
     readonly finishedAt: Prisma.FieldRef<"Route", 'DateTime'>;
@@ -1588,6 +1858,12 @@ export type Route$eventsArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
     take?: number;
     skip?: number;
     distinct?: Prisma.RouteEventScalarFieldEnum | Prisma.RouteEventScalarFieldEnum[];
+};
+export type Route$summaryArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.RouteSummarySelect<ExtArgs> | null;
+    omit?: Prisma.RouteSummaryOmit<ExtArgs> | null;
+    include?: Prisma.RouteSummaryInclude<ExtArgs> | null;
+    where?: Prisma.RouteSummaryWhereInput;
 };
 export type RouteDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.RouteSelect<ExtArgs> | null;

@@ -87,6 +87,23 @@ enum RouteEventType {
   DRIVER_DELAYED
 }
 
+enum NotificationChannel {
+  SMS
+  EMAIL
+}
+
+enum NotificationType {
+  ETA
+  DELIVERED
+  FAILED
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
 // --- Models ---
 
 model Organization {
@@ -96,12 +113,14 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users            User[]
-  drivers          Driver[]
-  vehicles         Vehicle[]
-  deliveries       Delivery[]
-  routes           Route[]
-  optimizationJobs OptimizationJob[]
+  users                 User[]
+  drivers               Driver[]
+  vehicles              Vehicle[]
+  depots                Depot[]
+  deliveries            Delivery[]
+  routes                Route[]
+  optimizationJobs      OptimizationJob[]
+  customerNotifications CustomerNotification[]
 
   @@map("organizations")
 }
@@ -138,20 +157,55 @@ model Driver {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  vehicle      Vehicle?     @relation("AssignedVehicle", fields: [vehicleId], references: [id], onDelete: SetNull)
-  activeRoute  Route?       @relation("ActiveRoute", fields: [activeRouteId], references: [id], onDelete: SetNull)
-  routes       Route[]      @relation("DriverRoutes")
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  vehicle      Vehicle?        @relation("AssignedVehicle", fields: [vehicleId], references: [id], onDelete: SetNull)
+  activeRoute  Route?          @relation("ActiveRoute", fields: [activeRouteId], references: [id], onDelete: SetNull)
+  routes       Route[]         @relation("DriverRoutes")
+  location     DriverLocation?
 
   @@index([organizationId])
   @@index([status])
   @@map("drivers")
 }
 
+model DriverLocation {
+  id         String   @id @default(cuid())
+  driverId   String   @unique
+  latitude   Decimal  @db.Decimal(10, 7)
+  longitude  Decimal  @db.Decimal(10, 7)
+  heading    Decimal? @db.Decimal(6, 2)
+  speed      Decimal? @db.Decimal(8, 2)
+  recordedAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@index([recordedAt])
+  @@map("driver_locations")
+}
+
+model Depot {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  address        String
+  latitude       Decimal  @db.Decimal(10, 7)
+  longitude      Decimal  @db.Decimal(10, 7)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vehicles     Vehicle[]
+
+  @@index([organizationId])
+  @@map("depots")
+}
+
 model Vehicle {
   id                 String        @id @default(cuid())
   organizationId     String
+  depotId            String?
   name               String
   registrationNumber String
   startAddress       String
@@ -169,11 +223,13 @@ model Vehicle {
   updatedAt          DateTime      @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  depot        Depot?       @relation(fields: [depotId], references: [id], onDelete: SetNull)
   drivers      Driver[]     @relation("AssignedVehicle")
   routes       Route[]
 
   @@unique([organizationId, registrationNumber])
   @@index([organizationId])
+  @@index([depotId])
   @@index([status])
   @@map("vehicles")
 }
@@ -198,8 +254,9 @@ model Delivery {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  routeStops     RouteStop[]
+  organization  Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  routeStops    RouteStop[]
+  notifications CustomerNotification[]
 
   @@index([organizationId])
   @@index([status])
@@ -209,26 +266,29 @@ model Delivery {
 }
 
 model Route {
-  id                    String      @id @default(cuid())
-  organizationId        String
-  driverId              String?
-  vehicleId             String?
-  status                RouteStatus @default(PLANNED)
-  plannedDate           DateTime    @db.Date
-  totalDistanceMeters   Int?
-  totalDurationSeconds  Int?
-  capacityUsedKg        Decimal?    @db.Decimal(10, 2)
-  startedAt             DateTime?
-  finishedAt            DateTime?
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
+  id                     String      @id @default(cuid())
+  organizationId           String
+  driverId               String?
+  vehicleId              String?
+  status                 RouteStatus @default(PLANNED)
+  plannedDate            DateTime    @db.Date
+  totalDistanceMeters    Int?
+  totalDurationSeconds   Int?
+  actualDistanceMeters   Int?
+  actualDurationSeconds  Int?
+  capacityUsedKg         Decimal?    @db.Decimal(10, 2)
+  startedAt              DateTime?
+  finishedAt             DateTime?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
 
-  organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  driver        Driver?       @relation("DriverRoutes", fields: [driverId], references: [id], onDelete: SetNull)
-  vehicle       Vehicle?      @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
-  activeDriver  Driver?       @relation("ActiveRoute")
-  stops         RouteStop[]
-  events        RouteEvent[]
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  driver       Driver?       @relation("DriverRoutes", fields: [driverId], references: [id], onDelete: SetNull)
+  vehicle      Vehicle?      @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  activeDriver Driver?       @relation("ActiveRoute")
+  stops        RouteStop[]
+  events       RouteEvent[]
+  summary      RouteSummary?
 
   @@index([organizationId])
   @@index([driverId])
@@ -260,16 +320,16 @@ model RouteStop {
 }
 
 model ProofOfDelivery {
-  id          String   @id @default(cuid())
-  routeStopId String   @unique
-  photoUrl    String?
+  id           String   @id @default(cuid())
+  routeStopId  String   @unique
+  photoUrl     String?
   signatureUrl String?
-  note        String?
-  latitude    Decimal? @db.Decimal(10, 7)
-  longitude   Decimal? @db.Decimal(10, 7)
-  location    Unsupported("geography(Point,4326)")?
-  capturedAt  DateTime @default(now())
-  createdAt   DateTime @default(now())
+  note         String?
+  latitude     Decimal? @db.Decimal(10, 7)
+  longitude    Decimal? @db.Decimal(10, 7)
+  location     Unsupported("geography(Point,4326)")?
+  capturedAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
 
   routeStop RouteStop @relation(fields: [routeStopId], references: [id], onDelete: Cascade)
 
@@ -288,6 +348,43 @@ model RouteEvent {
   @@index([routeId])
   @@index([type])
   @@map("route_events")
+}
+
+model RouteSummary {
+  id          String   @id @default(cuid())
+  routeId     String   @unique
+  summary     String
+  model       String?
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@map("route_summaries")
+}
+
+model CustomerNotification {
+  id             String               @id @default(cuid())
+  organizationId String
+  deliveryId     String
+  channel        NotificationChannel
+  type           NotificationType
+  status         NotificationStatus   @default(PENDING)
+  payload        Json?
+  errorMessage   String?
+  sentAt         DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  delivery     Delivery     @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([deliveryId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("customer_notifications")
 }
 
 model OptimizationJob {

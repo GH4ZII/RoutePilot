@@ -150,6 +150,7 @@ export type DriverWhereInput = {
     vehicle?: Prisma.XOR<Prisma.VehicleNullableScalarRelationFilter, Prisma.VehicleWhereInput> | null;
     activeRoute?: Prisma.XOR<Prisma.RouteNullableScalarRelationFilter, Prisma.RouteWhereInput> | null;
     routes?: Prisma.RouteListRelationFilter;
+    location?: Prisma.XOR<Prisma.DriverLocationNullableScalarRelationFilter, Prisma.DriverLocationWhereInput> | null;
 };
 export type DriverOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
@@ -168,6 +169,7 @@ export type DriverOrderByWithRelationInput = {
     vehicle?: Prisma.VehicleOrderByWithRelationInput;
     activeRoute?: Prisma.RouteOrderByWithRelationInput;
     routes?: Prisma.RouteOrderByRelationAggregateInput;
+    location?: Prisma.DriverLocationOrderByWithRelationInput;
 };
 export type DriverWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
@@ -189,6 +191,7 @@ export type DriverWhereUniqueInput = Prisma.AtLeast<{
     vehicle?: Prisma.XOR<Prisma.VehicleNullableScalarRelationFilter, Prisma.VehicleWhereInput> | null;
     activeRoute?: Prisma.XOR<Prisma.RouteNullableScalarRelationFilter, Prisma.RouteWhereInput> | null;
     routes?: Prisma.RouteListRelationFilter;
+    location?: Prisma.XOR<Prisma.DriverLocationNullableScalarRelationFilter, Prisma.DriverLocationWhereInput> | null;
 }, "id" | "userId" | "activeRouteId">;
 export type DriverOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
@@ -235,6 +238,7 @@ export type DriverCreateInput = {
     vehicle?: Prisma.VehicleCreateNestedOneWithoutDriversInput;
     activeRoute?: Prisma.RouteCreateNestedOneWithoutActiveDriverInput;
     routes?: Prisma.RouteCreateNestedManyWithoutDriverInput;
+    location?: Prisma.DriverLocationCreateNestedOneWithoutDriverInput;
 };
 export type DriverUncheckedCreateInput = {
     id?: string;
@@ -249,6 +253,7 @@ export type DriverUncheckedCreateInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     routes?: Prisma.RouteUncheckedCreateNestedManyWithoutDriverInput;
+    location?: Prisma.DriverLocationUncheckedCreateNestedOneWithoutDriverInput;
 };
 export type DriverUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -263,6 +268,7 @@ export type DriverUpdateInput = {
     vehicle?: Prisma.VehicleUpdateOneWithoutDriversNestedInput;
     activeRoute?: Prisma.RouteUpdateOneWithoutActiveDriverNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutDriverNestedInput;
+    location?: Prisma.DriverLocationUpdateOneWithoutDriverNestedInput;
 };
 export type DriverUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -277,6 +283,7 @@ export type DriverUncheckedUpdateInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     routes?: Prisma.RouteUncheckedUpdateManyWithoutDriverNestedInput;
+    location?: Prisma.DriverLocationUncheckedUpdateOneWithoutDriverNestedInput;
 };
 export type DriverCreateManyInput = {
     id?: string;
@@ -364,6 +371,10 @@ export type DriverMinOrderByAggregateInput = {
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
 };
+export type DriverScalarRelationFilter = {
+    is?: Prisma.DriverWhereInput;
+    isNot?: Prisma.DriverWhereInput;
+};
 export type DriverCreateNestedManyWithoutOrganizationInput = {
     create?: Prisma.XOR<Prisma.DriverCreateWithoutOrganizationInput, Prisma.DriverUncheckedCreateWithoutOrganizationInput> | Prisma.DriverCreateWithoutOrganizationInput[] | Prisma.DriverUncheckedCreateWithoutOrganizationInput[];
     connectOrCreate?: Prisma.DriverCreateOrConnectWithoutOrganizationInput | Prisma.DriverCreateOrConnectWithoutOrganizationInput[];
@@ -432,6 +443,18 @@ export type DriverUncheckedUpdateOneWithoutUserNestedInput = {
 };
 export type EnumDriverStatusFieldUpdateOperationsInput = {
     set?: $Enums.DriverStatus;
+};
+export type DriverCreateNestedOneWithoutLocationInput = {
+    create?: Prisma.XOR<Prisma.DriverCreateWithoutLocationInput, Prisma.DriverUncheckedCreateWithoutLocationInput>;
+    connectOrCreate?: Prisma.DriverCreateOrConnectWithoutLocationInput;
+    connect?: Prisma.DriverWhereUniqueInput;
+};
+export type DriverUpdateOneRequiredWithoutLocationNestedInput = {
+    create?: Prisma.XOR<Prisma.DriverCreateWithoutLocationInput, Prisma.DriverUncheckedCreateWithoutLocationInput>;
+    connectOrCreate?: Prisma.DriverCreateOrConnectWithoutLocationInput;
+    upsert?: Prisma.DriverUpsertWithoutLocationInput;
+    connect?: Prisma.DriverWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.DriverUpdateToOneWithWhereWithoutLocationInput, Prisma.DriverUpdateWithoutLocationInput>, Prisma.DriverUncheckedUpdateWithoutLocationInput>;
 };
 export type DriverCreateNestedManyWithoutVehicleInput = {
     create?: Prisma.XOR<Prisma.DriverCreateWithoutVehicleInput, Prisma.DriverUncheckedCreateWithoutVehicleInput> | Prisma.DriverCreateWithoutVehicleInput[] | Prisma.DriverUncheckedCreateWithoutVehicleInput[];
@@ -525,6 +548,7 @@ export type DriverCreateWithoutOrganizationInput = {
     vehicle?: Prisma.VehicleCreateNestedOneWithoutDriversInput;
     activeRoute?: Prisma.RouteCreateNestedOneWithoutActiveDriverInput;
     routes?: Prisma.RouteCreateNestedManyWithoutDriverInput;
+    location?: Prisma.DriverLocationCreateNestedOneWithoutDriverInput;
 };
 export type DriverUncheckedCreateWithoutOrganizationInput = {
     id?: string;
@@ -538,6 +562,7 @@ export type DriverUncheckedCreateWithoutOrganizationInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     routes?: Prisma.RouteUncheckedCreateNestedManyWithoutDriverInput;
+    location?: Prisma.DriverLocationUncheckedCreateNestedOneWithoutDriverInput;
 };
 export type DriverCreateOrConnectWithoutOrganizationInput = {
     where: Prisma.DriverWhereUniqueInput;
@@ -588,6 +613,7 @@ export type DriverCreateWithoutUserInput = {
     vehicle?: Prisma.VehicleCreateNestedOneWithoutDriversInput;
     activeRoute?: Prisma.RouteCreateNestedOneWithoutActiveDriverInput;
     routes?: Prisma.RouteCreateNestedManyWithoutDriverInput;
+    location?: Prisma.DriverLocationCreateNestedOneWithoutDriverInput;
 };
 export type DriverUncheckedCreateWithoutUserInput = {
     id?: string;
@@ -601,6 +627,7 @@ export type DriverUncheckedCreateWithoutUserInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     routes?: Prisma.RouteUncheckedCreateNestedManyWithoutDriverInput;
+    location?: Prisma.DriverLocationUncheckedCreateNestedOneWithoutDriverInput;
 };
 export type DriverCreateOrConnectWithoutUserInput = {
     where: Prisma.DriverWhereUniqueInput;
@@ -627,10 +654,81 @@ export type DriverUpdateWithoutUserInput = {
     vehicle?: Prisma.VehicleUpdateOneWithoutDriversNestedInput;
     activeRoute?: Prisma.RouteUpdateOneWithoutActiveDriverNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutDriverNestedInput;
+    location?: Prisma.DriverLocationUpdateOneWithoutDriverNestedInput;
 };
 export type DriverUncheckedUpdateWithoutUserInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
+    vehicleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    activeRouteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    status?: Prisma.EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    routes?: Prisma.RouteUncheckedUpdateManyWithoutDriverNestedInput;
+    location?: Prisma.DriverLocationUncheckedUpdateOneWithoutDriverNestedInput;
+};
+export type DriverCreateWithoutLocationInput = {
+    id?: string;
+    name: string;
+    phone?: string | null;
+    email?: string | null;
+    status?: $Enums.DriverStatus;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    organization: Prisma.OrganizationCreateNestedOneWithoutDriversInput;
+    user?: Prisma.UserCreateNestedOneWithoutDriverInput;
+    vehicle?: Prisma.VehicleCreateNestedOneWithoutDriversInput;
+    activeRoute?: Prisma.RouteCreateNestedOneWithoutActiveDriverInput;
+    routes?: Prisma.RouteCreateNestedManyWithoutDriverInput;
+};
+export type DriverUncheckedCreateWithoutLocationInput = {
+    id?: string;
+    organizationId: string;
+    userId?: string | null;
+    vehicleId?: string | null;
+    activeRouteId?: string | null;
+    name: string;
+    phone?: string | null;
+    email?: string | null;
+    status?: $Enums.DriverStatus;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    routes?: Prisma.RouteUncheckedCreateNestedManyWithoutDriverInput;
+};
+export type DriverCreateOrConnectWithoutLocationInput = {
+    where: Prisma.DriverWhereUniqueInput;
+    create: Prisma.XOR<Prisma.DriverCreateWithoutLocationInput, Prisma.DriverUncheckedCreateWithoutLocationInput>;
+};
+export type DriverUpsertWithoutLocationInput = {
+    update: Prisma.XOR<Prisma.DriverUpdateWithoutLocationInput, Prisma.DriverUncheckedUpdateWithoutLocationInput>;
+    create: Prisma.XOR<Prisma.DriverCreateWithoutLocationInput, Prisma.DriverUncheckedCreateWithoutLocationInput>;
+    where?: Prisma.DriverWhereInput;
+};
+export type DriverUpdateToOneWithWhereWithoutLocationInput = {
+    where?: Prisma.DriverWhereInput;
+    data: Prisma.XOR<Prisma.DriverUpdateWithoutLocationInput, Prisma.DriverUncheckedUpdateWithoutLocationInput>;
+};
+export type DriverUpdateWithoutLocationInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    status?: Prisma.EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    organization?: Prisma.OrganizationUpdateOneRequiredWithoutDriversNestedInput;
+    user?: Prisma.UserUpdateOneWithoutDriverNestedInput;
+    vehicle?: Prisma.VehicleUpdateOneWithoutDriversNestedInput;
+    activeRoute?: Prisma.RouteUpdateOneWithoutActiveDriverNestedInput;
+    routes?: Prisma.RouteUpdateManyWithoutDriverNestedInput;
+};
+export type DriverUncheckedUpdateWithoutLocationInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    organizationId?: Prisma.StringFieldUpdateOperationsInput | string;
+    userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     vehicleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     activeRouteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -653,6 +751,7 @@ export type DriverCreateWithoutVehicleInput = {
     user?: Prisma.UserCreateNestedOneWithoutDriverInput;
     activeRoute?: Prisma.RouteCreateNestedOneWithoutActiveDriverInput;
     routes?: Prisma.RouteCreateNestedManyWithoutDriverInput;
+    location?: Prisma.DriverLocationCreateNestedOneWithoutDriverInput;
 };
 export type DriverUncheckedCreateWithoutVehicleInput = {
     id?: string;
@@ -666,6 +765,7 @@ export type DriverUncheckedCreateWithoutVehicleInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     routes?: Prisma.RouteUncheckedCreateNestedManyWithoutDriverInput;
+    location?: Prisma.DriverLocationUncheckedCreateNestedOneWithoutDriverInput;
 };
 export type DriverCreateOrConnectWithoutVehicleInput = {
     where: Prisma.DriverWhereUniqueInput;
@@ -700,6 +800,7 @@ export type DriverCreateWithoutRoutesInput = {
     user?: Prisma.UserCreateNestedOneWithoutDriverInput;
     vehicle?: Prisma.VehicleCreateNestedOneWithoutDriversInput;
     activeRoute?: Prisma.RouteCreateNestedOneWithoutActiveDriverInput;
+    location?: Prisma.DriverLocationCreateNestedOneWithoutDriverInput;
 };
 export type DriverUncheckedCreateWithoutRoutesInput = {
     id?: string;
@@ -713,6 +814,7 @@ export type DriverUncheckedCreateWithoutRoutesInput = {
     status?: $Enums.DriverStatus;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    location?: Prisma.DriverLocationUncheckedCreateNestedOneWithoutDriverInput;
 };
 export type DriverCreateOrConnectWithoutRoutesInput = {
     where: Prisma.DriverWhereUniqueInput;
@@ -730,6 +832,7 @@ export type DriverCreateWithoutActiveRouteInput = {
     user?: Prisma.UserCreateNestedOneWithoutDriverInput;
     vehicle?: Prisma.VehicleCreateNestedOneWithoutDriversInput;
     routes?: Prisma.RouteCreateNestedManyWithoutDriverInput;
+    location?: Prisma.DriverLocationCreateNestedOneWithoutDriverInput;
 };
 export type DriverUncheckedCreateWithoutActiveRouteInput = {
     id?: string;
@@ -743,6 +846,7 @@ export type DriverUncheckedCreateWithoutActiveRouteInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     routes?: Prisma.RouteUncheckedCreateNestedManyWithoutDriverInput;
+    location?: Prisma.DriverLocationUncheckedCreateNestedOneWithoutDriverInput;
 };
 export type DriverCreateOrConnectWithoutActiveRouteInput = {
     where: Prisma.DriverWhereUniqueInput;
@@ -769,6 +873,7 @@ export type DriverUpdateWithoutRoutesInput = {
     user?: Prisma.UserUpdateOneWithoutDriverNestedInput;
     vehicle?: Prisma.VehicleUpdateOneWithoutDriversNestedInput;
     activeRoute?: Prisma.RouteUpdateOneWithoutActiveDriverNestedInput;
+    location?: Prisma.DriverLocationUpdateOneWithoutDriverNestedInput;
 };
 export type DriverUncheckedUpdateWithoutRoutesInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -782,6 +887,7 @@ export type DriverUncheckedUpdateWithoutRoutesInput = {
     status?: Prisma.EnumDriverStatusFieldUpdateOperationsInput | $Enums.DriverStatus;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    location?: Prisma.DriverLocationUncheckedUpdateOneWithoutDriverNestedInput;
 };
 export type DriverUpsertWithoutActiveRouteInput = {
     update: Prisma.XOR<Prisma.DriverUpdateWithoutActiveRouteInput, Prisma.DriverUncheckedUpdateWithoutActiveRouteInput>;
@@ -804,6 +910,7 @@ export type DriverUpdateWithoutActiveRouteInput = {
     user?: Prisma.UserUpdateOneWithoutDriverNestedInput;
     vehicle?: Prisma.VehicleUpdateOneWithoutDriversNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutDriverNestedInput;
+    location?: Prisma.DriverLocationUpdateOneWithoutDriverNestedInput;
 };
 export type DriverUncheckedUpdateWithoutActiveRouteInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -817,6 +924,7 @@ export type DriverUncheckedUpdateWithoutActiveRouteInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     routes?: Prisma.RouteUncheckedUpdateManyWithoutDriverNestedInput;
+    location?: Prisma.DriverLocationUncheckedUpdateOneWithoutDriverNestedInput;
 };
 export type DriverCreateManyOrganizationInput = {
     id?: string;
@@ -842,6 +950,7 @@ export type DriverUpdateWithoutOrganizationInput = {
     vehicle?: Prisma.VehicleUpdateOneWithoutDriversNestedInput;
     activeRoute?: Prisma.RouteUpdateOneWithoutActiveDriverNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutDriverNestedInput;
+    location?: Prisma.DriverLocationUpdateOneWithoutDriverNestedInput;
 };
 export type DriverUncheckedUpdateWithoutOrganizationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -855,6 +964,7 @@ export type DriverUncheckedUpdateWithoutOrganizationInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     routes?: Prisma.RouteUncheckedUpdateManyWithoutDriverNestedInput;
+    location?: Prisma.DriverLocationUncheckedUpdateOneWithoutDriverNestedInput;
 };
 export type DriverUncheckedUpdateManyWithoutOrganizationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -892,6 +1002,7 @@ export type DriverUpdateWithoutVehicleInput = {
     user?: Prisma.UserUpdateOneWithoutDriverNestedInput;
     activeRoute?: Prisma.RouteUpdateOneWithoutActiveDriverNestedInput;
     routes?: Prisma.RouteUpdateManyWithoutDriverNestedInput;
+    location?: Prisma.DriverLocationUpdateOneWithoutDriverNestedInput;
 };
 export type DriverUncheckedUpdateWithoutVehicleInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -905,6 +1016,7 @@ export type DriverUncheckedUpdateWithoutVehicleInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     routes?: Prisma.RouteUncheckedUpdateManyWithoutDriverNestedInput;
+    location?: Prisma.DriverLocationUncheckedUpdateOneWithoutDriverNestedInput;
 };
 export type DriverUncheckedUpdateManyWithoutVehicleInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -947,6 +1059,7 @@ export type DriverSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     vehicle?: boolean | Prisma.Driver$vehicleArgs<ExtArgs>;
     activeRoute?: boolean | Prisma.Driver$activeRouteArgs<ExtArgs>;
     routes?: boolean | Prisma.Driver$routesArgs<ExtArgs>;
+    location?: boolean | Prisma.Driver$locationArgs<ExtArgs>;
     _count?: boolean | Prisma.DriverCountOutputTypeDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["driver"]>;
 export type DriverSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1003,6 +1116,7 @@ export type DriverInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     vehicle?: boolean | Prisma.Driver$vehicleArgs<ExtArgs>;
     activeRoute?: boolean | Prisma.Driver$activeRouteArgs<ExtArgs>;
     routes?: boolean | Prisma.Driver$routesArgs<ExtArgs>;
+    location?: boolean | Prisma.Driver$locationArgs<ExtArgs>;
     _count?: boolean | Prisma.DriverCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type DriverIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1025,6 +1139,7 @@ export type $DriverPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
         vehicle: Prisma.$VehiclePayload<ExtArgs> | null;
         activeRoute: Prisma.$RoutePayload<ExtArgs> | null;
         routes: Prisma.$RoutePayload<ExtArgs>[];
+        location: Prisma.$DriverLocationPayload<ExtArgs> | null;
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
@@ -1095,6 +1210,7 @@ export interface Prisma__DriverClient<T, Null = never, ExtArgs extends runtime.T
     vehicle<T extends Prisma.Driver$vehicleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Driver$vehicleArgs<ExtArgs>>): Prisma.Prisma__VehicleClient<runtime.Types.Result.GetResult<Prisma.$VehiclePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     activeRoute<T extends Prisma.Driver$activeRouteArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Driver$activeRouteArgs<ExtArgs>>): Prisma.Prisma__RouteClient<runtime.Types.Result.GetResult<Prisma.$RoutePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     routes<T extends Prisma.Driver$routesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Driver$routesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RoutePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    location<T extends Prisma.Driver$locationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Driver$locationArgs<ExtArgs>>): Prisma.Prisma__DriverLocationClient<runtime.Types.Result.GetResult<Prisma.$DriverLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): runtime.Types.Utils.JsPromise<TResult1 | TResult2>;
     catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): runtime.Types.Utils.JsPromise<T | TResult>;
     finally(onfinally?: (() => void) | undefined | null): runtime.Types.Utils.JsPromise<T>;
@@ -1240,6 +1356,12 @@ export type Driver$routesArgs<ExtArgs extends runtime.Types.Extensions.InternalA
     take?: number;
     skip?: number;
     distinct?: Prisma.RouteScalarFieldEnum | Prisma.RouteScalarFieldEnum[];
+};
+export type Driver$locationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.DriverLocationSelect<ExtArgs> | null;
+    omit?: Prisma.DriverLocationOmit<ExtArgs> | null;
+    include?: Prisma.DriverLocationInclude<ExtArgs> | null;
+    where?: Prisma.DriverLocationWhereInput;
 };
 export type DriverDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.DriverSelect<ExtArgs> | null;

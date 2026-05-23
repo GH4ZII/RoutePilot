@@ -39,6 +39,12 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get driver(): Prisma.DriverDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    get driverLocation(): Prisma.DriverLocationDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    get depot(): Prisma.DepotDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
     get vehicle(): Prisma.VehicleDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
@@ -55,6 +61,12 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
         omit: OmitOpts;
     }>;
     get routeEvent(): Prisma.RouteEventDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    get routeSummary(): Prisma.RouteSummaryDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    get customerNotification(): Prisma.CustomerNotificationDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
     get optimizationJob(): Prisma.OptimizationJobDelegate<ExtArgs, {

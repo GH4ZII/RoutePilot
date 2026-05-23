@@ -11,6 +11,7 @@ import {
 import {
   DELIVERY_MARKER_COLORS,
   DEPOT_MARKER_COLOR,
+  DRIVER_MARKER_COLOR,
   ROUTE_LINE_COLOR,
 } from '../lib/map-colors'
 // Fix default marker icons when bundling with Vite
@@ -49,9 +50,17 @@ export type NumberedStop = {
   color?: string
 }
 
+export type DriverMarker = {
+  id: string
+  label: string
+  latitude: number
+  longitude: number
+}
+
 type DeliveryMapProps = {
   deliveries: Delivery[]
   depots?: DepotPoint[]
+  driverMarkers?: DriverMarker[]
   routeLines?: RouteLine[]
   numberedStops?: NumberedStop[]
   selectedDeliveryId?: string | null
@@ -90,6 +99,7 @@ function createNumberedIcon(order: number, color: string): L.DivIcon {
 export default function DeliveryMap({
   deliveries,
   depots = [],
+  driverMarkers = [],
   routeLines = [],
   numberedStops = [],
   selectedDeliveryId,
@@ -100,6 +110,7 @@ export default function DeliveryMap({
   const mapRef = useRef<L.Map | null>(null)
   const deliveryLayersRef = useRef<L.LayerGroup | null>(null)
   const depotLayersRef = useRef<L.LayerGroup | null>(null)
+  const driverLayersRef = useRef<L.LayerGroup | null>(null)
   const routeLayersRef = useRef<L.LayerGroup | null>(null)
   const numberedLayersRef = useRef<L.LayerGroup | null>(null)
   const markerByIdRef = useRef<Map<string, L.CircleMarker>>(new Map())
@@ -121,6 +132,7 @@ export default function DeliveryMap({
     numberedLayersRef.current = L.layerGroup().addTo(map)
     deliveryLayersRef.current = L.layerGroup().addTo(map)
     depotLayersRef.current = L.layerGroup().addTo(map)
+    driverLayersRef.current = L.layerGroup().addTo(map)
     mapRef.current = map
 
     return () => {
@@ -130,6 +142,7 @@ export default function DeliveryMap({
       numberedLayersRef.current = null
       deliveryLayersRef.current = null
       depotLayersRef.current = null
+      driverLayersRef.current = null
       markerByIdRef.current.clear()
     }
   }, [])
@@ -138,12 +151,14 @@ export default function DeliveryMap({
     const map = mapRef.current
     const deliveryLayers = deliveryLayersRef.current
     const depotLayers = depotLayersRef.current
+    const driverLayers = driverLayersRef.current
     const routeLayers = routeLayersRef.current
     const numberedLayers = numberedLayersRef.current
     if (
       !map ||
       !deliveryLayers ||
       !depotLayers ||
+      !driverLayers ||
       !routeLayers ||
       !numberedLayers
     ) {
@@ -154,6 +169,7 @@ export default function DeliveryMap({
     numberedLayers.clearLayers()
     deliveryLayers.clearLayers()
     depotLayers.clearLayers()
+    driverLayers.clearLayers()
     markerByIdRef.current.clear()
 
     const boundsPoints: L.LatLngExpression[] = []
@@ -189,6 +205,21 @@ export default function DeliveryMap({
       )
       depotLayers.addLayer(marker)
       boundsPoints.push([depot.latitude, depot.longitude])
+    }
+
+    for (const driver of driverMarkers) {
+      const marker = L.circleMarker([driver.latitude, driver.longitude], {
+        radius: 11,
+        fillColor: DRIVER_MARKER_COLOR,
+        color: '#ffffff',
+        weight: 3,
+        fillOpacity: 1,
+      })
+      marker.bindPopup(
+        `<div class="map-popup"><strong>${escapeHtml(driver.label)}</strong><p><span class="map-popup-label">Sjåfør (live)</span></p></div>`,
+      )
+      driverLayers.addLayer(marker)
+      boundsPoints.push([driver.latitude, driver.longitude])
     }
 
     const numberedStopIds = new Set(numberedStops.map((stop) => stop.id))
@@ -251,7 +282,7 @@ export default function DeliveryMap({
       const bounds = L.latLngBounds(boundsPoints)
       map.fitBounds(bounds.pad(0.12), { maxZoom: 14 })
     }
-  }, [deliveries, depots, routeLines, numberedStops, onSelectDelivery])
+  }, [deliveries, depots, driverMarkers, routeLines, numberedStops, onSelectDelivery])
 
   useEffect(() => {
     for (const [id, marker] of markerByIdRef.current) {

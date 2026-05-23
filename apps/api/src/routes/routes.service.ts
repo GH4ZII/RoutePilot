@@ -16,8 +16,19 @@ import type { JwtPayload } from '../auth/types/jwt-payload';
 import { decimalToNumber } from '../common/decimal.util';
 import { DriverScopeService } from '../common/driver-scope.service';
 import { OrgScopeService } from '../common/org-scope.service';
+import { EventsService } from '../events/events.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListRoutesQueryDto } from './dto/list-routes-query.dto';
+
+export type ProofOfDeliveryInRoute = {
+  id: string;
+  photoUrl: string | null;
+  signatureUrl: string | null;
+  note: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  capturedAt: Date;
+};
 
 export type RouteStopResponse = {
   id: string;
@@ -38,6 +49,7 @@ export type RouteStopResponse = {
     status: string;
     priority: string;
   };
+  proofOfDelivery: ProofOfDeliveryInRoute | null;
 };
 
 export type RouteResponse = {
@@ -49,6 +61,8 @@ export type RouteResponse = {
   plannedDate: Date;
   totalDistanceMeters: number | null;
   totalDurationSeconds: number | null;
+  actualDistanceMeters: number | null;
+  actualDurationSeconds: number | null;
   capacityUsedKg: number | null;
   startedAt: Date | null;
   finishedAt: Date | null;
@@ -77,7 +91,7 @@ const routeInclude = {
   driver: true,
   stops: {
     orderBy: { stopOrder: 'asc' as const },
-    include: { delivery: true },
+    include: { delivery: true, proofOfDelivery: true },
   },
 };
 
@@ -87,6 +101,7 @@ export class RoutesService {
     private readonly prisma: PrismaService,
     private readonly orgScope: OrgScopeService,
     private readonly driverScope: DriverScopeService,
+    private readonly events: EventsService,
   ) {}
 
   async findAll(
@@ -264,6 +279,11 @@ export class RoutesService {
       return next;
     });
 
+    this.events.publish(user.organizationId, 'route.updated', {
+      routeId: route.id,
+      status: RouteStatus.IN_PROGRESS,
+    });
+
     return toRouteResponse(updated);
   }
 
@@ -287,6 +307,14 @@ export class RoutesService {
     }
 
     const driverId = route.driverId;
+    const finishedAt = new Date();
+    const actualDurationSeconds =
+      route.startedAt != null
+        ? Math.round(
+            (finishedAt.getTime() - route.startedAt.getTime()) / 1000,
+          )
+        : null;
+
     const updated = await this.prisma.$transaction(async (tx) => {
       if (driverId) {
         await tx.driver.update({
@@ -302,7 +330,9 @@ export class RoutesService {
         where: { id: route.id },
         data: {
           status: RouteStatus.COMPLETED,
-          finishedAt: new Date(),
+          finishedAt,
+          actualDurationSeconds,
+          actualDistanceMeters: route.totalDistanceMeters,
         },
         include: routeInclude,
       });
@@ -315,6 +345,11 @@ export class RoutesService {
       });
 
       return next;
+    });
+
+    this.events.publish(user.organizationId, 'route.updated', {
+      routeId: route.id,
+      status: RouteStatus.COMPLETED,
     });
 
     return toRouteResponse(updated);
@@ -432,6 +467,8 @@ function toRouteResponse(route: {
   plannedDate: Date;
   totalDistanceMeters: number | null;
   totalDurationSeconds: number | null;
+  actualDistanceMeters: number | null;
+  actualDurationSeconds: number | null;
   capacityUsedKg: Parameters<typeof decimalToNumber>[0] | null;
   startedAt: Date | null;
   finishedAt: Date | null;
@@ -467,6 +504,15 @@ function toRouteResponse(route: {
       status: string;
       priority: string;
     };
+    proofOfDelivery: {
+      id: string;
+      photoUrl: string | null;
+      signatureUrl: string | null;
+      note: string | null;
+      latitude: Parameters<typeof decimalToNumber>[0] | null;
+      longitude: Parameters<typeof decimalToNumber>[0] | null;
+      capturedAt: Date;
+    } | null;
   }>;
 }): RouteResponse {
   return {
@@ -478,6 +524,8 @@ function toRouteResponse(route: {
     plannedDate: route.plannedDate,
     totalDistanceMeters: route.totalDistanceMeters,
     totalDurationSeconds: route.totalDurationSeconds,
+    actualDistanceMeters: route.actualDistanceMeters,
+    actualDurationSeconds: route.actualDurationSeconds,
     capacityUsedKg:
       route.capacityUsedKg != null
         ? decimalToNumber(route.capacityUsedKg)
@@ -527,6 +575,23 @@ function toRouteResponse(route: {
         status: stop.delivery.status,
         priority: stop.delivery.priority,
       },
+      proofOfDelivery: stop.proofOfDelivery
+        ? {
+            id: stop.proofOfDelivery.id,
+            photoUrl: stop.proofOfDelivery.photoUrl,
+            signatureUrl: stop.proofOfDelivery.signatureUrl,
+            note: stop.proofOfDelivery.note,
+            latitude:
+              stop.proofOfDelivery.latitude != null
+                ? decimalToNumber(stop.proofOfDelivery.latitude)
+                : null,
+            longitude:
+              stop.proofOfDelivery.longitude != null
+                ? decimalToNumber(stop.proofOfDelivery.longitude)
+                : null,
+            capturedAt: stop.proofOfDelivery.capturedAt,
+          }
+        : null,
     })),
   };
 }

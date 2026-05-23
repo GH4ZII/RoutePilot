@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { OsrmService } from './osrm.service';
+import { TrafficRoutingService } from './traffic-routing.service';
 import type { DistanceTimeMatrix, RoutingPoint } from './routing.types';
 
 @Injectable()
 export class RoutingService {
-  constructor(private readonly osrm: OsrmService) {}
+  constructor(private readonly traffic: TrafficRoutingService) {}
 
   /**
    * Builds an N×N distance (meters) and duration (seconds) matrix for all point pairs.
@@ -14,7 +14,7 @@ export class RoutingService {
     points: RoutingPoint[],
   ): Promise<DistanceTimeMatrix> {
     const validated = this.validatePoints(points);
-    const table = await this.osrm.getTable(validated);
+    const table = await this.traffic.getTable(validated);
 
     return {
       pointIds: validated.map((p) => p.id),

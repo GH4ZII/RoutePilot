@@ -15,6 +15,7 @@ import MapPage from './pages/MapPage'
 import RoutesPage from './pages/RoutesPage'
 import ArchivePage from './pages/ArchivePage'
 import ReportsPage from './pages/ReportsPage'
+import DepotsPage from './pages/DepotsPage'
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
         <Route path="users" element={<UsersPage />} />
         <Route path="drivers" element={<DriversPage />} />
         <Route path="vehicles" element={<VehiclesPage />} />
+        <Route path="depots" element={<DepotsPage />} />
         <Route path="deliveries" element={<DeliveriesPage />} />
         <Route path="map" element={<MapPage />} />
         <Route path="routes" element={<RoutesPage />} />

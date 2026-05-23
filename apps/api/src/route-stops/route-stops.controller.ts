@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { UserRole } from '../generated/prisma/client';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -28,6 +28,12 @@ export class RouteStopsController {
     @Body() dto: FailRouteStopDto,
   ) {
     return this.routeStops.fail(user, id, dto);
+  }
+
+  @Get(':id/proof')
+  @Roles(UserRole.ADMIN, UserRole.DISPATCHER, UserRole.DRIVER)
+  getProof(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.routeStops.getProof(user, id);
   }
 
   @Post(':id/proof')

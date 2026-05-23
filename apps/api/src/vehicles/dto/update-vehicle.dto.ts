@@ -47,4 +47,8 @@ export class UpdateVehicleDto {
   @IsOptional()
   @IsEnum(VehicleStatus)
   status?: VehicleStatus;
+
+  @IsOptional()
+  @IsString()
+  depotId?: string | null;
 }

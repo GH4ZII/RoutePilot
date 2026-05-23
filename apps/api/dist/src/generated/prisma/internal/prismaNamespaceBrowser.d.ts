@@ -14,12 +14,16 @@ export declare const ModelName: {
     readonly Organization: "Organization";
     readonly User: "User";
     readonly Driver: "Driver";
+    readonly DriverLocation: "DriverLocation";
+    readonly Depot: "Depot";
     readonly Vehicle: "Vehicle";
     readonly Delivery: "Delivery";
     readonly Route: "Route";
     readonly RouteStop: "RouteStop";
     readonly ProofOfDelivery: "ProofOfDelivery";
     readonly RouteEvent: "RouteEvent";
+    readonly RouteSummary: "RouteSummary";
+    readonly CustomerNotification: "CustomerNotification";
     readonly OptimizationJob: "OptimizationJob";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -64,9 +68,32 @@ export declare const DriverScalarFieldEnum: {
     readonly updatedAt: "updatedAt";
 };
 export type DriverScalarFieldEnum = (typeof DriverScalarFieldEnum)[keyof typeof DriverScalarFieldEnum];
+export declare const DriverLocationScalarFieldEnum: {
+    readonly id: "id";
+    readonly driverId: "driverId";
+    readonly latitude: "latitude";
+    readonly longitude: "longitude";
+    readonly heading: "heading";
+    readonly speed: "speed";
+    readonly recordedAt: "recordedAt";
+    readonly updatedAt: "updatedAt";
+};
+export type DriverLocationScalarFieldEnum = (typeof DriverLocationScalarFieldEnum)[keyof typeof DriverLocationScalarFieldEnum];
+export declare const DepotScalarFieldEnum: {
+    readonly id: "id";
+    readonly organizationId: "organizationId";
+    readonly name: "name";
+    readonly address: "address";
+    readonly latitude: "latitude";
+    readonly longitude: "longitude";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type DepotScalarFieldEnum = (typeof DepotScalarFieldEnum)[keyof typeof DepotScalarFieldEnum];
 export declare const VehicleScalarFieldEnum: {
     readonly id: "id";
     readonly organizationId: "organizationId";
+    readonly depotId: "depotId";
     readonly name: "name";
     readonly registrationNumber: "registrationNumber";
     readonly startAddress: "startAddress";
@@ -111,6 +138,8 @@ export declare const RouteScalarFieldEnum: {
     readonly plannedDate: "plannedDate";
     readonly totalDistanceMeters: "totalDistanceMeters";
     readonly totalDurationSeconds: "totalDurationSeconds";
+    readonly actualDistanceMeters: "actualDistanceMeters";
+    readonly actualDurationSeconds: "actualDurationSeconds";
     readonly capacityUsedKg: "capacityUsedKg";
     readonly startedAt: "startedAt";
     readonly finishedAt: "finishedAt";
@@ -150,6 +179,30 @@ export declare const RouteEventScalarFieldEnum: {
     readonly createdAt: "createdAt";
 };
 export type RouteEventScalarFieldEnum = (typeof RouteEventScalarFieldEnum)[keyof typeof RouteEventScalarFieldEnum];
+export declare const RouteSummaryScalarFieldEnum: {
+    readonly id: "id";
+    readonly routeId: "routeId";
+    readonly summary: "summary";
+    readonly model: "model";
+    readonly generatedAt: "generatedAt";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type RouteSummaryScalarFieldEnum = (typeof RouteSummaryScalarFieldEnum)[keyof typeof RouteSummaryScalarFieldEnum];
+export declare const CustomerNotificationScalarFieldEnum: {
+    readonly id: "id";
+    readonly organizationId: "organizationId";
+    readonly deliveryId: "deliveryId";
+    readonly channel: "channel";
+    readonly type: "type";
+    readonly status: "status";
+    readonly payload: "payload";
+    readonly errorMessage: "errorMessage";
+    readonly sentAt: "sentAt";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type CustomerNotificationScalarFieldEnum = (typeof CustomerNotificationScalarFieldEnum)[keyof typeof CustomerNotificationScalarFieldEnum];
 export declare const OptimizationJobScalarFieldEnum: {
     readonly id: "id";
     readonly organizationId: "organizationId";

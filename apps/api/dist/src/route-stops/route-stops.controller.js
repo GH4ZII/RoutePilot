@@ -33,6 +33,9 @@ let RouteStopsController = class RouteStopsController {
     fail(user, id, dto) {
         return this.routeStops.fail(user, id, dto);
     }
+    getProof(user, id) {
+        return this.routeStops.getProof(user, id);
+    }
     proof(user, id, dto) {
         return this.routeStops.submitProof(user, id, dto);
     }
@@ -57,6 +60,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, fail_route_stop_dto_1.FailRouteStopDto]),
     __metadata("design:returntype", void 0)
 ], RouteStopsController.prototype, "fail", null);
+__decorate([
+    (0, common_1.Get)(':id/proof'),
+    (0, roles_decorator_1.Roles)(client_1.UserRole.ADMIN, client_1.UserRole.DISPATCHER, client_1.UserRole.DRIVER),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], RouteStopsController.prototype, "getProof", null);
 __decorate([
     (0, common_1.Post)(':id/proof'),
     (0, roles_decorator_1.Roles)(client_1.UserRole.DRIVER, client_1.UserRole.ADMIN),

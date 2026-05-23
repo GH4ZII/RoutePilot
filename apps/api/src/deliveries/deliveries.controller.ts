@@ -7,8 +7,11 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UserRole } from '../generated/prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -18,6 +21,7 @@ import type { JwtPayload } from '../auth/types/jwt-payload';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { ListDeliveriesQueryDto } from './dto/list-deliveries-query.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
+import { ImportCsvBodyDto } from './dto/import-csv.dto';
 import { DeliveriesService } from './deliveries.service';
 
 @Controller('deliveries')
@@ -37,6 +41,21 @@ export class DeliveriesController {
   @Post()
   create(@CurrentUser() user: JwtPayload, @Body() dto: CreateDeliveryDto) {
     return this.deliveriesService.create(user, dto);
+  }
+
+  @Post('import-csv')
+  @UseInterceptors(FileInterceptor('file'))
+  importCsv(
+    @CurrentUser() user: JwtPayload,
+    @UploadedFile() file?: Express.Multer.File,
+    @Body() body?: ImportCsvBodyDto,
+  ) {
+    const content =
+      file?.buffer?.toString('utf-8') ?? body?.csv?.trim() ?? '';
+    if (!content) {
+      return { created: [], errors: [{ row: 0, message: 'Ingen CSV-data' }] };
+    }
+    return this.deliveriesService.importCsv(user, content);
   }
 
   @Get(':id')

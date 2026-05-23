@@ -2,8 +2,18 @@ import { DeliveryStatus, DriverStatus, RouteStatus, RouteStopStatus } from '../g
 import type { JwtPayload } from '../auth/types/jwt-payload';
 import { DriverScopeService } from '../common/driver-scope.service';
 import { OrgScopeService } from '../common/org-scope.service';
+import { EventsService } from '../events/events.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListRoutesQueryDto } from './dto/list-routes-query.dto';
+export type ProofOfDeliveryInRoute = {
+    id: string;
+    photoUrl: string | null;
+    signatureUrl: string | null;
+    note: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    capturedAt: Date;
+};
 export type RouteStopResponse = {
     id: string;
     stopOrder: number;
@@ -23,6 +33,7 @@ export type RouteStopResponse = {
         status: string;
         priority: string;
     };
+    proofOfDelivery: ProofOfDeliveryInRoute | null;
 };
 export type RouteResponse = {
     id: string;
@@ -33,6 +44,8 @@ export type RouteResponse = {
     plannedDate: Date;
     totalDistanceMeters: number | null;
     totalDurationSeconds: number | null;
+    actualDistanceMeters: number | null;
+    actualDurationSeconds: number | null;
     capacityUsedKg: number | null;
     startedAt: Date | null;
     finishedAt: Date | null;
@@ -59,7 +72,8 @@ export declare class RoutesService {
     private readonly prisma;
     private readonly orgScope;
     private readonly driverScope;
-    constructor(prisma: PrismaService, orgScope: OrgScopeService, driverScope: DriverScopeService);
+    private readonly events;
+    constructor(prisma: PrismaService, orgScope: OrgScopeService, driverScope: DriverScopeService, events: EventsService);
     findAll(user: JwtPayload, query: ListRoutesQueryDto): Promise<RouteResponse[]>;
     findOne(user: JwtPayload, id: string): Promise<RouteResponse>;
     findMyRoutes(user: JwtPayload): Promise<RouteResponse[]>;
@@ -76,10 +90,10 @@ export declare class RoutesService {
             organizationId: string;
             phone: string | null;
             status: DeliveryStatus;
-            customerName: string;
-            address: string;
             latitude: import("@prisma/client-runtime-utils").Decimal;
             longitude: import("@prisma/client-runtime-utils").Decimal;
+            address: string;
+            customerName: string;
             weightKg: import("@prisma/client-runtime-utils").Decimal;
             volumeM3: import("@prisma/client-runtime-utils").Decimal | null;
             priority: import("../generated/prisma/enums").DeliveryPriority;
@@ -109,15 +123,16 @@ export declare class RoutesService {
                 updatedAt: Date;
                 organizationId: string;
                 status: import("../generated/prisma/enums").VehicleStatus;
+                depotId: string | null;
                 registrationNumber: string;
+                startAddress: string;
+                endAddress: string;
                 maxWeightKg: import("@prisma/client-runtime-utils").Decimal;
                 maxVolumeM3: import("@prisma/client-runtime-utils").Decimal;
                 startLatitude: import("@prisma/client-runtime-utils").Decimal;
                 startLongitude: import("@prisma/client-runtime-utils").Decimal;
                 endLatitude: import("@prisma/client-runtime-utils").Decimal;
                 endLongitude: import("@prisma/client-runtime-utils").Decimal;
-                startAddress: string;
-                endAddress: string;
             } | null;
             stops: ({
                 delivery: {
@@ -127,10 +142,10 @@ export declare class RoutesService {
                     organizationId: string;
                     phone: string | null;
                     status: DeliveryStatus;
-                    customerName: string;
-                    address: string;
                     latitude: import("@prisma/client-runtime-utils").Decimal;
                     longitude: import("@prisma/client-runtime-utils").Decimal;
+                    address: string;
+                    customerName: string;
                     weightKg: import("@prisma/client-runtime-utils").Decimal;
                     volumeM3: import("@prisma/client-runtime-utils").Decimal | null;
                     priority: import("../generated/prisma/enums").DeliveryPriority;
@@ -139,6 +154,17 @@ export declare class RoutesService {
                     timeWindowEnd: Date | null;
                     notes: string | null;
                 };
+                proofOfDelivery: {
+                    id: string;
+                    createdAt: Date;
+                    latitude: import("@prisma/client-runtime-utils").Decimal | null;
+                    longitude: import("@prisma/client-runtime-utils").Decimal | null;
+                    routeStopId: string;
+                    photoUrl: string | null;
+                    signatureUrl: string | null;
+                    note: string | null;
+                    capturedAt: Date;
+                } | null;
             } & {
                 id: string;
                 createdAt: Date;
@@ -161,6 +187,8 @@ export declare class RoutesService {
             plannedDate: Date;
             totalDistanceMeters: number | null;
             totalDurationSeconds: number | null;
+            actualDistanceMeters: number | null;
+            actualDurationSeconds: number | null;
             capacityUsedKg: import("@prisma/client-runtime-utils").Decimal | null;
             startedAt: Date | null;
             finishedAt: Date | null;

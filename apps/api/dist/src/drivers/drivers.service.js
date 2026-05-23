@@ -47,13 +47,16 @@ const common_1 = require("@nestjs/common");
 const bcrypt = __importStar(require("bcrypt"));
 const client_1 = require("../generated/prisma/client");
 const org_scope_service_1 = require("../common/org-scope.service");
+const events_service_1 = require("../events/events.service");
 const prisma_service_1 = require("../prisma/prisma.service");
 let DriversService = class DriversService {
     prisma;
     orgScope;
-    constructor(prisma, orgScope) {
+    events;
+    constructor(prisma, orgScope, events) {
         this.prisma = prisma;
         this.orgScope = orgScope;
+        this.events = events;
     }
     async findAll(user, query) {
         const rows = await this.prisma.driver.findMany({
@@ -193,6 +196,51 @@ let DriversService = class DriversService {
             }
         });
     }
+    async updateMyLocation(user, dto) {
+        const driver = await this.prisma.driver.findFirst({
+            where: this.orgScope.forOrganization(user, { userId: user.sub }),
+            include: { activeRoute: true },
+        });
+        if (!driver) {
+            throw new common_1.NotFoundException('Sjåførprofil ikke funnet');
+        }
+        if (!driver.activeRoute ||
+            driver.activeRoute.status !== client_1.RouteStatus.IN_PROGRESS) {
+            throw new common_1.ForbiddenException('Posisjon kan kun oppdateres under aktiv rute');
+        }
+        const now = new Date();
+        const location = await this.prisma.driverLocation.upsert({
+            where: { driverId: driver.id },
+            create: {
+                driverId: driver.id,
+                latitude: dto.latitude,
+                longitude: dto.longitude,
+                heading: dto.heading,
+                speed: dto.speed,
+                recordedAt: now,
+            },
+            update: {
+                latitude: dto.latitude,
+                longitude: dto.longitude,
+                heading: dto.heading,
+                speed: dto.speed,
+                recordedAt: now,
+            },
+        });
+        const response = {
+            driverId: location.driverId,
+            latitude: Number(location.latitude),
+            longitude: Number(location.longitude),
+            heading: location.heading != null ? Number(location.heading) : null,
+            speed: location.speed != null ? Number(location.speed) : null,
+            recordedAt: location.recordedAt,
+        };
+        this.events.publish(user.organizationId, 'driver.location', {
+            routeId: driver.activeRouteId,
+            ...response,
+        });
+        return response;
+    }
     async findScopedOrThrow(user, id) {
         const row = await this.prisma.driver.findFirst({
             where: this.orgScope.forOrganization(user, { id }),
@@ -234,7 +282,8 @@ exports.DriversService = DriversService;
 exports.DriversService = DriversService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        org_scope_service_1.OrgScopeService])
+        org_scope_service_1.OrgScopeService,
+        events_service_1.EventsService])
 ], DriversService);
 function toDriverResponse(driver) {
     return { ...driver };

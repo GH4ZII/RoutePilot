@@ -27,7 +27,9 @@ import {
   formatPlannedDate,
   formatWeight,
 } from '@/lib/format';
+import { startDriverLocationUpdates } from '@/lib/driver-location';
 import { mapsAppLabel, openRouteInMaps } from '@/lib/navigation';
+import { subscribeToEvents } from '@/lib/sse';
 import type { DriverRoute, RouteStop } from '@/types/routes';
 
 const ROUTE_STATUS_LABELS: Record<string, string> = {
@@ -72,6 +74,25 @@ export default function HomeScreen() {
     enabled: user?.role === 'DRIVER',
     refetchInterval: 30_000,
   });
+
+  const activeRoute = useMemo(
+    () => routes.find((r) => r.status === 'IN_PROGRESS'),
+    [routes],
+  );
+
+  useEffect(() => {
+    if (!activeRoute) return;
+    const stopLocation = startDriverLocationUpdates(
+      () => activeRoute.status === 'IN_PROGRESS',
+    );
+    const stopSse = subscribeToEvents(() => {
+      void queryClient.invalidateQueries({ queryKey: MY_ROUTES_QUERY_KEY });
+    });
+    return () => {
+      void stopLocation.then((stop) => stop());
+      stopSse();
+    };
+  }, [activeRoute?.id, activeRoute?.status, queryClient]);
 
   useEffect(() => {
     if (routes.length === 0) {

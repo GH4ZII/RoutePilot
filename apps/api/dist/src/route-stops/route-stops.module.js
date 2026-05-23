@@ -8,6 +8,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RouteStopsModule = void 0;
 const common_1 = require("@nestjs/common");
+const events_module_1 = require("../events/events.module");
+const notifications_module_1 = require("../notifications/notifications.module");
 const routes_module_1 = require("../routes/routes.module");
 const route_stops_controller_1 = require("./route-stops.controller");
 const route_stops_service_1 = require("./route-stops.service");
@@ -16,7 +18,7 @@ let RouteStopsModule = class RouteStopsModule {
 exports.RouteStopsModule = RouteStopsModule;
 exports.RouteStopsModule = RouteStopsModule = __decorate([
     (0, common_1.Module)({
-        imports: [routes_module_1.RoutesModule],
+        imports: [routes_module_1.RoutesModule, events_module_1.EventsModule, notifications_module_1.NotificationsModule],
         controllers: [route_stops_controller_1.RouteStopsController],
         providers: [route_stops_service_1.RouteStopsService],
     })

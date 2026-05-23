@@ -160,12 +160,16 @@ export declare const ModelName: {
     readonly Organization: "Organization";
     readonly User: "User";
     readonly Driver: "Driver";
+    readonly DriverLocation: "DriverLocation";
+    readonly Depot: "Depot";
     readonly Vehicle: "Vehicle";
     readonly Delivery: "Delivery";
     readonly Route: "Route";
     readonly RouteStop: "RouteStop";
     readonly ProofOfDelivery: "ProofOfDelivery";
     readonly RouteEvent: "RouteEvent";
+    readonly RouteSummary: "RouteSummary";
+    readonly CustomerNotification: "CustomerNotification";
     readonly OptimizationJob: "OptimizationJob";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -179,7 +183,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "organization" | "user" | "driver" | "vehicle" | "delivery" | "route" | "routeStop" | "proofOfDelivery" | "routeEvent" | "optimizationJob";
+        modelProps: "organization" | "user" | "driver" | "driverLocation" | "depot" | "vehicle" | "delivery" | "route" | "routeStop" | "proofOfDelivery" | "routeEvent" | "routeSummary" | "customerNotification" | "optimizationJob";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -402,6 +406,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 count: {
                     args: Prisma.DriverCountArgs<ExtArgs>;
                     result: runtime.Types.Utils.Optional<Prisma.DriverCountAggregateOutputType> | number;
+                };
+            };
+        };
+        DriverLocation: {
+            payload: Prisma.$DriverLocationPayload<ExtArgs>;
+            fields: Prisma.DriverLocationFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.DriverLocationFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DriverLocationPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.DriverLocationFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DriverLocationPayload>;
+                };
+                findFirst: {
+                    args: Prisma.DriverLocationFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DriverLocationPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.DriverLocationFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DriverLocationPayload>;
+                };
+                findMany: {
+                    args: Prisma.DriverLocationFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DriverLocationPayload>[];
+                };
+                create: {
+                    args: Prisma.DriverLocationCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DriverLocationPayload>;
+                };
+                createMany: {
+                    args: Prisma.DriverLocationCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.DriverLocationCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DriverLocationPayload>[];
+                };
+                delete: {
+                    args: Prisma.DriverLocationDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DriverLocationPayload>;
+                };
+                update: {
+                    args: Prisma.DriverLocationUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DriverLocationPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.DriverLocationDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.DriverLocationUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.DriverLocationUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DriverLocationPayload>[];
+                };
+                upsert: {
+                    args: Prisma.DriverLocationUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DriverLocationPayload>;
+                };
+                aggregate: {
+                    args: Prisma.DriverLocationAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateDriverLocation>;
+                };
+                groupBy: {
+                    args: Prisma.DriverLocationGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.DriverLocationGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.DriverLocationCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.DriverLocationCountAggregateOutputType> | number;
+                };
+            };
+        };
+        Depot: {
+            payload: Prisma.$DepotPayload<ExtArgs>;
+            fields: Prisma.DepotFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.DepotFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DepotPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.DepotFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DepotPayload>;
+                };
+                findFirst: {
+                    args: Prisma.DepotFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DepotPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.DepotFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DepotPayload>;
+                };
+                findMany: {
+                    args: Prisma.DepotFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DepotPayload>[];
+                };
+                create: {
+                    args: Prisma.DepotCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DepotPayload>;
+                };
+                createMany: {
+                    args: Prisma.DepotCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.DepotCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DepotPayload>[];
+                };
+                delete: {
+                    args: Prisma.DepotDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DepotPayload>;
+                };
+                update: {
+                    args: Prisma.DepotUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DepotPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.DepotDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.DepotUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.DepotUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DepotPayload>[];
+                };
+                upsert: {
+                    args: Prisma.DepotUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$DepotPayload>;
+                };
+                aggregate: {
+                    args: Prisma.DepotAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateDepot>;
+                };
+                groupBy: {
+                    args: Prisma.DepotGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.DepotGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.DepotCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.DepotCountAggregateOutputType> | number;
                 };
             };
         };
@@ -849,6 +1001,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 };
             };
         };
+        RouteSummary: {
+            payload: Prisma.$RouteSummaryPayload<ExtArgs>;
+            fields: Prisma.RouteSummaryFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.RouteSummaryFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.RouteSummaryFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>;
+                };
+                findFirst: {
+                    args: Prisma.RouteSummaryFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.RouteSummaryFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>;
+                };
+                findMany: {
+                    args: Prisma.RouteSummaryFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>[];
+                };
+                create: {
+                    args: Prisma.RouteSummaryCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>;
+                };
+                createMany: {
+                    args: Prisma.RouteSummaryCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.RouteSummaryCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>[];
+                };
+                delete: {
+                    args: Prisma.RouteSummaryDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>;
+                };
+                update: {
+                    args: Prisma.RouteSummaryUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.RouteSummaryDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.RouteSummaryUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.RouteSummaryUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>[];
+                };
+                upsert: {
+                    args: Prisma.RouteSummaryUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>;
+                };
+                aggregate: {
+                    args: Prisma.RouteSummaryAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateRouteSummary>;
+                };
+                groupBy: {
+                    args: Prisma.RouteSummaryGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.RouteSummaryGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.RouteSummaryCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.RouteSummaryCountAggregateOutputType> | number;
+                };
+            };
+        };
+        CustomerNotification: {
+            payload: Prisma.$CustomerNotificationPayload<ExtArgs>;
+            fields: Prisma.CustomerNotificationFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.CustomerNotificationFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerNotificationPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.CustomerNotificationFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerNotificationPayload>;
+                };
+                findFirst: {
+                    args: Prisma.CustomerNotificationFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerNotificationPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.CustomerNotificationFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerNotificationPayload>;
+                };
+                findMany: {
+                    args: Prisma.CustomerNotificationFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerNotificationPayload>[];
+                };
+                create: {
+                    args: Prisma.CustomerNotificationCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerNotificationPayload>;
+                };
+                createMany: {
+                    args: Prisma.CustomerNotificationCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.CustomerNotificationCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerNotificationPayload>[];
+                };
+                delete: {
+                    args: Prisma.CustomerNotificationDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerNotificationPayload>;
+                };
+                update: {
+                    args: Prisma.CustomerNotificationUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerNotificationPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.CustomerNotificationDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.CustomerNotificationUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.CustomerNotificationUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerNotificationPayload>[];
+                };
+                upsert: {
+                    args: Prisma.CustomerNotificationUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$CustomerNotificationPayload>;
+                };
+                aggregate: {
+                    args: Prisma.CustomerNotificationAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateCustomerNotification>;
+                };
+                groupBy: {
+                    args: Prisma.CustomerNotificationGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.CustomerNotificationGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.CustomerNotificationCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.CustomerNotificationCountAggregateOutputType> | number;
+                };
+            };
+        };
         OptimizationJob: {
             payload: Prisma.$OptimizationJobPayload<ExtArgs>;
             fields: Prisma.OptimizationJobFieldRefs;
@@ -988,9 +1288,32 @@ export declare const DriverScalarFieldEnum: {
     readonly updatedAt: "updatedAt";
 };
 export type DriverScalarFieldEnum = (typeof DriverScalarFieldEnum)[keyof typeof DriverScalarFieldEnum];
+export declare const DriverLocationScalarFieldEnum: {
+    readonly id: "id";
+    readonly driverId: "driverId";
+    readonly latitude: "latitude";
+    readonly longitude: "longitude";
+    readonly heading: "heading";
+    readonly speed: "speed";
+    readonly recordedAt: "recordedAt";
+    readonly updatedAt: "updatedAt";
+};
+export type DriverLocationScalarFieldEnum = (typeof DriverLocationScalarFieldEnum)[keyof typeof DriverLocationScalarFieldEnum];
+export declare const DepotScalarFieldEnum: {
+    readonly id: "id";
+    readonly organizationId: "organizationId";
+    readonly name: "name";
+    readonly address: "address";
+    readonly latitude: "latitude";
+    readonly longitude: "longitude";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type DepotScalarFieldEnum = (typeof DepotScalarFieldEnum)[keyof typeof DepotScalarFieldEnum];
 export declare const VehicleScalarFieldEnum: {
     readonly id: "id";
     readonly organizationId: "organizationId";
+    readonly depotId: "depotId";
     readonly name: "name";
     readonly registrationNumber: "registrationNumber";
     readonly startAddress: "startAddress";
@@ -1035,6 +1358,8 @@ export declare const RouteScalarFieldEnum: {
     readonly plannedDate: "plannedDate";
     readonly totalDistanceMeters: "totalDistanceMeters";
     readonly totalDurationSeconds: "totalDurationSeconds";
+    readonly actualDistanceMeters: "actualDistanceMeters";
+    readonly actualDurationSeconds: "actualDurationSeconds";
     readonly capacityUsedKg: "capacityUsedKg";
     readonly startedAt: "startedAt";
     readonly finishedAt: "finishedAt";
@@ -1074,6 +1399,30 @@ export declare const RouteEventScalarFieldEnum: {
     readonly createdAt: "createdAt";
 };
 export type RouteEventScalarFieldEnum = (typeof RouteEventScalarFieldEnum)[keyof typeof RouteEventScalarFieldEnum];
+export declare const RouteSummaryScalarFieldEnum: {
+    readonly id: "id";
+    readonly routeId: "routeId";
+    readonly summary: "summary";
+    readonly model: "model";
+    readonly generatedAt: "generatedAt";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type RouteSummaryScalarFieldEnum = (typeof RouteSummaryScalarFieldEnum)[keyof typeof RouteSummaryScalarFieldEnum];
+export declare const CustomerNotificationScalarFieldEnum: {
+    readonly id: "id";
+    readonly organizationId: "organizationId";
+    readonly deliveryId: "deliveryId";
+    readonly channel: "channel";
+    readonly type: "type";
+    readonly status: "status";
+    readonly payload: "payload";
+    readonly errorMessage: "errorMessage";
+    readonly sentAt: "sentAt";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type CustomerNotificationScalarFieldEnum = (typeof CustomerNotificationScalarFieldEnum)[keyof typeof CustomerNotificationScalarFieldEnum];
 export declare const OptimizationJobScalarFieldEnum: {
     readonly id: "id";
     readonly organizationId: "organizationId";
@@ -1145,6 +1494,12 @@ export type EnumRouteEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$P
 export type ListEnumRouteEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RouteEventType[]'>;
 export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>;
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>;
+export type EnumNotificationChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationChannel'>;
+export type ListEnumNotificationChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationChannel[]'>;
+export type EnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType'>;
+export type ListEnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType[]'>;
+export type EnumNotificationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationStatus'>;
+export type ListEnumNotificationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationStatus[]'>;
 export type EnumOptimizationJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OptimizationJobStatus'>;
 export type ListEnumOptimizationJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OptimizationJobStatus[]'>;
 export type EnumOptimizationObjectiveFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OptimizationObjective'>;
@@ -1179,12 +1534,16 @@ export type GlobalOmitConfig = {
     organization?: Prisma.OrganizationOmit;
     user?: Prisma.UserOmit;
     driver?: Prisma.DriverOmit;
+    driverLocation?: Prisma.DriverLocationOmit;
+    depot?: Prisma.DepotOmit;
     vehicle?: Prisma.VehicleOmit;
     delivery?: Prisma.DeliveryOmit;
     route?: Prisma.RouteOmit;
     routeStop?: Prisma.RouteStopOmit;
     proofOfDelivery?: Prisma.ProofOfDeliveryOmit;
     routeEvent?: Prisma.RouteEventOmit;
+    routeSummary?: Prisma.RouteSummaryOmit;
+    customerNotification?: Prisma.CustomerNotificationOmit;
     optimizationJob?: Prisma.OptimizationJobOmit;
 };
 export type LogLevel = 'info' | 'query' | 'warn' | 'error';

@@ -9,6 +9,7 @@ import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 export type VehicleResponse = {
     id: string;
     organizationId: string;
+    depotId: string | null;
     name: string;
     registrationNumber: string;
     startAddress: string;
@@ -33,5 +34,6 @@ export declare class VehiclesService {
     create(user: JwtPayload, dto: CreateVehicleDto): Promise<VehicleResponse>;
     update(user: JwtPayload, id: string, dto: UpdateVehicleDto): Promise<VehicleResponse>;
     remove(user: JwtPayload, id: string): Promise<void>;
+    private resolveDepotCoords;
     private findScopedOrThrow;
 }

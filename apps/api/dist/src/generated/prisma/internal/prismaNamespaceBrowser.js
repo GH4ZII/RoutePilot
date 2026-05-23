@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.JsonNullValueFilter = exports.NullsOrder = exports.QueryMode = exports.JsonNullValueInput = exports.NullableJsonNullValueInput = exports.SortOrder = exports.OptimizationJobScalarFieldEnum = exports.RouteEventScalarFieldEnum = exports.ProofOfDeliveryScalarFieldEnum = exports.RouteStopScalarFieldEnum = exports.RouteScalarFieldEnum = exports.DeliveryScalarFieldEnum = exports.VehicleScalarFieldEnum = exports.DriverScalarFieldEnum = exports.UserScalarFieldEnum = exports.OrganizationScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
+exports.JsonNullValueFilter = exports.NullsOrder = exports.QueryMode = exports.JsonNullValueInput = exports.NullableJsonNullValueInput = exports.SortOrder = exports.OptimizationJobScalarFieldEnum = exports.CustomerNotificationScalarFieldEnum = exports.RouteSummaryScalarFieldEnum = exports.RouteEventScalarFieldEnum = exports.ProofOfDeliveryScalarFieldEnum = exports.RouteStopScalarFieldEnum = exports.RouteScalarFieldEnum = exports.DeliveryScalarFieldEnum = exports.VehicleScalarFieldEnum = exports.DepotScalarFieldEnum = exports.DriverLocationScalarFieldEnum = exports.DriverScalarFieldEnum = exports.UserScalarFieldEnum = exports.OrganizationScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
 const runtime = __importStar(require("@prisma/client/runtime/index-browser"));
 exports.Decimal = runtime.Decimal;
 exports.NullTypes = {
@@ -48,12 +48,16 @@ exports.ModelName = {
     Organization: 'Organization',
     User: 'User',
     Driver: 'Driver',
+    DriverLocation: 'DriverLocation',
+    Depot: 'Depot',
     Vehicle: 'Vehicle',
     Delivery: 'Delivery',
     Route: 'Route',
     RouteStop: 'RouteStop',
     ProofOfDelivery: 'ProofOfDelivery',
     RouteEvent: 'RouteEvent',
+    RouteSummary: 'RouteSummary',
+    CustomerNotification: 'CustomerNotification',
     OptimizationJob: 'OptimizationJob'
 };
 exports.TransactionIsolationLevel = runtime.makeStrictEnum({
@@ -93,9 +97,30 @@ exports.DriverScalarFieldEnum = {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };
+exports.DriverLocationScalarFieldEnum = {
+    id: 'id',
+    driverId: 'driverId',
+    latitude: 'latitude',
+    longitude: 'longitude',
+    heading: 'heading',
+    speed: 'speed',
+    recordedAt: 'recordedAt',
+    updatedAt: 'updatedAt'
+};
+exports.DepotScalarFieldEnum = {
+    id: 'id',
+    organizationId: 'organizationId',
+    name: 'name',
+    address: 'address',
+    latitude: 'latitude',
+    longitude: 'longitude',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
 exports.VehicleScalarFieldEnum = {
     id: 'id',
     organizationId: 'organizationId',
+    depotId: 'depotId',
     name: 'name',
     registrationNumber: 'registrationNumber',
     startAddress: 'startAddress',
@@ -138,6 +163,8 @@ exports.RouteScalarFieldEnum = {
     plannedDate: 'plannedDate',
     totalDistanceMeters: 'totalDistanceMeters',
     totalDurationSeconds: 'totalDurationSeconds',
+    actualDistanceMeters: 'actualDistanceMeters',
+    actualDurationSeconds: 'actualDurationSeconds',
     capacityUsedKg: 'capacityUsedKg',
     startedAt: 'startedAt',
     finishedAt: 'finishedAt',
@@ -172,6 +199,28 @@ exports.RouteEventScalarFieldEnum = {
     type: 'type',
     metadata: 'metadata',
     createdAt: 'createdAt'
+};
+exports.RouteSummaryScalarFieldEnum = {
+    id: 'id',
+    routeId: 'routeId',
+    summary: 'summary',
+    model: 'model',
+    generatedAt: 'generatedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
+exports.CustomerNotificationScalarFieldEnum = {
+    id: 'id',
+    organizationId: 'organizationId',
+    deliveryId: 'deliveryId',
+    channel: 'channel',
+    type: 'type',
+    status: 'status',
+    payload: 'payload',
+    errorMessage: 'errorMessage',
+    sentAt: 'sentAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
 };
 exports.OptimizationJobScalarFieldEnum = {
     id: 'id',

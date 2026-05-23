@@ -73,3 +73,20 @@ export declare const RouteEventType: {
     readonly DRIVER_DELAYED: "DRIVER_DELAYED";
 };
 export type RouteEventType = (typeof RouteEventType)[keyof typeof RouteEventType];
+export declare const NotificationChannel: {
+    readonly SMS: "SMS";
+    readonly EMAIL: "EMAIL";
+};
+export type NotificationChannel = (typeof NotificationChannel)[keyof typeof NotificationChannel];
+export declare const NotificationType: {
+    readonly ETA: "ETA";
+    readonly DELIVERED: "DELIVERED";
+    readonly FAILED: "FAILED";
+};
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
+export declare const NotificationStatus: {
+    readonly PENDING: "PENDING";
+    readonly SENT: "SENT";
+    readonly FAILED: "FAILED";
+};
+export type NotificationStatus = (typeof NotificationStatus)[keyof typeof NotificationStatus];

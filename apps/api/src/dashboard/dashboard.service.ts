@@ -70,11 +70,20 @@ export type LiveRouteStop = {
   };
 };
 
+export type DriverLocationSnapshot = {
+  latitude: number;
+  longitude: number;
+  recordedAt: Date;
+  heading: number | null;
+  speed: number | null;
+};
+
 export type LiveRouteResponse = {
   id: string;
   status: RouteStatus;
   plannedDate: Date;
   driver: { id: string; name: string; phone: string | null } | null;
+  driverLocation: DriverLocationSnapshot | null;
   vehicle: {
     id: string;
     name: string;
@@ -182,6 +191,18 @@ export class DashboardService {
       orderBy: [{ status: 'asc' }, { updatedAt: 'desc' }],
     });
 
+    const driverIds = rows
+      .map((r) => r.driverId)
+      .filter((id): id is string => id != null);
+    const locations = driverIds.length
+      ? await this.prisma.driverLocation.findMany({
+          where: { driverId: { in: driverIds } },
+        })
+      : [];
+    const locationByDriver = new Map(
+      locations.map((loc) => [loc.driverId, loc]),
+    );
+
     return rows.map((route) => {
       const stops: LiveRouteStop[] = route.stops.map((stop) => ({
         id: stop.id,
@@ -213,6 +234,19 @@ export class DashboardService {
               phone: route.driver.phone,
             }
           : null,
+        driverLocation: (() => {
+          if (!route.driverId) return null;
+          const loc = locationByDriver.get(route.driverId);
+          if (!loc) return null;
+          return {
+            latitude: decimalToNumber(loc.latitude)!,
+            longitude: decimalToNumber(loc.longitude)!,
+            recordedAt: loc.recordedAt,
+            heading:
+              loc.heading != null ? decimalToNumber(loc.heading) : null,
+            speed: loc.speed != null ? decimalToNumber(loc.speed) : null,
+          };
+        })(),
         vehicle: route.vehicle
           ? {
               id: route.vehicle.id,

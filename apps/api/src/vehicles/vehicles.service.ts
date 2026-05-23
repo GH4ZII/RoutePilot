@@ -17,6 +17,7 @@ import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 export type VehicleResponse = {
   id: string;
   organizationId: string;
+  depotId: string | null;
   name: string;
   registrationNumber: string;
   startAddress: string;
@@ -68,8 +69,14 @@ export class VehiclesService {
     const startAddress = dto.startAddress.trim();
     const endAddress = dto.endAddress.trim();
 
+    const depotCoords = dto.depotId
+      ? await this.resolveDepotCoords(user, dto.depotId)
+      : null;
+
     const [start, end] = await Promise.all([
-      this.geocoding.geocode(startAddress),
+      depotCoords
+        ? Promise.resolve(depotCoords)
+        : this.geocoding.geocode(startAddress),
       this.geocoding.geocode(endAddress),
     ]);
 
@@ -77,9 +84,10 @@ export class VehiclesService {
       const created = await this.prisma.vehicle.create({
         data: {
           organizationId,
+          depotId: dto.depotId,
           name: dto.name,
           registrationNumber,
-          startAddress,
+          startAddress: depotCoords ? depotCoords.address : startAddress,
           endAddress,
           maxWeightKg: dto.maxWeightKg,
           maxVolumeM3: dto.maxVolumeM3,
@@ -134,10 +142,17 @@ export class VehiclesService {
       endLongitude = end.longitude;
     }
 
+    if (dto.depotId) {
+      const depotCoords = await this.resolveDepotCoords(user, dto.depotId);
+      startLatitude = depotCoords.latitude;
+      startLongitude = depotCoords.longitude;
+    }
+
     try {
       const updated = await this.prisma.vehicle.update({
         where: { id },
         data: {
+          ...(dto.depotId !== undefined && { depotId: dto.depotId }),
           ...(dto.name !== undefined && { name: dto.name }),
           ...(dto.registrationNumber !== undefined && {
             registrationNumber: dto.registrationNumber.trim(),
@@ -192,6 +207,27 @@ export class VehiclesService {
     await this.prisma.vehicle.delete({ where: { id } });
   }
 
+  private async resolveDepotCoords(
+    user: JwtPayload,
+    depotId: string,
+  ): Promise<{
+    latitude: number;
+    longitude: number;
+    address: string;
+  }> {
+    const depot = await this.prisma.depot.findFirst({
+      where: this.orgScope.forOrganization(user, { id: depotId }),
+    });
+    if (!depot) {
+      throw new BadRequestException('Depot ikke funnet');
+    }
+    return {
+      latitude: decimalToNumber(depot.latitude)!,
+      longitude: decimalToNumber(depot.longitude)!,
+      address: depot.address,
+    };
+  }
+
   private async findScopedOrThrow(user: JwtPayload, id: string) {
     const row = await this.prisma.vehicle.findFirst({
       where: this.orgScope.forOrganization(user, { id }),
@@ -206,6 +242,7 @@ export class VehiclesService {
 function toVehicleResponse(vehicle: {
   id: string;
   organizationId: string;
+  depotId?: string | null;
   name: string;
   registrationNumber: string;
   startAddress: string;
@@ -223,6 +260,7 @@ function toVehicleResponse(vehicle: {
   return {
     id: vehicle.id,
     organizationId: vehicle.organizationId,
+    depotId: vehicle.depotId ?? null,
     name: vehicle.name,
     registrationNumber: vehicle.registrationNumber,
     startAddress: vehicle.startAddress,

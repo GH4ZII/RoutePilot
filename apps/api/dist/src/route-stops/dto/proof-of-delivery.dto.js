@@ -11,11 +11,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProofOfDeliveryDto = void 0;
 const class_validator_1 = require("class-validator");
+const is_pod_photo_url_validator_1 = require("../validators/is-pod-photo-url.validator");
+const is_pod_signature_url_validator_1 = require("../validators/is-pod-signature-url.validator");
 class ProofOfDeliveryDto {
     note;
     latitude;
     longitude;
+    capturedAt;
     photoUrl;
+    signatureUrl;
 }
 exports.ProofOfDeliveryDto = ProofOfDeliveryDto;
 __decorate([
@@ -36,8 +40,19 @@ __decorate([
 ], ProofOfDeliveryDto.prototype, "longitude", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsDateString)(),
+    __metadata("design:type", String)
+], ProofOfDeliveryDto.prototype, "capturedAt", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MaxLength)(500_000),
+    (0, is_pod_photo_url_validator_1.IsPodPhotoUrl)(),
     __metadata("design:type", String)
 ], ProofOfDeliveryDto.prototype, "photoUrl", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, is_pod_signature_url_validator_1.IsPodSignatureUrl)(),
+    __metadata("design:type", String)
+], ProofOfDeliveryDto.prototype, "signatureUrl", void 0);
 //# sourceMappingURL=proof-of-delivery.dto.js.map

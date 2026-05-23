@@ -1,17 +1,24 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { DriverStatus, UserRole } from '../generated/prisma/client';
+import {
+  DriverStatus,
+  RouteStatus,
+  UserRole,
+} from '../generated/prisma/client';
 import type { JwtPayload } from '../auth/types/jwt-payload';
 import { OrgScopeService } from '../common/org-scope.service';
+import { EventsService } from '../events/events.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDriverDto } from './dto/create-driver.dto';
 import { ListDriversQueryDto } from './dto/list-drivers-query.dto';
 import { UpdateDriverDto } from './dto/update-driver.dto';
+import { UpdateDriverLocationDto } from './dto/update-driver-location.dto';
 
 export type DriverResponse = {
   id: string;
@@ -27,11 +34,21 @@ export type DriverResponse = {
   updatedAt: Date;
 };
 
+export type DriverLocationResponse = {
+  driverId: string;
+  latitude: number;
+  longitude: number;
+  heading: number | null;
+  speed: number | null;
+  recordedAt: Date;
+};
+
 @Injectable()
 export class DriversService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly orgScope: OrgScopeService,
+    private readonly events: EventsService,
   ) {}
 
   async findAll(
@@ -212,6 +229,64 @@ export class DriversService {
         }
       }
     });
+  }
+
+  async updateMyLocation(
+    user: JwtPayload,
+    dto: UpdateDriverLocationDto,
+  ): Promise<DriverLocationResponse> {
+    const driver = await this.prisma.driver.findFirst({
+      where: this.orgScope.forOrganization(user, { userId: user.sub }),
+      include: { activeRoute: true },
+    });
+    if (!driver) {
+      throw new NotFoundException('Sjåførprofil ikke funnet');
+    }
+    if (
+      !driver.activeRoute ||
+      driver.activeRoute.status !== RouteStatus.IN_PROGRESS
+    ) {
+      throw new ForbiddenException(
+        'Posisjon kan kun oppdateres under aktiv rute',
+      );
+    }
+
+    const now = new Date();
+    const location = await this.prisma.driverLocation.upsert({
+      where: { driverId: driver.id },
+      create: {
+        driverId: driver.id,
+        latitude: dto.latitude,
+        longitude: dto.longitude,
+        heading: dto.heading,
+        speed: dto.speed,
+        recordedAt: now,
+      },
+      update: {
+        latitude: dto.latitude,
+        longitude: dto.longitude,
+        heading: dto.heading,
+        speed: dto.speed,
+        recordedAt: now,
+      },
+    });
+
+    const response: DriverLocationResponse = {
+      driverId: location.driverId,
+      latitude: Number(location.latitude),
+      longitude: Number(location.longitude),
+      heading:
+        location.heading != null ? Number(location.heading) : null,
+      speed: location.speed != null ? Number(location.speed) : null,
+      recordedAt: location.recordedAt,
+    };
+
+    this.events.publish(user.organizationId, 'driver.location', {
+      routeId: driver.activeRouteId,
+      ...response,
+    });
+
+    return response;
   }
 
   private async findScopedOrThrow(user: JwtPayload, id: string) {

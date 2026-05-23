@@ -9,16 +9,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DriversModule = void 0;
 const common_1 = require("@nestjs/common");
 const auth_module_1 = require("../auth/auth.module");
+const events_module_1 = require("../events/events.module");
 const drivers_controller_1 = require("./drivers.controller");
+const drivers_me_controller_1 = require("./drivers-me.controller");
 const drivers_service_1 = require("./drivers.service");
 let DriversModule = class DriversModule {
 };
 exports.DriversModule = DriversModule;
 exports.DriversModule = DriversModule = __decorate([
     (0, common_1.Module)({
-        imports: [auth_module_1.AuthModule],
-        controllers: [drivers_controller_1.DriversController],
+        imports: [auth_module_1.AuthModule, events_module_1.EventsModule],
+        controllers: [drivers_controller_1.DriversController, drivers_me_controller_1.DriversMeController],
         providers: [drivers_service_1.DriversService],
+        exports: [drivers_service_1.DriversService],
     })
 ], DriversModule);
 //# sourceMappingURL=drivers.module.js.map

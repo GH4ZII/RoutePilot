@@ -1,6 +1,7 @@
 import { Queue } from 'bullmq';
 import { OptimizationJobStatus, OptimizationObjective } from '../generated/prisma/client';
 import type { JwtPayload } from '../auth/types/jwt-payload';
+import { EventsService } from '../events/events.service';
 import { OrgScopeService } from '../common/org-scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RoutingService } from '../routing/routing.service';
@@ -37,8 +38,9 @@ export declare class OptimizationService {
     private readonly orgScope;
     private readonly routing;
     private readonly optimizer;
+    private readonly events;
     private readonly queue;
-    constructor(prisma: PrismaService, orgScope: OrgScopeService, routing: RoutingService, optimizer: OptimizerClientService, queue: Queue);
+    constructor(prisma: PrismaService, orgScope: OrgScopeService, routing: RoutingService, optimizer: OptimizerClientService, events: EventsService, queue: Queue);
     createJob(user: JwtPayload, dto: CreateOptimizationJobDto): Promise<OptimizationJobResponse>;
     findJob(user: JwtPayload, id: string): Promise<OptimizationJobResponse>;
     runJob(jobId: string, organizationId: string): Promise<void>;

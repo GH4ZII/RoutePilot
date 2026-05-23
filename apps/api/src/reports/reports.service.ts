@@ -77,6 +77,31 @@ export type RouteEfficiencyResponse = {
   routes: RouteEfficiencyRow[];
 };
 
+export type PlannedVsActualStopRow = {
+  stopId: string;
+  stopOrder: number;
+  customerName: string;
+  estimatedArrival: Date | null;
+  actualArrival: Date | null;
+  deltaMinutes: number | null;
+};
+
+export type PlannedVsActualRouteRow = {
+  routeId: string;
+  plannedDate: string;
+  plannedDistanceMeters: number | null;
+  actualDistanceMeters: number | null;
+  plannedDurationSeconds: number | null;
+  actualDurationSeconds: number | null;
+  stops: PlannedVsActualStopRow[];
+};
+
+export type PlannedVsActualResponse = {
+  from: string;
+  to: string;
+  routes: PlannedVsActualRouteRow[];
+};
+
 const routeWithStopsInclude = {
   driver: true,
   vehicle: true,
@@ -146,8 +171,10 @@ export class ReportsService {
 
     const planned = routes.length;
     const completed = routes.filter((r) => r.status === RouteStatus.COMPLETED).length;
-    const active = routes.filter((r) =>
-      [RouteStatus.ASSIGNED, RouteStatus.IN_PROGRESS].includes(r.status),
+    const active = routes.filter(
+      (r) =>
+        r.status === RouteStatus.ASSIGNED ||
+        r.status === RouteStatus.IN_PROGRESS,
     ).length;
 
     const distanceMeters = routes.reduce(
@@ -363,6 +390,56 @@ export class ReportsService {
             : null,
       };
     });
+
+    return {
+      from: formatDate(from),
+      to: formatDate(to),
+      routes: rows,
+    };
+  }
+
+  async getPlannedVsActual(
+    user: JwtPayload,
+    query: RangeReportQueryDto,
+  ): Promise<PlannedVsActualResponse> {
+    const { from, to } = resolveDateRange(query.from, query.to);
+    const orgWhere = this.orgScope.forOrganization(user);
+
+    const routes = await this.prisma.route.findMany({
+      where: {
+        ...orgWhere,
+        plannedDate: { gte: from, lte: to },
+        ...(query.driverId ? { driverId: query.driverId } : {}),
+      },
+      include: routeWithStopsInclude,
+      orderBy: { plannedDate: 'desc' },
+    });
+
+    const rows: PlannedVsActualRouteRow[] = routes.map((route) => ({
+      routeId: route.id,
+      plannedDate: formatDate(route.plannedDate),
+      plannedDistanceMeters: route.totalDistanceMeters,
+      actualDistanceMeters: route.actualDistanceMeters,
+      plannedDurationSeconds: route.totalDurationSeconds,
+      actualDurationSeconds:
+        route.actualDurationSeconds ??
+        (route.startedAt && route.finishedAt
+          ? Math.round(
+              (route.finishedAt.getTime() - route.startedAt.getTime()) / 1000,
+            )
+          : null),
+      stops: route.stops.map((stop) => ({
+        stopId: stop.id,
+        stopOrder: stop.stopOrder,
+        customerName: stop.delivery.customerName,
+        estimatedArrival: stop.estimatedArrival,
+        actualArrival: stop.actualArrival,
+        deltaMinutes: arrivalDeltaMinutes(
+          stop.estimatedArrival,
+          stop.actualArrival,
+        ),
+      })),
+    }));
 
     return {
       from: formatDate(from),

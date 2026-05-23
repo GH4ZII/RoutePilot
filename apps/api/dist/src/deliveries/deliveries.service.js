@@ -17,6 +17,7 @@ const org_scope_service_1 = require("../common/org-scope.service");
 const geocoding_service_1 = require("../geocoding/geocoding.service");
 const geocoding_util_1 = require("../geocoding/geocoding.util");
 const prisma_service_1 = require("../prisma/prisma.service");
+const deliveries_import_util_1 = require("./deliveries-import.util");
 let DeliveriesService = class DeliveriesService {
     prisma;
     orgScope;
@@ -107,6 +108,48 @@ let DeliveriesService = class DeliveriesService {
             },
         });
         return toDeliveryResponse(updated);
+    }
+    async importCsv(user, csvContent) {
+        const { rows, errors: parseErrors } = (0, deliveries_import_util_1.parseDeliveriesCsv)(csvContent);
+        const created = [];
+        const errors = [...parseErrors];
+        const batchSize = 5;
+        for (let i = 0; i < rows.length; i += batchSize) {
+            const batch = rows.slice(i, i + batchSize);
+            const results = await Promise.all(batch.map((row) => this.createFromCsvRow(user, row)));
+            for (const result of results) {
+                if (result.error) {
+                    errors.push({ row: result.row, message: result.error });
+                }
+                else if (result.delivery) {
+                    created.push(result.delivery);
+                }
+            }
+        }
+        return { created, errors };
+    }
+    async createFromCsvRow(user, row) {
+        try {
+            const delivery = await this.create(user, {
+                customerName: row.customerName,
+                phone: row.phone,
+                address: row.address,
+                weightKg: row.weightKg,
+                volumeM3: row.volumeM3,
+                priority: row.priority,
+                deadline: row.deadline,
+                timeWindowStart: row.timeWindowStart,
+                timeWindowEnd: row.timeWindowEnd,
+                notes: row.notes,
+            });
+            return { row: row.row, delivery };
+        }
+        catch (err) {
+            return {
+                row: row.row,
+                error: err instanceof Error ? err.message : 'Import feilet',
+            };
+        }
     }
     async remove(user, id) {
         await this.findScopedOrThrow(user, id);

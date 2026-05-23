@@ -10,6 +10,7 @@ const adminNav: NavItem[] = [
   { label: 'Brukere', path: '/users' },
   { label: 'Sjåfører', path: '/drivers' },
   { label: 'Kjøretøy', path: '/vehicles' },
+  { label: 'Depot', path: '/depots' },
   { label: 'Leveranser', path: '/deliveries' },
   { label: 'Kart', path: '/map' },
   { label: 'Ruter', path: '/routes' },
@@ -27,6 +28,7 @@ const dispatcherNav: NavItem[] = [
   { label: 'Rapporter', path: '/reports' },
   { label: 'Sjåfører', path: '/drivers' },
   { label: 'Kjøretøy', path: '/vehicles' },
+  { label: 'Depot', path: '/depots' },
 ]
 
 export function getNavItemsForRole(role: string): NavItem[] {

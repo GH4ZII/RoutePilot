@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeliveriesController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const client_1 = require("../generated/prisma/client");
 const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
@@ -22,6 +23,7 @@ const roles_guard_1 = require("../auth/guards/roles.guard");
 const create_delivery_dto_1 = require("./dto/create-delivery.dto");
 const list_deliveries_query_dto_1 = require("./dto/list-deliveries-query.dto");
 const update_delivery_dto_1 = require("./dto/update-delivery.dto");
+const import_csv_dto_1 = require("./dto/import-csv.dto");
 const deliveries_service_1 = require("./deliveries.service");
 let DeliveriesController = class DeliveriesController {
     deliveriesService;
@@ -33,6 +35,13 @@ let DeliveriesController = class DeliveriesController {
     }
     create(user, dto) {
         return this.deliveriesService.create(user, dto);
+    }
+    importCsv(user, file, body) {
+        const content = file?.buffer?.toString('utf-8') ?? body?.csv?.trim() ?? '';
+        if (!content) {
+            return { created: [], errors: [{ row: 0, message: 'Ingen CSV-data' }] };
+        }
+        return this.deliveriesService.importCsv(user, content);
     }
     findOne(user, id) {
         return this.deliveriesService.findOne(user, id);
@@ -61,6 +70,16 @@ __decorate([
     __metadata("design:paramtypes", [Object, create_delivery_dto_1.CreateDeliveryDto]),
     __metadata("design:returntype", void 0)
 ], DeliveriesController.prototype, "create", null);
+__decorate([
+    (0, common_1.Post)('import-csv'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.UploadedFile)()),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, import_csv_dto_1.ImportCsvBodyDto]),
+    __metadata("design:returntype", void 0)
+], DeliveriesController.prototype, "importCsv", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),

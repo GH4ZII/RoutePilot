@@ -18,6 +18,7 @@ const bullmq_1 = require("@nestjs/bullmq");
 const bullmq_2 = require("bullmq");
 const client_1 = require("../generated/prisma/client");
 const decimal_util_1 = require("../common/decimal.util");
+const events_service_1 = require("../events/events.service");
 const org_scope_service_1 = require("../common/org-scope.service");
 const prisma_service_1 = require("../prisma/prisma.service");
 const routing_service_1 = require("../routing/routing.service");
@@ -29,12 +30,14 @@ let OptimizationService = class OptimizationService {
     orgScope;
     routing;
     optimizer;
+    events;
     queue;
-    constructor(prisma, orgScope, routing, optimizer, queue) {
+    constructor(prisma, orgScope, routing, optimizer, events, queue) {
         this.prisma = prisma;
         this.orgScope = orgScope;
         this.routing = routing;
         this.optimizer = optimizer;
+        this.events = events;
         this.queue = queue;
     }
     async createJob(user, dto) {
@@ -90,6 +93,9 @@ let OptimizationService = class OptimizationService {
                     result: result,
                     completedAt: new Date(),
                 },
+            });
+            this.events.publish(organizationId, 'optimization.completed', {
+                jobId,
             });
         }
         catch (err) {
@@ -266,8 +272,12 @@ let OptimizationService = class OptimizationService {
         const vehicleDepots = [];
         for (let v = 0; v < vehicles.length; v += 1) {
             const vehicle = vehicles[v];
-            const startLat = (0, decimal_util_1.decimalToNumber)(vehicle.startLatitude);
-            const startLon = (0, decimal_util_1.decimalToNumber)(vehicle.startLongitude);
+            const startLat = vehicle.depot != null
+                ? (0, decimal_util_1.decimalToNumber)(vehicle.depot.latitude)
+                : (0, decimal_util_1.decimalToNumber)(vehicle.startLatitude);
+            const startLon = vehicle.depot != null
+                ? (0, decimal_util_1.decimalToNumber)(vehicle.depot.longitude)
+                : (0, decimal_util_1.decimalToNumber)(vehicle.startLongitude);
             const endLat = (0, decimal_util_1.decimalToNumber)(vehicle.endLatitude);
             const endLon = (0, decimal_util_1.decimalToNumber)(vehicle.endLongitude);
             const startIndex = points.length;
@@ -298,6 +308,7 @@ let OptimizationService = class OptimizationService {
     async loadAvailableVehicles(organizationId, vehicleIds) {
         const vehicles = await this.prisma.vehicle.findMany({
             where: { organizationId, id: { in: vehicleIds } },
+            include: { depot: true },
         });
         if (vehicles.length !== vehicleIds.length) {
             throw new common_1.BadRequestException('En eller flere kjøretøy ble ikke funnet');
@@ -405,11 +416,12 @@ let OptimizationService = class OptimizationService {
 exports.OptimizationService = OptimizationService;
 exports.OptimizationService = OptimizationService = __decorate([
     (0, common_1.Injectable)(),
-    __param(4, (0, bullmq_1.InjectQueue)(exports.OPTIMIZATION_QUEUE)),
+    __param(5, (0, bullmq_1.InjectQueue)(exports.OPTIMIZATION_QUEUE)),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         org_scope_service_1.OrgScopeService,
         routing_service_1.RoutingService,
         optimizer_client_service_1.OptimizerClientService,
+        events_service_1.EventsService,
         bullmq_2.Queue])
 ], OptimizationService);
 //# sourceMappingURL=optimization.service.js.map

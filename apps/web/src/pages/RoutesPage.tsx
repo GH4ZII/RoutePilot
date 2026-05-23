@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import DeleteRouteButton from '../components/DeleteRouteButton'
 import AssignRoutePanel from '../components/AssignRoutePanel'
 import RouteOptimizationResult from '../components/RouteOptimizationResult'
 import PageToolbar from '../components/PageToolbar'
 import * as api from '../lib/api'
+import { ApiError } from '../lib/api'
 import {
   getActiveRoutes,
   getRoutesPendingDriverAssignment,
@@ -35,6 +37,9 @@ export default function RoutesPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const navigationState = location.state as RoutesPageState | null
+  const [routeSummary, setRouteSummary] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [reoptimizing, setReoptimizing] = useState(false)
 
   const { data: routes, isLoading, reload } = useAsync(() => api.listRoutes(), [])
   const { data: drivers } = useAsync(() => api.listDrivers(), [])
@@ -232,6 +237,7 @@ export default function RoutesPage() {
             ? {
                 id: routeDetail.vehicle.id,
                 organizationId: routeDetail.organizationId,
+                depotId: null,
                 name: routeDetail.vehicle.name,
                 registrationNumber: '',
                 startAddress: routeDetail.vehicle.startAddress,
@@ -249,6 +255,65 @@ export default function RoutesPage() {
             : undefined
         }
       />
+
+      {routeDetail.status === 'IN_PROGRESS' && (
+        <div className="route-actions">
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={reoptimizing}
+            onClick={async () => {
+              setReoptimizing(true)
+              setActionError(null)
+              try {
+                await api.reoptimizeRoute(routeDetail.id)
+                await reload()
+              } catch (err) {
+                setActionError(
+                  err instanceof ApiError ? err.message : 'Re-opt feilet',
+                )
+              } finally {
+                setReoptimizing(false)
+              }
+            }}
+          >
+            {reoptimizing ? 'Optimaliserer…' : 'Re-optimaliser gjenværende'}
+          </button>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={async () => {
+              setActionError(null)
+              try {
+                const summary = await api.generateRouteSummary(routeDetail.id)
+                setRouteSummary(summary.summary)
+              } catch (err) {
+                setActionError(
+                  err instanceof ApiError ? err.message : 'Sammendrag feilet',
+                )
+              }
+            }}
+          >
+            Generer sammendrag
+          </button>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => void api.downloadRoutePdf(routeDetail.id)}
+          >
+            Last ned PDF
+          </button>
+        </div>
+      )}
+
+      {routeSummary && (
+        <div className="route-summary-box">
+          <h3>Rutesammendrag</h3>
+          <p>{routeSummary}</p>
+        </div>
+      )}
+
+      {actionError && <p className="form-error">{actionError}</p>}
 
       <p className="page-muted route-empty__back">
         {routeDetail.status !== 'IN_PROGRESS' ? (

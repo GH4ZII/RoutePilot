@@ -119,7 +119,7 @@ export default function ArchivePage() {
           routeId={selectedRoute.id}
           routeLabel={`${selectedRoute.plannedDate.slice(0, 10)} · ${selectedRoute.stops.length} stopp`}
           confirmMessage={`Slette ruten ${selectedRoute.plannedDate.slice(0, 10)} · ${selectedRoute.stops.length} stopp fra arkivet? Dette kan ikke angres.`}
-          onDeleted={reload}
+          onDeleted={() => void reload()}
         />
       </div>
 
@@ -132,6 +132,7 @@ export default function ArchivePage() {
             ? {
                 id: selectedRoute.vehicle.id,
                 organizationId: selectedRoute.organizationId,
+                depotId: null,
                 name: selectedRoute.vehicle.name,
                 registrationNumber: '',
                 startAddress: selectedRoute.vehicle.startAddress,

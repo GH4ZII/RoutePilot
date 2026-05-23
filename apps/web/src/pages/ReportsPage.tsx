@@ -87,6 +87,14 @@ export default function ReportsPage() {
     staleTime: 60_000,
   })
 
+  const plannedVsActualQuery = useQuery({
+    queryKey: ['reports', 'planned-vs-actual', rangeFrom, rangeTo],
+    queryFn: () =>
+      api.getReportsPlannedVsActual({ from: rangeFrom, to: rangeTo }),
+    enabled: rangeValid === null,
+    staleTime: 60_000,
+  })
+
   const deliveryChartData = useMemo(() => {
     const d = dailyQuery.data?.deliveries
     if (!d) return []
@@ -117,6 +125,7 @@ export default function ReportsPage() {
     if (!err) {
       void driverQuery.refetch()
       void efficiencyQuery.refetch()
+      void plannedVsActualQuery.refetch()
     }
   }
 
@@ -149,6 +158,18 @@ export default function ReportsPage() {
               onChange={(e) => setDailyDate(e.target.value)}
             />
           </label>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() =>
+              void api.downloadReportCsv(
+                `/reports/daily/export.csv?date=${dailyDate}`,
+                `daily-${dailyDate}.csv`,
+              )
+            }
+          >
+            Last ned CSV
+          </button>
         </div>
 
         {dailyQuery.isLoading && <p className="page-muted">Laster…</p>}
@@ -261,6 +282,18 @@ export default function ReportsPage() {
           <button type="button" className="btn btn-primary" onClick={applyRange}>
             Oppdater periode
           </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() =>
+              void api.downloadReportCsv(
+                `/reports/route-efficiency/export.csv?from=${rangeFrom}&to=${rangeTo}`,
+                `route-efficiency-${rangeFrom}-${rangeTo}.csv`,
+              )
+            }
+          >
+            Eksporter effektivitet CSV
+          </button>
         </div>
 
         <div className="reports-charts-grid">
@@ -334,6 +367,60 @@ export default function ReportsPage() {
             ) : (
               !efficiencyQuery.isLoading && (
                 <p className="page-muted">Ingen fullførte ruter i perioden.</p>
+              )
+            )}
+          </div>
+
+          <div className="reports-panel">
+            <h3>Planlagt vs. faktisk</h3>
+            {plannedVsActualQuery.isLoading && (
+              <p className="page-muted">Laster…</p>
+            )}
+            {plannedVsActualQuery.data &&
+            plannedVsActualQuery.data.routes.length > 0 ? (
+              <div className="reports-table-wrap">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Rute</th>
+                      <th>Planlagt km</th>
+                      <th>Faktisk km</th>
+                      <th>Planlagt tid</th>
+                      <th>Faktisk tid</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {plannedVsActualQuery.data.routes.map((row) => (
+                      <tr key={row.routeId}>
+                        <td>{row.plannedDate}</td>
+                        <td>
+                          {row.plannedDistanceMeters != null
+                            ? formatDistance(row.plannedDistanceMeters)
+                            : '—'}
+                        </td>
+                        <td>
+                          {row.actualDistanceMeters != null
+                            ? formatDistance(row.actualDistanceMeters)
+                            : '—'}
+                        </td>
+                        <td>
+                          {row.plannedDurationSeconds != null
+                            ? formatDuration(row.plannedDurationSeconds)
+                            : '—'}
+                        </td>
+                        <td>
+                          {row.actualDurationSeconds != null
+                            ? formatDuration(row.actualDurationSeconds)
+                            : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              !plannedVsActualQuery.isLoading && (
+                <p className="page-muted">Ingen rutedata i perioden.</p>
               )
             )}
           </div>
