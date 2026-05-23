@@ -17,7 +17,6 @@ import type { JwtPayload } from '../auth/types/jwt-payload';
 import { AssignRouteDto } from './dto/assign-route.dto';
 import { ListRoutesQueryDto } from './dto/list-routes-query.dto';
 import { ReoptimizeRouteQueryDto } from './dto/reoptimize-route-query.dto';
-import { RouteSummaryService } from './route-summary.service';
 import { RoutesReoptimizeService } from './routes-reoptimize.service';
 import { RoutesService } from './routes.service';
 
@@ -27,7 +26,6 @@ export class RoutesController {
   constructor(
     private readonly routes: RoutesService,
     private readonly reoptimize: RoutesReoptimizeService,
-    private readonly summaries: RouteSummaryService,
   ) {}
 
   @Get()
@@ -91,18 +89,6 @@ export class RoutesController {
       id,
       query.includeDeliveryIds ?? [],
     );
-  }
-
-  @Get(':id/summary')
-  @Roles(UserRole.ADMIN, UserRole.DISPATCHER)
-  getSummary(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
-    return this.summaries.getSummary(user, id);
-  }
-
-  @Post(':id/summary')
-  @Roles(UserRole.ADMIN, UserRole.DISPATCHER)
-  generateSummary(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
-    return this.summaries.generateSummary(user, id);
   }
 
   @Delete(':id')

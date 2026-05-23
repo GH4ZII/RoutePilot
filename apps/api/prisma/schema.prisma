@@ -288,7 +288,6 @@ model Route {
   activeDriver Driver?       @relation("ActiveRoute")
   stops        RouteStop[]
   events       RouteEvent[]
-  summary      RouteSummary?
 
   @@index([organizationId])
   @@index([driverId])
@@ -348,20 +347,6 @@ model RouteEvent {
   @@index([routeId])
   @@index([type])
   @@map("route_events")
-}
-
-model RouteSummary {
-  id          String   @id @default(cuid())
-  routeId     String   @unique
-  summary     String
-  model       String?
-  generatedAt DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
-
-  @@map("route_summaries")
 }
 
 model CustomerNotification {

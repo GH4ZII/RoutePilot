@@ -11,15 +11,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RoutingService = void 0;
 const common_1 = require("@nestjs/common");
-const traffic_routing_service_1 = require("./traffic-routing.service");
+const osrm_service_1 = require("./osrm.service");
 let RoutingService = class RoutingService {
-    traffic;
-    constructor(traffic) {
-        this.traffic = traffic;
+    osrm;
+    constructor(osrm) {
+        this.osrm = osrm;
     }
     async buildDistanceTimeMatrix(points) {
         const validated = this.validatePoints(points);
-        const table = await this.traffic.getTable(validated);
+        const table = await this.osrm.getTable(validated);
         return {
             pointIds: validated.map((p) => p.id),
             distancesMeters: table.distancesMeters,
@@ -59,6 +59,6 @@ let RoutingService = class RoutingService {
 exports.RoutingService = RoutingService;
 exports.RoutingService = RoutingService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [traffic_routing_service_1.TrafficRoutingService])
+    __metadata("design:paramtypes", [osrm_service_1.OsrmService])
 ], RoutingService);
 //# sourceMappingURL=routing.service.js.map

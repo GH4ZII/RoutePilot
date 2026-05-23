@@ -35,7 +35,6 @@ import type {
   CreateDepotPayload,
   UpdateDepotPayload,
   ImportCsvResult,
-  RouteSummary,
   PlannedVsActualReport,
 } from '../types/domain'
 import { getStoredToken } from './auth-storage'
@@ -381,14 +380,6 @@ export function reoptimizeRoute(
   return request<RouteDetail>(`/routes/${routeId}/reoptimize${q ? `?${q}` : ''}`, {
     method: 'POST',
   })
-}
-
-export function getRouteSummary(routeId: string): Promise<RouteSummary> {
-  return request<RouteSummary>(`/routes/${routeId}/summary`)
-}
-
-export function generateRouteSummary(routeId: string): Promise<RouteSummary> {
-  return request<RouteSummary>(`/routes/${routeId}/summary`, { method: 'POST' })
 }
 
 export function getReportsPlannedVsActual(params?: {

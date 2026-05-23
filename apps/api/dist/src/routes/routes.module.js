@@ -12,7 +12,6 @@ const auth_module_1 = require("../auth/auth.module");
 const events_module_1 = require("../events/events.module");
 const optimization_module_1 = require("../optimization/optimization.module");
 const routes_controller_1 = require("./routes.controller");
-const route_summary_service_1 = require("./route-summary.service");
 const routes_reoptimize_service_1 = require("./routes-reoptimize.service");
 const routes_service_1 = require("./routes.service");
 let RoutesModule = class RoutesModule {
@@ -22,7 +21,7 @@ exports.RoutesModule = RoutesModule = __decorate([
     (0, common_1.Module)({
         imports: [auth_module_1.AuthModule, events_module_1.EventsModule, optimization_module_1.OptimizationModule],
         controllers: [routes_controller_1.RoutesController],
-        providers: [routes_service_1.RoutesService, routes_reoptimize_service_1.RoutesReoptimizeService, route_summary_service_1.RouteSummaryService],
+        providers: [routes_service_1.RoutesService, routes_reoptimize_service_1.RoutesReoptimizeService],
         exports: [routes_service_1.RoutesService],
     })
 ], RoutesModule);

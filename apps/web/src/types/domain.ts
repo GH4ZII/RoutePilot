@@ -486,13 +486,6 @@ export type ImportCsvResult = {
   errors: Array<{ row: number; message: string }>
 }
 
-export type RouteSummary = {
-  routeId: string
-  summary: string
-  model: string | null
-  generatedAt: string
-}
-
 export type PlannedVsActualReport = {
   from: string
   to: string

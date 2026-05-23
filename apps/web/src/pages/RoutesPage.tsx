@@ -37,7 +37,6 @@ export default function RoutesPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const navigationState = location.state as RoutesPageState | null
-  const [routeSummary, setRouteSummary] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [reoptimizing, setReoptimizing] = useState(false)
 
@@ -282,34 +281,10 @@ export default function RoutesPage() {
           <button
             type="button"
             className="btn-secondary"
-            onClick={async () => {
-              setActionError(null)
-              try {
-                const summary = await api.generateRouteSummary(routeDetail.id)
-                setRouteSummary(summary.summary)
-              } catch (err) {
-                setActionError(
-                  err instanceof ApiError ? err.message : 'Sammendrag feilet',
-                )
-              }
-            }}
-          >
-            Generer sammendrag
-          </button>
-          <button
-            type="button"
-            className="btn-secondary"
             onClick={() => void api.downloadRoutePdf(routeDetail.id)}
           >
             Last ned PDF
           </button>
-        </div>
-      )}
-
-      {routeSummary && (
-        <div className="route-summary-box">
-          <h3>Rutesammendrag</h3>
-          <p>{routeSummary}</p>
         </div>
       )}
 
