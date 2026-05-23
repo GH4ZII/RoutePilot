@@ -28,6 +28,9 @@ import type {
   DashboardSummary,
   LiveRoute,
   DashboardDeliveriesStatus,
+  DailyReport,
+  DriverPerformanceReport,
+  RouteEfficiencyReport,
 } from '../types/domain'
 import { getStoredToken } from './auth-storage'
 
@@ -283,6 +286,39 @@ export function getDashboardDeliveriesStatus(
   const query = date ? `?date=${encodeURIComponent(date)}` : ''
   return request<DashboardDeliveriesStatus>(
     `/dashboard/deliveries/status${query}`,
+  )
+}
+
+function buildQuery(params: Record<string, string | undefined>): string {
+  const search = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (value) search.set(key, value)
+  }
+  const q = search.toString()
+  return q ? `?${q}` : ''
+}
+
+export function getReportsDaily(date?: string): Promise<DailyReport> {
+  return request<DailyReport>(`/reports/daily${buildQuery({ date })}`)
+}
+
+export function getReportsDriverPerformance(params?: {
+  from?: string
+  to?: string
+  driverId?: string
+}): Promise<DriverPerformanceReport> {
+  return request<DriverPerformanceReport>(
+    `/reports/driver-performance${buildQuery(params ?? {})}`,
+  )
+}
+
+export function getReportsRouteEfficiency(params?: {
+  from?: string
+  to?: string
+  driverId?: string
+}): Promise<RouteEfficiencyReport> {
+  return request<RouteEfficiencyReport>(
+    `/reports/route-efficiency${buildQuery(params ?? {})}`,
   )
 }
 

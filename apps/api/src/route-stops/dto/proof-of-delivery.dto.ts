@@ -1,4 +1,5 @@
 import { IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsPodPhotoUrl } from '../validators/is-pod-photo-url.validator';
 
 export class ProofOfDeliveryDto {
   @IsOptional()
@@ -14,9 +15,9 @@ export class ProofOfDeliveryDto {
   @IsNumber()
   longitude?: number;
 
-  /** Data-URI eller URL til bilde (MVP). */
+  /** JPEG/PNG data-URI (maks 500 KB dekodet). */
   @IsOptional()
   @IsString()
-  @MaxLength(500_000)
+  @IsPodPhotoUrl()
   photoUrl?: string;
 }

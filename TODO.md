@@ -126,15 +126,15 @@ Basert på produktkrav og implementasjon i monorepoet. Oppsett og arkitektur: [R
 
 ## Fase 8: Rapporter, polish og deploy
 
-- [ ] `GET /reports/daily`
-- [ ] `GET /reports/driver-performance`
-- [ ] `GET /reports/route-efficiency`
-- [ ] React Query + Recharts på frontend
-- [ ] Feilhåndtering og input-validering
-- [ ] Backend-tester (auth, leveringer, kapasitet, optimalisering, API)
-- [ ] Web-tester (login, skjema, dashboard, kart)
-- [ ] Mobile-tester (login, rutevisning, fullfør/feil stopp)
-- [ ] Sikkerhet: RBAC, org-isolasjon, rate limiting, sikker filopplasting
+- [x] `GET /reports/daily`
+- [x] `GET /reports/driver-performance`
+- [x] `GET /reports/route-efficiency`
+- [x] React Query + Recharts på frontend (Rapport-siden)
+- [x] Feilhåndtering og input-validering (rapport-intervall, POD data-URI)
+- [x] Backend-tester (auth, leveringer, reports, org-isolasjon, e2e)
+- [x] Web-tester (login, skjema, dashboard, kart)
+- [x] Mobile-tester (login, rutevisning, auth-validering)
+- [x] Sikkerhet: RBAC, org-isolasjon, rate limiting, sikker filopplasting (POD)
 - [ ] Deploy: web (Vercel), mobile (EAS → App Store / Play), API, DB, Redis
 
 ---
@@ -190,7 +190,7 @@ Se [README.md — Arkitektur](./README.md#arkitektur).
 - [x] Routes
 - [x] Optimization
 - [x] Dashboard
-- [ ] Reports
+- [x] Reports
 
 ---
 

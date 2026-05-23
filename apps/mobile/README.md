@@ -27,6 +27,12 @@ EXPO_PUBLIC_API_URL=http://<din-pc-ip>:3000
 6. **Leveringsbevis** (foto + GPS) → `POST /route-stops/:id/proof`.
 7. **Fullfør rute** når alle stopp er behandlet.
 
+## Tester
+
+```bash
+npm test
+```
+
 ## EAS Build (TestFlight / intern testing)
 
 ```bash

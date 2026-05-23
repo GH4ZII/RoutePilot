@@ -95,6 +95,7 @@ Flyt for optimalisering: web → API → OSRM (matrise) → Python `/solve-vrp` 
 - **Optimization** — `POST /optimization/jobs`, bakgrunnsprosessering
 - **Routes, Route stops** — planlegging, tildeling, start/fullfør, POD
 - **Dashboard** — sammendrag, live ruter, leveringsstatus
+- **Reports** — daglig rapport, sjåførytelse, rute-effektivitet
 
 Prisma-skjema: `apps/api/prisma/schema.prisma`. Klient genereres til `apps/api/src/generated/prisma` (`npx prisma generate`).
 
@@ -117,6 +118,15 @@ Per-app dokumentasjon:
 
 # API
 cd apps\api
+npm test
+npm run test:e2e
+
+# Web
+cd apps\web
+npm test
+
+# Mobile
+cd apps\mobile
 npm test
 ```
 

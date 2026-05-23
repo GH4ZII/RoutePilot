@@ -1,6 +1,6 @@
 # RoutePilot Web
 
-React + Vite + Tailwind for dispatcher og admin: leveringer, sjåfører, kjøretøy, kart, ruteoptimalisering og dashboard.
+React + Vite + Tailwind for dispatcher og admin: leveringer, sjåfører, kjøretøy, kart, ruteoptimalisering, dashboard og rapporter.
 
 ## Oppsett
 
@@ -19,6 +19,16 @@ npm run dev
 ```
 
 Appen kjører på http://localhost:5173.
+
+## Rapporter
+
+`/reports` — daglig oversikt, sjåførytelse og rute-effektivitet (React Query + Recharts). Krever innlogget admin eller dispatcher.
+
+## Tester
+
+```powershell
+npm test
+```
 
 ## Roller
 

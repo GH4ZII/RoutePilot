@@ -14,6 +14,7 @@ import DeliveriesPage from './pages/DeliveriesPage'
 import MapPage from './pages/MapPage'
 import RoutesPage from './pages/RoutesPage'
 import ArchivePage from './pages/ArchivePage'
+import ReportsPage from './pages/ReportsPage'
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
         <Route path="map" element={<MapPage />} />
         <Route path="routes" element={<RoutesPage />} />
         <Route path="archive" element={<ArchivePage />} />
+        <Route path="reports" element={<ReportsPage />} />
         <Route
           path="settings/org"
           element={<PlaceholderPage title="Organisasjon" />}

@@ -379,3 +379,62 @@ export type DashboardDeliveriesStatus = {
     reason: string
   }>
 }
+
+export type DailyReport = {
+  date: string
+  deliveries: {
+    pending: number
+    assigned: number
+    inProgress: number
+    delivered: number
+    failed: number
+    cancelled: number
+    total: number
+  }
+  routes: {
+    planned: number
+    completed: number
+    active: number
+  }
+  totals: {
+    distanceMeters: number
+    durationSeconds: number
+    stopsCompleted: number
+    stopsFailed: number
+  }
+  onTimeRate: number | null
+}
+
+export type DriverPerformanceRow = {
+  driverId: string
+  name: string
+  routesCompleted: number
+  stopsCompleted: number
+  stopsFailed: number
+  onTimePercent: number | null
+  avgDelayMinutes: number | null
+}
+
+export type DriverPerformanceReport = {
+  from: string
+  to: string
+  drivers: DriverPerformanceRow[]
+}
+
+export type RouteEfficiencyRow = {
+  routeId: string
+  plannedDate: string
+  driver: { id: string; name: string } | null
+  vehicle: { id: string; name: string } | null
+  plannedDistanceMeters: number | null
+  actualDurationSeconds: number | null
+  capacityUtilizationPercent: number | null
+  stopCompletionRate: number | null
+  avgArrivalDeltaMinutes: number | null
+}
+
+export type RouteEfficiencyReport = {
+  from: string
+  to: string
+  routes: RouteEfficiencyRow[]
+}
