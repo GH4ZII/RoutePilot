@@ -16,6 +16,7 @@ class UpdateUserDto {
     password;
     role;
     name;
+    avatarUrl;
 }
 exports.UpdateUserDto = UpdateUserDto;
 __decorate([
@@ -36,4 +37,10 @@ __decorate([
     (0, class_validator_1.MaxLength)(100),
     __metadata("design:type", String)
 ], UpdateUserDto.prototype, "name", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MaxLength)(4_000_000),
+    __metadata("design:type", Object)
+], UpdateUserDto.prototype, "avatarUrl", void 0);
 //# sourceMappingURL=update-user.dto.js.map

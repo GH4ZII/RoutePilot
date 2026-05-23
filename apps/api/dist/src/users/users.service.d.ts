@@ -10,6 +10,7 @@ export type UserResponse = {
     email: string;
     role: UserRole;
     name: string | null;
+    avatarUrl: string | null;
     createdAt: Date;
     updatedAt: Date;
 };

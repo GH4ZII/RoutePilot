@@ -18,6 +18,7 @@ export type UserResponse = {
   email: string;
   role: UserRole;
   name: string | null;
+  avatarUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -61,6 +62,7 @@ export class UsersService {
         passwordHash,
         role: dto.role,
         name: dto.name,
+        avatarUrl: dto.avatarUrl,
       },
     });
     return toUserResponse(created);
@@ -76,6 +78,7 @@ export class UsersService {
     const data: {
       role?: UserRole;
       name?: string;
+      avatarUrl?: string | null;
       passwordHash?: string;
     } = {};
 
@@ -84,6 +87,9 @@ export class UsersService {
     }
     if (dto.name !== undefined) {
       data.name = dto.name;
+    }
+    if (dto.avatarUrl !== undefined) {
+      data.avatarUrl = dto.avatarUrl;
     }
     if (dto.password) {
       data.passwordHash = await bcrypt.hash(dto.password, 12);
@@ -122,6 +128,7 @@ function toUserResponse(user: {
   email: string;
   role: UserRole;
   name: string | null;
+  avatarUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 }): UserResponse {
@@ -131,6 +138,7 @@ function toUserResponse(user: {
     email: user.email,
     role: user.role,
     name: user.name,
+    avatarUrl: user.avatarUrl,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };

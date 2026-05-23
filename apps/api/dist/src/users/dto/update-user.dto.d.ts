@@ -3,4 +3,5 @@ export declare class UpdateUserDto {
     password?: string;
     role?: UserRole;
     name?: string;
+    avatarUrl?: string | null;
 }

@@ -28,6 +28,7 @@ export type OrgUser = {
   email: string
   role: UserRole
   name: string | null
+  avatarUrl: string | null
   createdAt: string
   updatedAt: string
 }
@@ -95,12 +96,14 @@ export type CreateUserPayload = {
   password: string
   role: UserRole
   name?: string
+  avatarUrl?: string
 }
 
 export type UpdateUserPayload = {
   password?: string
   role?: UserRole
   name?: string
+  avatarUrl?: string | null
 }
 
 export type CreateDriverPayload = {

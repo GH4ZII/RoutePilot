@@ -4,4 +4,5 @@ export declare class CreateUserDto {
     password: string;
     role: UserRole;
     name?: string;
+    avatarUrl?: string;
 }

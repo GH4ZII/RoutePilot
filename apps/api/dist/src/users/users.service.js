@@ -82,6 +82,7 @@ let UsersService = class UsersService {
                 passwordHash,
                 role: dto.role,
                 name: dto.name,
+                avatarUrl: dto.avatarUrl,
             },
         });
         return toUserResponse(created);
@@ -94,6 +95,9 @@ let UsersService = class UsersService {
         }
         if (dto.name !== undefined) {
             data.name = dto.name;
+        }
+        if (dto.avatarUrl !== undefined) {
+            data.avatarUrl = dto.avatarUrl;
         }
         if (dto.password) {
             data.passwordHash = await bcrypt.hash(dto.password, 12);
@@ -134,6 +138,7 @@ function toUserResponse(user) {
         email: user.email,
         role: user.role,
         name: user.name,
+        avatarUrl: user.avatarUrl,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
     };
