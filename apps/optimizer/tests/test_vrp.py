@@ -203,6 +203,105 @@ def test_no_double_assignment() -> None:
     assert len(seen) <= 2
 
 
+def test_balance_workload_spreads_across_vehicles() -> None:
+    """BALANCE_WORKLOAD should use multiple vehicles when capacity allows."""
+    n_deliveries = 9
+    depot_nodes = [9, 10, 11]
+    n = 12
+    duration = [[0] * n for _ in range(n)]
+    distance = [[0] * n for _ in range(n)]
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                duration[i][j] = 600
+                distance[i][j] = 6000
+
+    deliveries = [
+        VrpDeliveryInput(
+            node, idx, 10, 10, 1, None, None, None, "NORMAL", 100_000
+        )
+        for idx, node in enumerate(range(n_deliveries))
+    ]
+
+    result = solve_vrp(
+        VrpSolveInput(
+            duration_matrix=duration,
+            distance_matrix=distance,
+            vehicles=[
+                VrpVehicleInput(
+                    depot, depot, max_weight_units=500, max_volume_units=500, max_packages=50
+                )
+                for depot in depot_nodes
+            ],
+            deliveries=deliveries,
+            objective="BALANCE_WORKLOAD",
+            respect_capacity=True,
+            respect_time_windows=False,
+            service_time_sec=0,
+            horizon_sec=86_400,
+        )
+    )
+
+    assigned_per_vehicle = []
+    for route in result.routes:
+        stops = [node for node in route.route_indices if node < n_deliveries]
+        assigned_per_vehicle.append(len(stops))
+
+    vehicles_used = sum(1 for count in assigned_per_vehicle if count > 0)
+    assert vehicles_used == 3, (
+        f"Expected all selected vehicles to be used, got counts {assigned_per_vehicle}"
+    )
+    assert sorted(assigned_per_vehicle) == [3, 3, 3]
+    assert len(result.unassigned_delivery_indices) == 0
+
+
+def test_balance_workload_uses_all_vehicles_for_large_job() -> None:
+    n_deliveries = 50
+    depot_nodes = [50, 51, 52]
+    n = 53
+    duration = [[0] * n for _ in range(n)]
+    distance = [[0] * n for _ in range(n)]
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                duration[i][j] = 300 + (i * 7 + j * 3) % 200
+                distance[i][j] = duration[i][j] * 10
+
+    deliveries = [
+        VrpDeliveryInput(
+            node, idx, 5, 5, 1, None, None, None, "NORMAL", 100_000
+        )
+        for idx, node in enumerate(range(n_deliveries))
+    ]
+
+    result = solve_vrp(
+        VrpSolveInput(
+            duration_matrix=duration,
+            distance_matrix=distance,
+            vehicles=[
+                VrpVehicleInput(
+                    depot, depot, max_weight_units=5000, max_volume_units=5000, max_packages=100
+                )
+                for depot in depot_nodes
+            ],
+            deliveries=deliveries,
+            objective="BALANCE_WORKLOAD",
+            respect_capacity=True,
+            respect_time_windows=False,
+            service_time_sec=120,
+            horizon_sec=86_400,
+        )
+    )
+
+    assigned_per_vehicle = sorted(
+        sum(1 for node in route.route_indices if node < n_deliveries)
+        for route in result.routes
+    )
+    assert sum(1 for count in assigned_per_vehicle if count > 0) == 3
+    assert assigned_per_vehicle == [16, 17, 17]
+    assert len(result.unassigned_delivery_indices) == 0
+
+
 def test_inverted_time_window_does_not_crash() -> None:
     duration = [
         [0, 300, 600],

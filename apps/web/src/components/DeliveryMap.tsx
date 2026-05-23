@@ -191,21 +191,36 @@ export default function DeliveryMap({
       boundsPoints.push([depot.latitude, depot.longitude])
     }
 
+    const numberedStopIds = new Set(numberedStops.map((stop) => stop.id))
+
     for (const stop of numberedStops) {
       const latLng: L.LatLngExpression = [stop.latitude, stop.longitude]
       boundsPoints.push(latLng)
       const color = stop.color ?? ROUTE_LINE_COLOR
       const marker = L.marker(latLng, {
         icon: createNumberedIcon(stop.stopOrder, color),
+        zIndexOffset: 1000,
       })
       const title = stop.label
         ? `${stop.stopOrder}. ${escapeHtml(stop.label)}`
         : `Stopp ${stop.stopOrder}`
       marker.bindPopup(`<div class="map-popup"><strong>${title}</strong></div>`)
+      const delivery = deliveries.find((d) => d.id === stop.id)
+      if (delivery) {
+        marker.on('click', () => {
+          onSelectDelivery?.(delivery)
+        })
+        marker.on('popupopen', () => {
+          onSelectDelivery?.(delivery)
+        })
+      }
       numberedLayers.addLayer(marker)
     }
 
     for (const delivery of deliveries) {
+      if (numberedStopIds.has(delivery.id)) {
+        continue
+      }
       const latLng: L.LatLngExpression = [
         delivery.latitude,
         delivery.longitude,

@@ -89,11 +89,16 @@ async function request<T>(
     throw new ApiError(message, response.status)
   }
 
-  if (response.status === 204) {
+  if (response.status === 204 || response.status === 205) {
     return undefined as T
   }
 
-  return response.json() as Promise<T>
+  const text = await response.text()
+  if (!text) {
+    return undefined as T
+  }
+
+  return JSON.parse(text) as T
 }
 
 export function login(credentials: LoginCredentials): Promise<AuthResponse> {

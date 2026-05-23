@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import DeliveryMap, { type DepotPoint, type RouteLine } from '../components/DeliveryMap'
+import DeliveryMap, {
+  type DepotPoint,
+  type NumberedStop,
+  type RouteLine,
+} from '../components/DeliveryMap'
 import PageToolbar from '../components/PageToolbar'
 import StatusBadge from '../components/StatusBadge'
 import { useAuth } from '../context/AuthContext'
@@ -197,6 +201,22 @@ export default function MapPage() {
     return [{ id: selectedRoute.id, positions: routeGeometry }]
   }, [selectedRoute, routeGeometry])
 
+  const numberedStops: NumberedStop[] = useMemo(() => {
+    if (!selectedRoute) {
+      return []
+    }
+    return [...selectedRoute.stops]
+      .sort((a, b) => a.stopOrder - b.stopOrder)
+      .map((stop) => ({
+        id: stop.delivery.id,
+        stopOrder: stop.stopOrder,
+        latitude: stop.delivery.latitude,
+        longitude: stop.delivery.longitude,
+        label: stop.delivery.customerName,
+        color: ROUTE_LINE_COLOR,
+      }))
+  }, [selectedRoute])
+
   const error = deliveriesError ?? routesError
 
   return (
@@ -258,6 +278,12 @@ export default function MapPage() {
             />
             Leveranse
           </span>
+          {numberedStops.length > 0 ? (
+            <span className="map-legend-item">
+              <span className="map-legend-numbered">1</span>
+              Rutestopp
+            </span>
+          ) : null}
           <span className="map-legend-item">
             <span
               className="map-legend-line"
@@ -285,6 +311,7 @@ export default function MapPage() {
             deliveries={visibleDeliveries}
             depots={depots}
             routeLines={routeLines}
+            numberedStops={numberedStops}
             selectedDeliveryId={selected?.id ?? null}
             onSelectDelivery={setSelected}
           />

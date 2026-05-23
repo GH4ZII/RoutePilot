@@ -6,12 +6,15 @@ export function useAsync<T>(loader: () => Promise<T>, deps: unknown[] = []) {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const reload = useCallback(async () => {
-    setIsLoading(true)
+  const reload = useCallback(async (options?: { silent?: boolean }): Promise<T | null> => {
+    if (!options?.silent) {
+      setIsLoading(true)
+    }
     setError(null)
     try {
       const result = await loader()
       setData(result)
+      return result
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message)
@@ -20,8 +23,11 @@ export function useAsync<T>(loader: () => Promise<T>, deps: unknown[] = []) {
       } else {
         setError('Noe gikk galt')
       }
+      return null
     } finally {
-      setIsLoading(false)
+      if (!options?.silent) {
+        setIsLoading(false)
+      }
     }
   }, deps)
 

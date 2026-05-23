@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.local
+.DS_Store
+
+# Python optimizer
+apps/optimizer/.venv/
+apps/optimizer/__pycache__/
+apps/optimizer/**/__pycache__/
+apps/optimizer/.pytest_cache/

@@ -780,6 +780,21 @@ body {
   border-radius: 2px;
 }
 
+.map-legend-numbered {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--auth-accent, #2563eb);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px var(--auth-border);
+}
+
 .map-route-stop-list {
   list-style: none;
   margin: 12px 0 0;
@@ -1307,6 +1322,16 @@ body {
   padding: 10px 12px;
   border: 1px solid var(--auth-border);
   border-radius: var(--auth-input-radius);
+}
+
+.assign-route-panel__success {
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: var(--auth-input-radius);
+  color: #047857;
+  font-size: 14px;
 }
 
 .route-result__warnings {

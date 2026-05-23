@@ -1,8 +1,8 @@
 # RoutePilot — To-do liste
 
-Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README).
+Basert på produktkrav og implementasjon i monorepoet. Oppsett og arkitektur: [README.md](./README.md).
 
-**Sist oppdatert:** 2026-05-22
+**Sist oppdatert:** 2026-05-23
 
 ---
 
@@ -142,13 +142,13 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 ## MVP (må være ferdig før «Advanced»)
 
 - [x] Brukerautentisering
-- [ ] Organisasjons-workspace
-- [ ] Roller: admin / dispatcher / driver
-- [ ] Sjåfør-CRUD
-- [ ] Kjøretøy-CRUD
-- [ ] Leverings-CRUD
-- [ ] Adresse-geokoding
-- [ ] Kart med leveringsmarkører
+- [x] Organisasjons-workspace
+- [x] Roller: admin / dispatcher / driver
+- [x] Sjåfør-CRUD
+- [x] Kjøretøy-CRUD
+- [x] Leverings-CRUD
+- [x] Adresse-geokoding
+- [x] Kart med leveringsmarkører
 - [x] Ruteoptimalisering for flere kjøretøy
 - [x] Kapasitetsbegrensninger
 - [x] Tidsvinduer
@@ -177,17 +177,17 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 ## Arkitektur (referanse)
 
-Se [README.md §17 Project Architecture](./README.md#17-project-architecture).
+Se [README.md — Arkitektur](./README.md#arkitektur).
 
 ### NestJS-moduler
 
 - [x] Auth
-- [ ] Users
-- [ ] Organizations
-- [ ] Drivers
-- [ ] Vehicles
-- [ ] Deliveries
-- [ ] Routes
+- [x] Users
+- [x] Organizations
+- [x] Drivers
+- [x] Vehicles
+- [x] Deliveries
+- [x] Routes
 - [x] Optimization
 - [x] Dashboard
 - [ ] Reports
@@ -209,18 +209,18 @@ Se [README.md §17 Project Architecture](./README.md#17-project-architecture).
 
 ### Dispatcher
 
-- [ ] Opprette leveringer for dagens planlegging
-- [ ] Generere optimerte ruter
-- [ ] Se forsinkede leveringer
-- [ ] Tildele ruter til sjåfører
+- [x] Opprette leveringer for dagens planlegging
+- [x] Generere optimerte ruter
+- [x] Se forsinkede leveringer
+- [x] Tildele ruter til sjåfører
 
 ### Sjåfør
 
-- [ ] Se tildelt rute
-- [ ] Markere levering som fullført
-- [ ] Rapportere mislykket levering
+- [x] Se tildelt rute
+- [x] Markere levering som fullført
+- [x] Rapportere mislykket levering
 
 ### Admin
 
-- [ ] Administrere brukere og roller
-- [ ] Administrere kjøretøy med riktig kapasitet
+- [x] Administrere brukere og roller
+- [x] Administrere kjøretøy med riktig kapasitet

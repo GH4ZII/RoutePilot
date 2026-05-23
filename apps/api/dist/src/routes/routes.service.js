@@ -102,8 +102,13 @@ let RoutesService = class RoutesService {
         if (!driver) {
             throw new common_1.NotFoundException('Sjåfør ikke funnet');
         }
-        if (driver.status !== client_1.DriverStatus.AVAILABLE) {
+        const isSameDriver = route.driverId === driverId;
+        if (driver.status !== client_1.DriverStatus.AVAILABLE &&
+            !isSameDriver) {
             throw new common_1.BadRequestException('Sjåføren må være AVAILABLE for tildeling');
+        }
+        if (isSameDriver && route.status === client_1.RouteStatus.ASSIGNED) {
+            return toRouteResponse(route);
         }
         const updated = await this.prisma.$transaction(async (tx) => {
             if (route.driverId && route.driverId !== driverId) {

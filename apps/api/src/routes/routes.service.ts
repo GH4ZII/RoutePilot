@@ -184,8 +184,17 @@ export class RoutesService {
     if (!driver) {
       throw new NotFoundException('Sjåfør ikke funnet');
     }
-    if (driver.status !== DriverStatus.AVAILABLE) {
+
+    const isSameDriver = route.driverId === driverId;
+    if (
+      driver.status !== DriverStatus.AVAILABLE &&
+      !isSameDriver
+    ) {
       throw new BadRequestException('Sjåføren må være AVAILABLE for tildeling');
+    }
+
+    if (isSameDriver && route.status === RouteStatus.ASSIGNED) {
+      return toRouteResponse(route);
     }
 
     const updated = await this.prisma.$transaction(async (tx) => {

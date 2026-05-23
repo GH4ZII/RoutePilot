@@ -4,16 +4,31 @@ import AssignRoutePanel from '../components/AssignRoutePanel'
 import RouteOptimizationResult from '../components/RouteOptimizationResult'
 import PageToolbar from '../components/PageToolbar'
 import * as api from '../lib/api'
-import { getActiveRoutes, routeDetailToJobShape } from '../lib/routes'
+import {
+  getActiveRoutes,
+  getRoutesPendingDriverAssignment,
+  routeDetailToJobShape,
+} from '../lib/routes'
 import { useAsync } from '../lib/useAsync'
 import type {
   OptimizationJob,
   OptimizationRouteResult,
+  RouteDetail,
 } from '../types/domain'
 
 export type RoutesPageState = {
   job: OptimizationJob
   route: OptimizationRouteResult
+}
+
+function routeOptionLabel(route: RouteDetail): string {
+  const date = route.plannedDate.slice(0, 10)
+  const vehicle = route.vehicle?.name
+  const driver = route.driver?.name
+  const meta = [vehicle, driver].filter(Boolean).join(' · ')
+  return meta
+    ? `${date} · ${meta} · ${route.stops.length} stopp`
+    : `${date} · ${route.stops.length} stopp`
 }
 
 export default function RoutesPage() {
@@ -25,18 +40,47 @@ export default function RoutesPage() {
   const { data: drivers } = useAsync(() => api.listDrivers(), [])
 
   const activeRoutes = getActiveRoutes(routes ?? [])
+  const pendingRoutes = getRoutesPendingDriverAssignment(activeRoutes)
 
-  const fromApi = activeRoutes[0]
-  const navigationActive =
-    navigationState &&
-    activeRoutes.some((route) => route.id === navigationState.route.routeId)
-      ? navigationState
-      : null
-  const active =
-    navigationActive ?? (fromApi ? routeDetailToJobShape(fromApi) : null)
+  const navigationRouteId = navigationState?.route.routeId
+  const navigationRoute = navigationRouteId
+    ? activeRoutes.find((route) => route.id === navigationRouteId)
+    : undefined
 
-  const routeDetail =
-    activeRoutes.find((r) => r.id === active?.route.routeId) ?? fromApi
+  const defaultPending = pendingRoutes[0]
+  const defaultActive = defaultPending ?? activeRoutes[0]
+
+  const activeRouteDetail =
+    navigationRoute ??
+    defaultActive ??
+    null
+
+  const active = activeRouteDetail
+    ? routeDetailToJobShape(activeRouteDetail)
+    : null
+
+  const routeDetail = activeRouteDetail
+  const needsDriverConfirmation = routeDetail?.status === 'PLANNED'
+  const pendingIndex = routeDetail
+    ? pendingRoutes.findIndex((route) => route.id === routeDetail.id)
+    : -1
+
+  async function advanceAfterAssignment() {
+    const refreshed = await reload({ silent: true })
+    const nextPending = getRoutesPendingDriverAssignment(
+      getActiveRoutes(refreshed ?? []),
+    )
+
+    if (nextPending.length > 0) {
+      navigate('/routes', {
+        state: routeDetailToJobShape(nextPending[0]),
+        replace: true,
+      })
+      return
+    }
+
+    navigate('/routes', { replace: true, state: null })
+  }
 
   if (isLoading) {
     return (
@@ -46,7 +90,7 @@ export default function RoutesPage() {
     )
   }
 
-  if (!active?.route) {
+  if (activeRoutes.length === 0) {
     return (
       <div className="page-content">
         <PageToolbar
@@ -67,11 +111,45 @@ export default function RoutesPage() {
     )
   }
 
+  if (pendingRoutes.length === 0 && !navigationRoute) {
+    return (
+      <div className="page-content">
+        <PageToolbar
+          title="Ruter"
+          description="Alle planlagte ruter er bekreftet."
+        />
+        <div className="assign-route-panel__success" role="status">
+          Alle sjåfører er bekreftet for {activeRoutes.length}{' '}
+          {activeRoutes.length === 1 ? 'rute' : 'ruter'}.
+        </div>
+        <p className="page-muted" style={{ marginTop: 16 }}>
+          <Link to="/map" className="btn-secondary">
+            Vis på kart
+          </Link>
+          {' · '}
+          <Link to="/deliveries">Ny optimalisering</Link>
+        </p>
+      </div>
+    )
+  }
+
+  if (!active?.route || !routeDetail) {
+    return (
+      <div className="page-content">
+        <p className="page-muted">Laster rute…</p>
+      </div>
+    )
+  }
+
   return (
     <div className="page-content">
       <PageToolbar
         title="Ruter"
-        description="Siste planlagte rute."
+        description={
+          pendingRoutes.length > 0
+            ? `Bekreft sjåfør (${pendingRoutes.length} gjenstår)`
+            : 'Planlagte kjøreruter.'
+        }
         action={
           <Link to="/map" className="btn-secondary">
             Vis på kart
@@ -79,14 +157,14 @@ export default function RoutesPage() {
         }
       />
 
-      {activeRoutes.length > 1 ? (
+      {pendingRoutes.length > 1 ? (
         <div className="filter-bar">
           <label>
             Velg rute
             <select
               value={active.route.routeId}
               onChange={(e) => {
-                const picked = activeRoutes.find((r) => r.id === e.target.value)
+                const picked = pendingRoutes.find((r) => r.id === e.target.value)
                 if (picked) {
                   navigate('/routes', {
                     state: routeDetailToJobShape(picked),
@@ -95,27 +173,31 @@ export default function RoutesPage() {
                 }
               }}
             >
-              {activeRoutes.map((r) => (
+              {pendingRoutes.map((r, index) => (
                 <option key={r.id} value={r.id}>
-                  {r.plannedDate.slice(0, 10)} · {r.stops.length} stopp
+                  {index + 1}. {routeOptionLabel(r)}
                 </option>
               ))}
             </select>
           </label>
+          {pendingIndex >= 0 ? (
+            <span className="page-muted">
+              Rute {pendingIndex + 1} av {pendingRoutes.length}
+            </span>
+          ) : null}
         </div>
+      ) : pendingRoutes.length === 1 ? (
+        <p className="page-muted">
+          Rute 1 av 1 · {routeOptionLabel(pendingRoutes[0])}
+        </p>
       ) : null}
 
-      {routeDetail ? (
+      {needsDriverConfirmation ? (
         <AssignRoutePanel
+          key={routeDetail.id}
           route={routeDetail}
           drivers={drivers ?? []}
-          onAssigned={(updated) => {
-            reload()
-            navigate('/routes', {
-              state: routeDetailToJobShape(updated),
-              replace: true,
-            })
-          }}
+          onAssigned={advanceAfterAssignment}
         />
       ) : null}
 
@@ -125,7 +207,7 @@ export default function RoutesPage() {
         routeDetail={routeDetail}
         drivers={drivers ?? []}
         deliveries={
-          routeDetail?.stops.map((s) => ({
+          routeDetail.stops.map((s) => ({
             id: s.delivery.id,
             organizationId: routeDetail.organizationId,
             customerName: s.delivery.customerName,
@@ -143,10 +225,10 @@ export default function RoutesPage() {
             status: s.delivery.status,
             createdAt: routeDetail.createdAt,
             updatedAt: routeDetail.updatedAt,
-          })) ?? []
+          }))
         }
         vehicle={
-          routeDetail?.vehicle
+          routeDetail.vehicle
             ? {
                 id: routeDetail.vehicle.id,
                 organizationId: routeDetail.organizationId,
@@ -169,14 +251,14 @@ export default function RoutesPage() {
       />
 
       <p className="page-muted route-empty__back">
-        {routeDetail && routeDetail.status !== 'IN_PROGRESS' ? (
+        {routeDetail.status !== 'IN_PROGRESS' ? (
           <>
             <DeleteRouteButton
               routeId={routeDetail.id}
-              routeLabel={`${routeDetail.plannedDate.slice(0, 10)} · ${routeDetail.stops.length} stopp`}
+              routeLabel={routeOptionLabel(routeDetail)}
               onDeleted={async () => {
                 await reload()
-                navigate('/routes', { replace: true, state: null })
+                await advanceAfterAssignment()
               }}
             />
             {' · '}

@@ -12,6 +12,13 @@ export function getActiveRoutes(routes: RouteDetail[]): RouteDetail[] {
   return routes.filter((route) => !isArchivedRoute(route))
 }
 
+/** Routes that still need dispatcher to confirm the assigned driver. */
+export function getRoutesPendingDriverAssignment(
+  routes: RouteDetail[],
+): RouteDetail[] {
+  return routes.filter((route) => route.status === 'PLANNED')
+}
+
 export function getArchivedDeliveryIds(routes: RouteDetail[]): Set<string> {
   return new Set(
     routes

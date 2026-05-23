@@ -150,6 +150,69 @@ def _set_time_range(
         ) from exc
 
 
+def _balance_targets(num_deliveries: int, num_vehicles: int) -> list[int]:
+    """Per-vehicle delivery caps that differ by at most one."""
+    base, remainder = divmod(num_deliveries, num_vehicles)
+    return [base + (1 if i < remainder else 0) for i in range(num_vehicles)]
+
+
+def _balance_allowed_vehicles(
+    deliveries: list[VrpDeliveryInput],
+    vehicles: list[VrpVehicleInput],
+    duration: list[list[int]],
+) -> dict[int, list[int]] | None:
+    """
+  Pre-assign each delivery to one vehicle so every selected vehicle is used
+  with an even split. Returns delivery_index -> allowed vehicle indices.
+    """
+    num_vehicles = len(vehicles)
+    num_deliveries = len(deliveries)
+    if num_vehicles <= 1 or num_deliveries < num_vehicles:
+        return None
+
+    caps = _balance_targets(num_deliveries, num_vehicles)
+    depot_starts = [vehicle.start_index for vehicle in vehicles]
+    counts = [0] * num_vehicles
+    allowed: dict[int, list[int]] = {}
+    unassigned = list(range(num_deliveries))
+
+    while unassigned:
+        best_cost: int | None = None
+        best_di: int | None = None
+        best_vehicle = 0
+
+        for di in unassigned:
+            node = deliveries[di].node_index
+            for vehicle_idx in range(num_vehicles):
+                if counts[vehicle_idx] >= caps[vehicle_idx]:
+                    continue
+                cost = duration[depot_starts[vehicle_idx]][node]
+                if best_cost is None or cost < best_cost or (
+                    cost == best_cost and counts[vehicle_idx] < counts[best_vehicle]
+                ):
+                    best_cost = cost
+                    best_di = di
+                    best_vehicle = vehicle_idx
+
+        if best_di is None:
+            break
+
+        delivery = deliveries[best_di]
+        allowed[delivery.delivery_index] = [best_vehicle]
+        counts[best_vehicle] += 1
+        unassigned.remove(best_di)
+
+    for di in unassigned:
+        delivery = deliveries[di]
+        for vehicle_idx in range(num_vehicles):
+            if counts[vehicle_idx] < caps[vehicle_idx]:
+                allowed[delivery.delivery_index] = [vehicle_idx]
+                counts[vehicle_idx] += 1
+                break
+
+    return allowed if len(allowed) == num_deliveries else None
+
+
 def _set_time_max(
     time_dimension: pywrapcp.RoutingDimension,
     index: int,
@@ -288,7 +351,26 @@ def solve_vrp(data: VrpSolveInput) -> VrpSolveResult:
                     _set_time_max(time_dimension, index, deadline)
 
         if data.objective == "BALANCE_WORKLOAD" and time_dimension is not None:
-            time_dimension.SetSpanCostCoefficientForAllVehicles(100)
+            # Penalize imbalance between vehicles (max route time − min route time).
+            time_dimension.SetGlobalSpanCostCoefficient(100)
+
+    balance_allowed: dict[int, list[int]] | None = None
+    if data.objective == "BALANCE_WORKLOAD" and num_vehicles > 1:
+        balance_allowed = _balance_allowed_vehicles(
+            data.deliveries, data.vehicles, duration
+        )
+        if balance_allowed:
+            solver = routing.solver()
+            for delivery in data.deliveries:
+                vehicle_ids = balance_allowed.get(delivery.delivery_index)
+                if not vehicle_ids:
+                    continue
+                index = manager.NodeToIndex(delivery.node_index)
+                vehicle_var = routing.VehicleVar(index)
+                if len(vehicle_ids) == 1:
+                    solver.Add(vehicle_var == vehicle_ids[0])
+                else:
+                    solver.AddMember(vehicle_var, vehicle_ids)
 
     for d in data.deliveries:
         index = manager.NodeToIndex(d.node_index)
@@ -298,9 +380,14 @@ def solve_vrp(data: VrpSolveInput) -> VrpSolveResult:
         routing.AddDisjunction([index], penalty)
 
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-    search_parameters.first_solution_strategy = (
-        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
-    )
+    if data.objective == "BALANCE_WORKLOAD" and num_vehicles > 1:
+        search_parameters.first_solution_strategy = (
+            routing_enums_pb2.FirstSolutionStrategy.PARALLEL_CHEAPEST_INSERTION
+        )
+    else:
+        search_parameters.first_solution_strategy = (
+            routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC
+        )
     search_parameters.local_search_metaheuristic = (
         routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
     )
