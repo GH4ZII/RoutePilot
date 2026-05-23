@@ -1,55 +1,19 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import DeleteRouteButton from '../components/DeleteRouteButton'
 import AssignRoutePanel from '../components/AssignRoutePanel'
 import RouteOptimizationResult from '../components/RouteOptimizationResult'
 import PageToolbar from '../components/PageToolbar'
 import * as api from '../lib/api'
+import { getActiveRoutes, routeDetailToJobShape } from '../lib/routes'
 import { useAsync } from '../lib/useAsync'
 import type {
   OptimizationJob,
   OptimizationRouteResult,
-  RouteDetail,
 } from '../types/domain'
 
 export type RoutesPageState = {
   job: OptimizationJob
   route: OptimizationRouteResult
-}
-
-function routeDetailToJobShape(
-  route: RouteDetail,
-): { job: OptimizationJob; route: OptimizationRouteResult } {
-  return {
-    job: {
-      id: '',
-      organizationId: route.organizationId,
-      status: 'COMPLETED',
-      objective: 'MINIMIZE_TOTAL_TIME',
-      plannedDate: route.plannedDate.slice(0, 10),
-      request: {
-        plannedDate: route.plannedDate.slice(0, 10),
-        vehicleIds: route.vehicleId ? [route.vehicleId] : [],
-        deliveryIds: route.stops.map((s) => s.delivery.id),
-      },
-      result: null,
-      errorMessage: null,
-      startedAt: null,
-      completedAt: null,
-      createdAt: route.createdAt,
-      updatedAt: route.updatedAt,
-    },
-    route: {
-      routeId: route.id,
-      driverId: route.driverId,
-      vehicleId: route.vehicleId ?? '',
-      totalDistanceMeters: route.totalDistanceMeters ?? 0,
-      totalDurationSeconds: route.totalDurationSeconds ?? 0,
-      stops: route.stops.map((s) => ({
-        deliveryId: s.delivery.id,
-        order: s.stopOrder,
-        estimatedArrival: s.estimatedArrival,
-      })),
-    },
-  }
 }
 
 export default function RoutesPage() {
@@ -60,11 +24,19 @@ export default function RoutesPage() {
   const { data: routes, isLoading, reload } = useAsync(() => api.listRoutes(), [])
   const { data: drivers } = useAsync(() => api.listDrivers(), [])
 
-  const fromApi = routes?.[0]
-  const active = navigationState ?? (fromApi ? routeDetailToJobShape(fromApi) : null)
+  const activeRoutes = getActiveRoutes(routes ?? [])
+
+  const fromApi = activeRoutes[0]
+  const navigationActive =
+    navigationState &&
+    activeRoutes.some((route) => route.id === navigationState.route.routeId)
+      ? navigationState
+      : null
+  const active =
+    navigationActive ?? (fromApi ? routeDetailToJobShape(fromApi) : null)
 
   const routeDetail =
-    routes?.find((r) => r.id === active?.route.routeId) ?? fromApi
+    activeRoutes.find((r) => r.id === active?.route.routeId) ?? fromApi
 
   if (isLoading) {
     return (
@@ -107,14 +79,14 @@ export default function RoutesPage() {
         }
       />
 
-      {routes && routes.length > 1 ? (
+      {activeRoutes.length > 1 ? (
         <div className="filter-bar">
           <label>
             Velg rute
             <select
               value={active.route.routeId}
               onChange={(e) => {
-                const picked = routes.find((r) => r.id === e.target.value)
+                const picked = activeRoutes.find((r) => r.id === e.target.value)
                 if (picked) {
                   navigate('/routes', {
                     state: routeDetailToJobShape(picked),
@@ -123,7 +95,7 @@ export default function RoutesPage() {
                 }
               }}
             >
-              {routes.map((r) => (
+              {activeRoutes.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.plannedDate.slice(0, 10)} · {r.stops.length} stopp
                 </option>
@@ -197,6 +169,19 @@ export default function RoutesPage() {
       />
 
       <p className="page-muted route-empty__back">
+        {routeDetail && routeDetail.status !== 'IN_PROGRESS' ? (
+          <>
+            <DeleteRouteButton
+              routeId={routeDetail.id}
+              routeLabel={`${routeDetail.plannedDate.slice(0, 10)} · ${routeDetail.stops.length} stopp`}
+              onDeleted={async () => {
+                await reload()
+                navigate('/routes', { replace: true, state: null })
+              }}
+            />
+            {' · '}
+          </>
+        ) : null}
         <Link to="/deliveries">Ny optimalisering</Link>
         {' · '}
         <button

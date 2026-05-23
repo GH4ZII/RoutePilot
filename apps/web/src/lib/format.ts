@@ -47,8 +47,17 @@ export function timeWindowsFromDeadline(deadlineLocal: string): {
   if (!deadlineLocal.trim()) return null
   const [datePart] = deadlineLocal.split('T')
   if (!datePart) return null
+
+  const defaultStart = `${datePart}T08:00`
+  if (deadlineLocal <= defaultStart) {
+    return {
+      timeWindowStart: `${datePart}T06:00`,
+      timeWindowEnd: deadlineLocal,
+    }
+  }
+
   return {
-    timeWindowStart: `${datePart}T08:00`,
+    timeWindowStart: defaultStart,
     timeWindowEnd: deadlineLocal,
   }
 }

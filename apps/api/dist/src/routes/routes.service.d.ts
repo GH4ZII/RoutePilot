@@ -67,6 +67,7 @@ export declare class RoutesService {
     assign(user: JwtPayload, id: string, driverId: string): Promise<RouteResponse>;
     start(user: JwtPayload, id: string): Promise<RouteResponse>;
     finish(user: JwtPayload, id: string): Promise<RouteResponse>;
+    remove(user: JwtPayload, id: string): Promise<void>;
     findStopScoped(user: JwtPayload, stopId: string): Promise<{
         delivery: {
             id: string;

@@ -22,6 +22,7 @@ import {
   deliveryStatusClass,
 } from '../lib/labels'
 import { useAsync } from '../lib/useAsync'
+import { getArchivedDeliveryIds } from '../lib/routes'
 import type {
   Delivery,
   DeliveryPriority,
@@ -68,12 +69,26 @@ export default function DeliveriesPage() {
     [statusFilter],
   )
 
+  const { data: routes } = useAsync(() => api.listRoutes(), [])
   const { data: vehicles } = useAsync(() => api.listVehicles(), [])
   const { data: drivers } = useAsync(() => api.listDrivers(), [])
 
+  const archivedDeliveryIds = useMemo(
+    () => getArchivedDeliveryIds(routes ?? []),
+    [routes],
+  )
+
+  const visibleDeliveries = useMemo(
+    () =>
+      (deliveries ?? []).filter(
+        (delivery) => !archivedDeliveryIds.has(delivery.id),
+      ),
+    [deliveries, archivedDeliveryIds],
+  )
+
   const pendingDeliveries = useMemo(
-    () => (deliveries ?? []).filter((d) => d.status === 'PENDING'),
-    [deliveries],
+    () => visibleDeliveries.filter((d) => d.status === 'PENDING'),
+    [visibleDeliveries],
   )
 
   const completedRoutes = completedJob?.result?.routes ?? []
@@ -288,14 +303,14 @@ export default function DeliveriesPage() {
               </tr>
             </thead>
             <tbody>
-              {deliveries?.length === 0 ? (
+              {visibleDeliveries.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="table-empty">
                     Ingen leveranser ennå.
                   </td>
                 </tr>
               ) : (
-                deliveries?.map((delivery) => (
+                visibleDeliveries.map((delivery) => (
                   <tr key={delivery.id}>
                     <td className="table-check">
                       {delivery.status === 'PENDING' ? (

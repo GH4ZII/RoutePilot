@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import DeliveryMap, { type DepotPoint, type RouteLine } from '../components/DeliveryMap'
 import PageToolbar from '../components/PageToolbar'
 import StatusBadge from '../components/StatusBadge'
+import { useAuth } from '../context/AuthContext'
 import * as api from '../lib/api'
+import { ApiError } from '../lib/api'
 import { formatDateTime } from '../lib/format'
 import { fetchDrivingRouteGeometry } from '../lib/osrm-route'
 import { buildRouteWaypoints } from '../lib/route-waypoints'
@@ -13,6 +15,7 @@ import {
   deliveryStatusClass,
 } from '../lib/labels'
 import { ROUTE_LINE_COLOR } from '../lib/map-colors'
+import { getActiveRoutes, getArchivedDeliveryIds } from '../lib/routes'
 import { useAsync } from '../lib/useAsync'
 import type { Delivery, DeliveryStatus, RouteDetail, Vehicle } from '../types/domain'
 
@@ -59,17 +62,23 @@ function buildDepots(vehicles: Vehicle[]): DepotPoint[] {
 }
 
 export default function MapPage() {
+  const { user } = useAuth()
+  const canUpdateStatus =
+    user?.role === 'ADMIN' || user?.role === 'DISPATCHER'
   const [statusFilter, setStatusFilter] = useState<DeliveryStatus | ''>('')
   const [selected, setSelected] = useState<Delivery | null>(null)
   const [selectedRouteId, setSelectedRouteId] = useState('')
   const [routeGeometry, setRouteGeometry] = useState<[number, number][]>([])
   const [geometryError, setGeometryError] = useState<string | null>(null)
   const [geometryLoading, setGeometryLoading] = useState(false)
+  const [statusUpdating, setStatusUpdating] = useState(false)
+  const [statusError, setStatusError] = useState<string | null>(null)
 
   const {
     data: deliveries,
     error: deliveriesError,
     isLoading: deliveriesLoading,
+    reload: reloadDeliveries,
   } = useAsync(
     () => api.listDeliveries(statusFilter || undefined),
     [statusFilter],
@@ -78,24 +87,70 @@ export default function MapPage() {
   const { data: vehicles } = useAsync(() => api.listVehicles(), [])
   const { data: routes, error: routesError } = useAsync(() => api.listRoutes(), [])
 
+  const activeRoutes = useMemo(
+    () => getActiveRoutes(routes ?? []),
+    [routes],
+  )
+
+  const archivedDeliveryIds = useMemo(
+    () => getArchivedDeliveryIds(routes ?? []),
+    [routes],
+  )
+
+  const visibleDeliveries = useMemo(
+    () =>
+      (deliveries ?? []).filter(
+        (delivery) => !archivedDeliveryIds.has(delivery.id),
+      ),
+    [deliveries, archivedDeliveryIds],
+  )
+
   const depots = useMemo(
     () => (vehicles ? buildDepots(vehicles) : []),
     [vehicles],
   )
 
   const selectedRoute: RouteDetail | undefined = useMemo(() => {
-    if (!routes?.length) return undefined
+    if (!activeRoutes.length) return undefined
     if (selectedRouteId) {
-      return routes.find((r) => r.id === selectedRouteId) ?? routes[0]
+      return activeRoutes.find((r) => r.id === selectedRouteId) ?? activeRoutes[0]
     }
-    return routes[0]
-  }, [routes, selectedRouteId])
+    return activeRoutes[0]
+  }, [activeRoutes, selectedRouteId])
 
   useEffect(() => {
-    if (routes?.length && !selectedRouteId) {
-      setSelectedRouteId(routes[0].id)
+    if (activeRoutes.length && !selectedRouteId) {
+      setSelectedRouteId(activeRoutes[0].id)
     }
-  }, [routes, selectedRouteId])
+  }, [activeRoutes, selectedRouteId])
+
+  useEffect(() => {
+    if (
+      selectedRouteId &&
+      activeRoutes.length &&
+      !activeRoutes.some((route) => route.id === selectedRouteId)
+    ) {
+      setSelectedRouteId(activeRoutes[0].id)
+    }
+  }, [activeRoutes, selectedRouteId])
+
+  async function updateDeliveryStatus(status: 'DELIVERED' | 'CANCELLED') {
+    if (!selected) return
+
+    setStatusUpdating(true)
+    setStatusError(null)
+    try {
+      const updated = await api.updateDelivery(selected.id, { status })
+      setSelected(updated)
+      await reloadDeliveries()
+    } catch (err) {
+      setStatusError(
+        err instanceof ApiError ? err.message : 'Kunne ikke oppdatere status',
+      )
+    } finally {
+      setStatusUpdating(false)
+    }
+  }
 
   useEffect(() => {
     if (!selectedRoute) {
@@ -174,12 +229,12 @@ export default function MapPage() {
           <select
             value={selectedRouteId}
             onChange={(e) => setSelectedRouteId(e.target.value)}
-            disabled={!routes?.length}
+            disabled={!activeRoutes.length}
           >
-            {!routes?.length ? (
-              <option value="">Ingen ruter lagret</option>
+            {!activeRoutes.length ? (
+              <option value="">Ingen aktive ruter</option>
             ) : (
-              routes.map((r) => (
+              activeRoutes.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.plannedDate.slice(0, 10)} · {r.stops.length} stopp ·{' '}
                   {r.status}
@@ -227,7 +282,7 @@ export default function MapPage() {
         <div className="map-layout">
           <DeliveryMap
             className="map-layout-map"
-            deliveries={deliveries ?? []}
+            deliveries={visibleDeliveries}
             depots={depots}
             routeLines={routeLines}
             selectedDeliveryId={selected?.id ?? null}
@@ -287,6 +342,35 @@ export default function MapPage() {
                   ) : null}
                 </dl>
 
+                {canUpdateStatus &&
+                selected.status !== 'DELIVERED' &&
+                selected.status !== 'CANCELLED' ? (
+                  <div className="map-detail-actions">
+                    <p className="field-hint">Oppdater leveringsstatus</p>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      disabled={statusUpdating}
+                      onClick={() => updateDeliveryStatus('DELIVERED')}
+                    >
+                      Marker som levert
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      disabled={statusUpdating}
+                      onClick={() => updateDeliveryStatus('CANCELLED')}
+                    >
+                      Kansellér
+                    </button>
+                    {statusError ? (
+                      <p className="page-error" role="alert">
+                        {statusError}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+
                 <button
                   type="button"
                   className="btn-secondary map-detail-close"
@@ -319,7 +403,7 @@ export default function MapPage() {
             ) : (
               <p className="page-muted map-detail-empty">
                 Klikk en leveranse på kartet for detaljer.
-                {(deliveries?.length ?? 0) === 0
+                {(visibleDeliveries.length ?? 0) === 0
                   ? ' Ingen leveranser å vise med valgt filter.'
                   : ' Optimaliser en rute under Leveranser for å se strek her.'}
               </p>

@@ -87,6 +87,85 @@ def _matrix_or_raise(matrix: list[list[float | int]]) -> list[list[int]]:
     return out
 
 
+def _clamp_sec(value: int | None, horizon: int) -> int | None:
+    if value is None:
+        return None
+    return max(0, min(value, horizon))
+
+
+def _effective_horizon(data: VrpSolveInput) -> int:
+    horizon = data.horizon_sec
+    for delivery in data.deliveries:
+        for value in (
+            delivery.time_window_start_sec,
+            delivery.time_window_end_sec,
+            delivery.deadline_sec,
+        ):
+            if value is not None:
+                horizon = max(horizon, value + data.service_time_sec)
+    return min(horizon, 7 * 86_400)
+
+
+def _normalize_delivery_time_limits(
+    delivery: VrpDeliveryInput,
+    horizon: int,
+    respect_time_windows: bool,
+) -> tuple[int | None, int | None, int | None]:
+    deadline = _clamp_sec(delivery.deadline_sec, horizon)
+    if not respect_time_windows:
+        return None, None, deadline
+
+    start = _clamp_sec(delivery.time_window_start_sec, horizon)
+    end = _clamp_sec(delivery.time_window_end_sec, horizon)
+
+    if deadline is not None:
+        end = deadline if end is None else min(end, deadline)
+
+    if start is not None and end is not None and start > end:
+        start = end
+
+    return start, end, deadline
+
+
+def _set_time_range(
+    time_dimension: pywrapcp.RoutingDimension,
+    index: int,
+    start: int,
+    end: int,
+) -> None:
+    if start > end:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid delivery time window: start is after end",
+        )
+    try:
+        time_dimension.CumulVar(index).SetRange(start, end)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Invalid delivery time window for optimizer "
+                f"(start={start}, end={end})"
+            ),
+        ) from exc
+
+
+def _set_time_max(
+    time_dimension: pywrapcp.RoutingDimension,
+    index: int,
+    upper: int,
+) -> None:
+    current_min = time_dimension.CumulVar(index).Min()
+    safe_upper = max(upper, current_min)
+    try:
+        time_dimension.CumulVar(index).SetMax(safe_upper)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid delivery deadline for optimizer (deadline={upper})",
+        ) from exc
+
+
 def solve_vrp(data: VrpSolveInput) -> VrpSolveResult:
     duration = _matrix_or_raise(data.duration_matrix)
     distance = _matrix_or_raise(data.distance_matrix)
@@ -167,6 +246,8 @@ def solve_vrp(data: VrpSolveInput) -> VrpSolveResult:
     )
 
     if needs_time:
+        horizon_sec = _effective_horizon(data)
+
         def time_callback(from_index: int, to_index: int) -> int:
             from_node = manager.IndexToNode(from_index)
             to_node = manager.IndexToNode(to_index)
@@ -176,7 +257,7 @@ def solve_vrp(data: VrpSolveInput) -> VrpSolveResult:
         routing.AddDimension(
             time_cb,
             30 * 60,
-            data.horizon_sec,
+            horizon_sec,
             False,
             "Time",
         )
@@ -184,31 +265,27 @@ def solve_vrp(data: VrpSolveInput) -> VrpSolveResult:
 
         for d in data.deliveries:
             index = manager.NodeToIndex(d.node_index)
-            if data.respect_time_windows:
-                if (
-                    d.time_window_start_sec is not None
-                    and d.time_window_end_sec is not None
-                ):
-                    time_dimension.CumulVar(index).SetRange(
-                        d.time_window_start_sec,
-                        d.time_window_end_sec,
-                    )
-                elif d.time_window_end_sec is not None:
-                    time_dimension.CumulVar(index).SetMax(d.time_window_end_sec)
-                elif d.time_window_start_sec is not None:
-                    time_dimension.CumulVar(index).SetMin(d.time_window_start_sec)
+            window_start, window_end, deadline = _normalize_delivery_time_limits(
+                d,
+                horizon_sec,
+                data.respect_time_windows,
+            )
 
-            if d.deadline_sec is not None:
+            if data.respect_time_windows:
+                if window_start is not None and window_end is not None:
+                    _set_time_range(time_dimension, index, window_start, window_end)
+                elif window_end is not None:
+                    _set_time_max(time_dimension, index, window_end)
+                elif window_start is not None:
+                    time_dimension.CumulVar(index).SetMin(window_start)
+
+            if deadline is not None:
                 if data.objective == "MINIMIZE_LATE_DELIVERIES":
-                    time_dimension.SetCumulVarSoftUpperBound(
-                        index, d.deadline_sec, 100_000
-                    )
+                    time_dimension.SetCumulVarSoftUpperBound(index, deadline, 100_000)
                 elif data.respect_time_windows:
-                    current_max = time_dimension.CumulVar(index).Max()
-                    if current_max > d.deadline_sec:
-                        time_dimension.CumulVar(index).SetMax(d.deadline_sec)
+                    _set_time_max(time_dimension, index, deadline)
                 else:
-                    time_dimension.CumulVar(index).SetMax(d.deadline_sec)
+                    _set_time_max(time_dimension, index, deadline)
 
         if data.objective == "BALANCE_WORKLOAD" and time_dimension is not None:
             time_dimension.SetSpanCostCoefficientForAllVehicles(100)

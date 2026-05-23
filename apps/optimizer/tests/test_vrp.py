@@ -201,3 +201,42 @@ def test_no_double_assignment() -> None:
                 assert node not in seen
                 seen.add(node)
     assert len(seen) <= 2
+
+
+def test_inverted_time_window_does_not_crash() -> None:
+    duration = [
+        [0, 300, 600],
+        [300, 0, 300],
+        [600, 300, 0],
+    ]
+    distance = [[d * 10 for d in row] for row in duration]
+    result = solve_vrp(
+        VrpSolveInput(
+            duration_matrix=duration,
+            distance_matrix=distance,
+            vehicles=[
+                VrpVehicleInput(0, 0, max_weight_units=500, max_volume_units=500, max_packages=5),
+            ],
+            deliveries=[
+                VrpDeliveryInput(
+                    1,
+                    0,
+                    10,
+                    10,
+                    1,
+                    5000,
+                    2000,
+                    2000,
+                    "NORMAL",
+                    100_000,
+                ),
+            ],
+            objective="MINIMIZE_TOTAL_TIME",
+            respect_capacity=False,
+            respect_time_windows=True,
+            service_time_sec=0,
+            horizon_sec=86_400,
+        )
+    )
+
+    assert result.routes

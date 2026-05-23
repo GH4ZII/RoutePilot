@@ -3,6 +3,7 @@ import type {
   DeliveryPriority,
   DeliveryStatus,
   DriverStatus,
+  RouteStatus,
   UserRole,
   VehicleStatus,
 } from '../types/domain'
@@ -50,6 +51,14 @@ export const DELIVERY_PRIORITY_LABELS: Record<DeliveryPriority, string> = {
   CRITICAL: 'Kritisk',
 }
 
+export const ROUTE_STATUS_LABELS: Record<RouteStatus, string> = {
+  PLANNED: 'Planlagt',
+  ASSIGNED: 'Tildelt',
+  IN_PROGRESS: 'Under kjøring',
+  COMPLETED: 'Fullført',
+  CANCELLED: 'Kansellert',
+}
+
 function statusModifier(value: string): string {
   return value.toLowerCase().replace(/_/g, '-')
 }
@@ -68,4 +77,8 @@ export function deliveryStatusClass(status: DeliveryStatus): string {
 
 export function deliveryPriorityClass(priority: DeliveryPriority): string {
   return `priority-badge priority-badge--${priority.toLowerCase()}`
+}
+
+export function routeStatusClass(status: RouteStatus): string {
+  return `status-badge status-badge--${statusModifier(status)}`
 }

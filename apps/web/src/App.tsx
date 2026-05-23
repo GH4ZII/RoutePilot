@@ -13,6 +13,7 @@ import VehiclesPage from './pages/VehiclesPage'
 import DeliveriesPage from './pages/DeliveriesPage'
 import MapPage from './pages/MapPage'
 import RoutesPage from './pages/RoutesPage'
+import ArchivePage from './pages/ArchivePage'
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
         <Route path="deliveries" element={<DeliveriesPage />} />
         <Route path="map" element={<MapPage />} />
         <Route path="routes" element={<RoutesPage />} />
+        <Route path="archive" element={<ArchivePage />} />
         <Route
           path="settings/org"
           element={<PlaceholderPage title="Organisasjon" />}

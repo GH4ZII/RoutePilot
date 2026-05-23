@@ -311,6 +311,48 @@ export class RoutesService {
     return toRouteResponse(updated);
   }
 
+  async remove(user: JwtPayload, id: string): Promise<void> {
+    const route = await this.findScopedOrThrow(user, id);
+
+    if (route.status === RouteStatus.IN_PROGRESS) {
+      throw new BadRequestException(
+        'Kan ikke slette rute som er under kjøring',
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      for (const stop of route.stops) {
+        if (stop.delivery.status !== DeliveryStatus.ASSIGNED) {
+          continue;
+        }
+
+        const otherStops = await tx.routeStop.count({
+          where: {
+            deliveryId: stop.delivery.id,
+            routeId: { not: route.id },
+          },
+        });
+
+        if (otherStops === 0) {
+          await tx.delivery.update({
+            where: { id: stop.delivery.id },
+            data: { status: DeliveryStatus.PENDING },
+          });
+        }
+      }
+
+      await tx.driver.updateMany({
+        where: { activeRouteId: route.id },
+        data: {
+          activeRouteId: null,
+          status: DriverStatus.AVAILABLE,
+        },
+      });
+
+      await tx.route.delete({ where: { id: route.id } });
+    });
+  }
+
   async findStopScoped(user: JwtPayload, stopId: string) {
     const stop = await this.prisma.routeStop.findFirst({
       where: {

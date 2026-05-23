@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -69,5 +70,11 @@ export class RoutesController {
   @Roles(UserRole.DRIVER, UserRole.ADMIN, UserRole.DISPATCHER)
   finish(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
     return this.routes.finish(user, id);
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.ADMIN, UserRole.DISPATCHER)
+  remove(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.routes.remove(user, id);
   }
 }

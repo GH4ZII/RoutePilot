@@ -258,6 +258,10 @@ export function assignRoute(
   })
 }
 
+export function deleteRoute(id: string): Promise<void> {
+  return request<void>(`/routes/${id}`, { method: 'DELETE' })
+}
+
 export function getDashboardSummary(date?: string): Promise<DashboardSummary> {
   const query = date ? `?date=${encodeURIComponent(date)}` : ''
   return request<DashboardSummary>(`/dashboard/summary${query}`)

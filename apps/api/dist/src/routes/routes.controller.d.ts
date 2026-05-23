@@ -12,4 +12,5 @@ export declare class RoutesController {
     assign(user: JwtPayload, id: string, dto: AssignRouteDto): Promise<import("./routes.service").RouteResponse>;
     start(user: JwtPayload, id: string): Promise<import("./routes.service").RouteResponse>;
     finish(user: JwtPayload, id: string): Promise<import("./routes.service").RouteResponse>;
+    remove(user: JwtPayload, id: string): Promise<void>;
 }
