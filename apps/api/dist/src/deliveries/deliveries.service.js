@@ -15,6 +15,7 @@ const client_1 = require("../generated/prisma/client");
 const decimal_util_1 = require("../common/decimal.util");
 const org_scope_service_1 = require("../common/org-scope.service");
 const geocoding_service_1 = require("../geocoding/geocoding.service");
+const geocoding_util_1 = require("../geocoding/geocoding.util");
 const prisma_service_1 = require("../prisma/prisma.service");
 let DeliveriesService = class DeliveriesService {
     prisma;
@@ -74,9 +75,12 @@ let DeliveriesService = class DeliveriesService {
         let latitude = (0, decimal_util_1.decimalToNumber)(existing.latitude);
         let longitude = (0, decimal_util_1.decimalToNumber)(existing.longitude);
         if (dto.address !== undefined) {
-            const location = await this.geocoding.geocode(address);
-            latitude = location.latitude;
-            longitude = location.longitude;
+            const addressChanged = (0, geocoding_util_1.normalizeAddress)(address) !== (0, geocoding_util_1.normalizeAddress)(existing.address);
+            if (addressChanged) {
+                const location = await this.geocoding.geocode(address);
+                latitude = location.latitude;
+                longitude = location.longitude;
+            }
         }
         const updated = await this.prisma.delivery.update({
             where: { id },

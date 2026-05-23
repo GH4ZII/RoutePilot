@@ -11,6 +11,7 @@ import type { JwtPayload } from '../auth/types/jwt-payload';
 import { decimalToNumber } from '../common/decimal.util';
 import { OrgScopeService } from '../common/org-scope.service';
 import { GeocodingService } from '../geocoding/geocoding.service';
+import { normalizeAddress } from '../geocoding/geocoding.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { ListDeliveriesQueryDto } from './dto/list-deliveries-query.dto';
@@ -121,9 +122,13 @@ export class DeliveriesService {
     let longitude = decimalToNumber(existing.longitude)!;
 
     if (dto.address !== undefined) {
-      const location = await this.geocoding.geocode(address);
-      latitude = location.latitude;
-      longitude = location.longitude;
+      const addressChanged =
+        normalizeAddress(address) !== normalizeAddress(existing.address);
+      if (addressChanged) {
+        const location = await this.geocoding.geocode(address);
+        latitude = location.latitude;
+        longitude = location.longitude;
+      }
     }
 
     const updated = await this.prisma.delivery.update({

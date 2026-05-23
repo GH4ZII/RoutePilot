@@ -3,6 +3,12 @@ import {
   Injectable,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import {
+  normalizeAddress,
+  parseAddressQuery,
+  placeMatches,
+  type ParsedAddressQuery,
+} from './geocoding.util';
 
 export type GeocodedLocation = {
   latitude: number;
@@ -34,10 +40,7 @@ const KARTVERKET_BASE = 'https://ws.geonorge.no/adresser/v1';
 @Injectable()
 export class GeocodingService {
   async geocode(address: string): Promise<GeocodedLocation> {
-    let results = await this.searchKartverket(address, 1, false);
-    if (!results.length) {
-      results = await this.searchKartverket(address, 1, true);
-    }
+    const results = await this.searchAddresses(address, 20);
     if (!results.length) {
       throw new BadRequestException(
         'Fant ikke adressen. Skriv gate, postnummer og sted (f.eks. Markens gate 10, 4610 Kristiansand).',
@@ -51,8 +54,82 @@ export class GeocodingService {
     if (trimmed.length < 3) {
       return [];
     }
-    const results = await this.searchKartverket(trimmed, 8, true);
+    const results = await this.searchAddresses(trimmed, 8);
     return results.map((hit) => this.toLocation(hit));
+  }
+
+  private async searchAddresses(
+    query: string,
+    limit: number,
+  ): Promise<KartverketAddress[]> {
+    const parsed = parseAddressQuery(query);
+
+    let results: KartverketAddress[] = [];
+    if (parsed.adressenavn && parsed.nummer) {
+      results = await this.searchStructured(
+        parsed.adressenavn,
+        parsed.nummer,
+        Math.max(limit, 20),
+      );
+      results = this.rankResults(results, parsed);
+    }
+
+    if (!results.length) {
+      results = await this.searchKartverket(query, limit, false);
+      results = this.rankResults(results, parsed);
+    }
+
+    if (!results.length) {
+      results = await this.searchKartverket(query, limit, true);
+      results = this.rankResults(results, parsed);
+    }
+
+    return results.slice(0, limit);
+  }
+
+  private rankResults(
+    results: KartverketAddress[],
+    parsed: ParsedAddressQuery,
+  ): KartverketAddress[] {
+    if (!results.length) {
+      return results;
+    }
+
+    let ranked = results;
+    if (parsed.postnummer) {
+      const withPostnummer = ranked.filter(
+        (addr) => addr.postnummer === parsed.postnummer,
+      );
+      if (withPostnummer.length) {
+        ranked = withPostnummer;
+      }
+    }
+
+    if (parsed.place) {
+      const withPlace = ranked.filter(
+        (addr) =>
+          placeMatches(addr.poststed, parsed.place!) ||
+          placeMatches(addr.kommunenavn, parsed.place!),
+      );
+      if (withPlace.length) {
+        ranked = withPlace;
+      }
+    }
+
+    return ranked;
+  }
+
+  private async searchStructured(
+    adressenavn: string,
+    nummer: string,
+    limit: number,
+  ): Promise<KartverketAddress[]> {
+    const params = new URLSearchParams({
+      adressenavn,
+      nummer,
+      treffPerSide: String(Math.min(limit, 50)),
+    });
+    return this.fetchKartverket(`${KARTVERKET_BASE}/sok?${params}`);
   }
 
   private async searchKartverket(
@@ -67,15 +144,19 @@ export class GeocodingService {
 
     const params = new URLSearchParams({
       sok: trimmed,
-      treffPerSide: String(Math.min(limit, 10)),
+      treffPerSide: String(Math.min(limit, 50)),
     });
     if (fuzzy) {
       params.set('fuzzy', 'true');
     }
 
+    return this.fetchKartverket(`${KARTVERKET_BASE}/sok?${params}`);
+  }
+
+  private async fetchKartverket(url: string): Promise<KartverketAddress[]> {
     let response: Response;
     try {
-      response = await fetch(`${KARTVERKET_BASE}/sok?${params}`, {
+      response = await fetch(url, {
         headers: { Accept: 'application/json' },
       });
     } catch {

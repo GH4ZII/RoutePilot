@@ -292,61 +292,57 @@ export default function MapPage() {
           <aside className="map-detail-panel" aria-label="Leveringsdetaljer">
             {selected ? (
               <>
-                <h2>{selected.customerName}</h2>
-                <p className="map-detail-address">{selected.address}</p>
+                <header className="map-detail-header">
+                  <div>
+                    <h2>{selected.customerName}</h2>
+                    <p className="map-detail-address">{selected.address}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="map-detail-close-btn"
+                    onClick={() => setSelected(null)}
+                    aria-label="Lukk"
+                  >
+                    ×
+                  </button>
+                </header>
 
-                <dl className="map-detail-list">
-                  <div>
-                    <dt>Status</dt>
-                    <dd>
-                      <StatusBadge
-                        label={DELIVERY_STATUS_LABELS[selected.status]}
-                        className={deliveryStatusClass(selected.status)}
-                      />
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Prioritet</dt>
-                    <dd>
-                      <StatusBadge
-                        label={DELIVERY_PRIORITY_LABELS[selected.priority]}
-                        className={deliveryPriorityClass(selected.priority)}
-                      />
-                    </dd>
-                  </div>
+                <div className="map-detail-badges">
+                  <StatusBadge
+                    label={DELIVERY_STATUS_LABELS[selected.status]}
+                    className={deliveryStatusClass(selected.status)}
+                  />
+                  <StatusBadge
+                    label={DELIVERY_PRIORITY_LABELS[selected.priority]}
+                    className={deliveryPriorityClass(selected.priority)}
+                  />
+                </div>
+
+                <ul className="map-detail-meta">
                   {selected.phone ? (
-                    <div>
-                      <dt>Telefon</dt>
-                      <dd>{selected.phone}</dd>
-                    </div>
+                    <li>
+                      <a href={`tel:${selected.phone.replace(/\s/g, '')}`}>
+                        {selected.phone}
+                      </a>
+                    </li>
                   ) : null}
-                  <div>
-                    <dt>Vekt</dt>
-                    <dd>{selected.weightKg} kg</dd>
-                  </div>
-                  {selected.volumeM3 != null ? (
-                    <div>
-                      <dt>Volum</dt>
-                      <dd>{selected.volumeM3} m³</dd>
-                    </div>
+                  <li>
+                    {selected.weightKg} kg
+                    {selected.volumeM3 != null ? ` · ${selected.volumeM3} m³` : ''}
+                  </li>
+                  {selected.deadline ? (
+                    <li>{formatDateTime(selected.deadline)}</li>
                   ) : null}
-                  <div>
-                    <dt>Deadline</dt>
-                    <dd>{formatDateTime(selected.deadline)}</dd>
-                  </div>
-                  {selected.notes ? (
-                    <div>
-                      <dt>Notater</dt>
-                      <dd>{selected.notes}</dd>
-                    </div>
-                  ) : null}
-                </dl>
+                </ul>
+
+                {selected.notes ? (
+                  <p className="map-detail-notes">{selected.notes}</p>
+                ) : null}
 
                 {canUpdateStatus &&
                 selected.status !== 'DELIVERED' &&
                 selected.status !== 'CANCELLED' ? (
                   <div className="map-detail-actions">
-                    <p className="field-hint">Oppdater leveringsstatus</p>
                     <button
                       type="button"
                       className="btn-primary"
@@ -370,14 +366,6 @@ export default function MapPage() {
                     ) : null}
                   </div>
                 ) : null}
-
-                <button
-                  type="button"
-                  className="btn-secondary map-detail-close"
-                  onClick={() => setSelected(null)}
-                >
-                  Lukk
-                </button>
               </>
             ) : selectedRoute ? (
               <>

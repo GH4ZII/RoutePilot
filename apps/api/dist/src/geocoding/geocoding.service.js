@@ -8,13 +8,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GeocodingService = void 0;
 const common_1 = require("@nestjs/common");
+const geocoding_util_1 = require("./geocoding.util");
 const KARTVERKET_BASE = 'https://ws.geonorge.no/adresser/v1';
 let GeocodingService = class GeocodingService {
     async geocode(address) {
-        let results = await this.searchKartverket(address, 1, false);
-        if (!results.length) {
-            results = await this.searchKartverket(address, 1, true);
-        }
+        const results = await this.searchAddresses(address, 20);
         if (!results.length) {
             throw new common_1.BadRequestException('Fant ikke adressen. Skriv gate, postnummer og sted (f.eks. Markens gate 10, 4610 Kristiansand).');
         }
@@ -25,8 +23,53 @@ let GeocodingService = class GeocodingService {
         if (trimmed.length < 3) {
             return [];
         }
-        const results = await this.searchKartverket(trimmed, 8, true);
+        const results = await this.searchAddresses(trimmed, 8);
         return results.map((hit) => this.toLocation(hit));
+    }
+    async searchAddresses(query, limit) {
+        const parsed = (0, geocoding_util_1.parseAddressQuery)(query);
+        let results = [];
+        if (parsed.adressenavn && parsed.nummer) {
+            results = await this.searchStructured(parsed.adressenavn, parsed.nummer, Math.max(limit, 20));
+            results = this.rankResults(results, parsed);
+        }
+        if (!results.length) {
+            results = await this.searchKartverket(query, limit, false);
+            results = this.rankResults(results, parsed);
+        }
+        if (!results.length) {
+            results = await this.searchKartverket(query, limit, true);
+            results = this.rankResults(results, parsed);
+        }
+        return results.slice(0, limit);
+    }
+    rankResults(results, parsed) {
+        if (!results.length) {
+            return results;
+        }
+        let ranked = results;
+        if (parsed.postnummer) {
+            const withPostnummer = ranked.filter((addr) => addr.postnummer === parsed.postnummer);
+            if (withPostnummer.length) {
+                ranked = withPostnummer;
+            }
+        }
+        if (parsed.place) {
+            const withPlace = ranked.filter((addr) => (0, geocoding_util_1.placeMatches)(addr.poststed, parsed.place) ||
+                (0, geocoding_util_1.placeMatches)(addr.kommunenavn, parsed.place));
+            if (withPlace.length) {
+                ranked = withPlace;
+            }
+        }
+        return ranked;
+    }
+    async searchStructured(adressenavn, nummer, limit) {
+        const params = new URLSearchParams({
+            adressenavn,
+            nummer,
+            treffPerSide: String(Math.min(limit, 50)),
+        });
+        return this.fetchKartverket(`${KARTVERKET_BASE}/sok?${params}`);
     }
     async searchKartverket(query, limit, fuzzy) {
         const trimmed = query.trim();
@@ -35,14 +78,17 @@ let GeocodingService = class GeocodingService {
         }
         const params = new URLSearchParams({
             sok: trimmed,
-            treffPerSide: String(Math.min(limit, 10)),
+            treffPerSide: String(Math.min(limit, 50)),
         });
         if (fuzzy) {
             params.set('fuzzy', 'true');
         }
+        return this.fetchKartverket(`${KARTVERKET_BASE}/sok?${params}`);
+    }
+    async fetchKartverket(url) {
         let response;
         try {
-            response = await fetch(`${KARTVERKET_BASE}/sok?${params}`, {
+            response = await fetch(url, {
                 headers: { Accept: 'application/json' },
             });
         }

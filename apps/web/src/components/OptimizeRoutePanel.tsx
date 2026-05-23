@@ -57,8 +57,6 @@ export default function OptimizeRoutePanel({
   const [objective, setObjective] = useState<OptimizationObjective>(
     'MINIMIZE_TOTAL_TIME',
   )
-  const [respectCapacity, setRespectCapacity] = useState(true)
-  const [respectTimeWindows, setRespectTimeWindows] = useState(true)
   const [isRunning, setIsRunning] = useState(false)
   const [progress, setProgress] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -113,8 +111,6 @@ export default function OptimizeRoutePanel({
         objective,
         routeStartTime,
         returnToDepot: true,
-        respectCapacity,
-        respectTimeWindows,
       })
 
       setProgress(JOB_STATUS_LABELS[job.status] ?? job.status)
@@ -142,13 +138,23 @@ export default function OptimizeRoutePanel({
 
   return (
     <section className="optimize-panel">
-      <div className="optimize-panel__intro">
-        <h2>Optimaliser ruter (VRP)</h2>
-        <p className="page-muted">
-          Fordeler leveranser på flere tilgjengelige kjøretøy med kapasitet,
-          tidsvinduer, deadlines og prioritet.
-        </p>
-      </div>
+      <header className="optimize-panel__header">
+        <div className="optimize-panel__header-icon" aria-hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path
+              d="M3 17h18M5 17V7l7-4 7 4v10M9 17v-4h6v4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <div>
+          <h2>Optimaliser ruter</h2>
+          <p className="optimize-panel__subtitle">
+            Fordeler valgte leveranser på kjøretøy med kapasitet, tidsvinduer og deadlines.
+          </p>
+        </div>
+      </header>
 
       <form className="optimize-panel__form" onSubmit={handleOptimize}>
         <div className="optimize-panel__fields">
@@ -190,104 +196,104 @@ export default function OptimizeRoutePanel({
           </label>
         </div>
 
-        <fieldset className="optimize-panel__vehicles" disabled={isRunning}>
-          <legend>Tilgjengelige kjøretøy</legend>
+        <div className="optimize-panel__section">
+          <div className="optimize-panel__section-head">
+            <h3>Tilgjengelige kjøretøy</h3>
+            <span className="optimize-panel__section-meta">
+              {selectedVehicleIds.size} valgt
+            </span>
+          </div>
+
           {availableVehicles.length === 0 ? (
-            <p className="page-muted">Ingen kjøretøy med status AVAILABLE.</p>
+            <p className="optimize-panel__empty">Ingen tilgjengelige kjøretøy.</p>
           ) : (
-            <ul className="optimize-panel__vehicle-list">
-              {availableVehicles.map((v) => (
-                <li key={v.id} className="optimize-panel__vehicle-row">
-                  <label className="optimize-panel__vehicle-check">
-                    <input
-                      type="checkbox"
-                      checked={selectedVehicleIds.has(v.id)}
-                      onChange={() => toggleVehicle(v.id)}
-                    />
-                    <span>
-                      {v.name} ({v.registrationNumber}) — maks{' '}
-                      {v.maxWeightKg} kg
-                    </span>
-                  </label>
-                  {selectedVehicleIds.has(v.id) ? (
-                    <label className="optimize-panel__driver-select">
-                      Sjåfør
-                      <select
-                        value={driverByVehicle[v.id] ?? ''}
-                        onChange={(e) =>
-                          setDriverByVehicle((prev) => ({
-                            ...prev,
-                            [v.id]: e.target.value,
-                          }))
-                        }
-                      >
-                        <option value="">Ingen</option>
-                        {availableDrivers.map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.name}
-                          </option>
-                        ))}
-                      </select>
+            <ul className="optimize-panel__vehicle-grid">
+              {availableVehicles.map((v) => {
+                const isSelected = selectedVehicleIds.has(v.id)
+                return (
+                  <li key={v.id}>
+                    <label
+                      className={`optimize-vehicle-card${isSelected ? ' optimize-vehicle-card--selected' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="optimize-vehicle-card__input"
+                        checked={isSelected}
+                        onChange={() => toggleVehicle(v.id)}
+                        disabled={isRunning}
+                      />
+                      <span className="optimize-vehicle-card__body">
+                        <span className="optimize-vehicle-card__name">{v.name}</span>
+                        <span className="optimize-vehicle-card__reg">
+                          {v.registrationNumber}
+                        </span>
+                      </span>
                     </label>
-                  ) : null}
-                </li>
-              ))}
+                    {isSelected ? (
+                      <label className="optimize-vehicle-card__driver">
+                        Sjåfør
+                        <select
+                          value={driverByVehicle[v.id] ?? ''}
+                          onChange={(e) =>
+                            setDriverByVehicle((prev) => ({
+                              ...prev,
+                              [v.id]: e.target.value,
+                            }))
+                          }
+                          disabled={isRunning}
+                        >
+                          <option value="">Ingen</option>
+                          {availableDrivers.map((d) => (
+                            <option key={d.id} value={d.id}>
+                              {d.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : null}
+                  </li>
+                )
+              })}
             </ul>
           )}
-        </fieldset>
-
-        <div className="optimize-panel__flags">
-          <label>
-            <input
-              type="checkbox"
-              checked={respectCapacity}
-              onChange={(e) => setRespectCapacity(e.target.checked)}
-              disabled={isRunning}
-            />
-            Respekter kapasitet (vekt, volum, pakker)
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={respectTimeWindows}
-              onChange={(e) => setRespectTimeWindows(e.target.checked)}
-              disabled={isRunning}
-            />
-            Respekter tidsvinduer og deadlines
-          </label>
         </div>
 
-        <div className="optimize-panel__selection">
-          <span>
-            {selectedIds.size} av {pendingDeliveries.length} ventende valgt
-          </span>
-          <div className="optimize-panel__selection-actions">
-            <button
-              type="button"
-              className="btn-link"
-              onClick={onSelectAllPending}
-              disabled={isRunning || pendingDeliveries.length === 0}
-            >
-              Velg alle ventende
-            </button>
-            <button
-              type="button"
-              className="btn-link"
-              onClick={onClearSelection}
-              disabled={isRunning || selectedIds.size === 0}
-            >
-              Tøm valg
-            </button>
+        <div className="optimize-panel__footer">
+          <div className="optimize-panel__selection">
+            <span className="optimize-panel__selection-count">
+              <strong>{selectedIds.size}</strong>
+              {' av '}
+              {pendingDeliveries.length}
+              {' ventende valgt'}
+            </span>
+            <div className="optimize-panel__selection-actions">
+              <button
+                type="button"
+                className="btn-link"
+                onClick={onSelectAllPending}
+                disabled={isRunning || pendingDeliveries.length === 0}
+              >
+                Velg alle
+              </button>
+              <button
+                type="button"
+                className="btn-link"
+                onClick={onClearSelection}
+                disabled={isRunning || selectedIds.size === 0}
+              >
+                Tøm valg
+              </button>
+            </div>
           </div>
-        </div>
 
-        {error ? <p className="page-error" role="alert">{error}</p> : null}
-        {progress ? <p className="optimize-panel__progress">{progress}</p> : null}
+          {error ? <p className="page-error" role="alert">{error}</p> : null}
+          {progress ? (
+            <p className="optimize-panel__progress">{progress}</p>
+          ) : null}
 
-        <div className="optimize-panel__actions">
           <button
             type="submit"
-            className="btn-primary"
+            className="btn-primary optimize-panel__submit"
             disabled={
               isRunning ||
               selectedIds.size < 1 ||
@@ -298,11 +304,6 @@ export default function OptimizeRoutePanel({
           </button>
         </div>
       </form>
-
-      <p className="field-hint optimize-panel__hint">
-        Flyt: optimaliser → Ruter → tildel sjåfør → kjør i mobil. Krever API,
-        Redis og optimizer (port 8000).
-      </p>
     </section>
   )
 }

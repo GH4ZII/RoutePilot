@@ -401,7 +401,7 @@ export default function DeliveriesPage() {
               value={form.address}
               onChange={(address) => updateField('address', address)}
               placeholder="Begynn å skrive adresse…"
-              hint="Velg et forslag fra listen for best treff."
+              hint="Inkluder postnummer og sted for riktig treff (f.eks. Kirkegata 12, 4950 Risør)."
               required
               disabled={isSubmitting}
             />
