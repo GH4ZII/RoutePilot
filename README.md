@@ -6,6 +6,68 @@ The system allows an organization to register deliveries, vehicles, drivers, and
 
 ---
 
+## Starte prosjektet lokalt
+
+Alle kommandoer kjøres fra **repo-roten** (`RoutePilot/`), med mindre annet står.
+
+### Første gang
+
+```powershell
+npm install
+npm install --prefix apps/api
+npm install --prefix apps/web
+npm install --prefix apps/mobile
+
+copy apps\api\.env.example apps\api\.env
+# Fyll inn DATABASE_URL, JWT_SECRET, osv.
+
+cd apps\api
+npx prisma migrate deploy
+npx prisma generate
+cd ..\..
+
+# Optimizer (kun ved ruteoptimalisering — Windows, bruk py)
+cd apps\optimizer
+py -3.12 -m venv .venv
+.\.venv\Scripts\pip install -r requirements.txt
+cd ..\..
+```
+
+Miljøvariabler:
+
+- `apps/web/.env` — `VITE_API_URL=http://localhost:3000`
+- `apps/mobile/.env` — `EXPO_PUBLIC_API_URL=http://localhost:3000` (på telefon: bruk PC-ens IP)
+
+### Starte klientene
+
+| Hva | Kommando | Port / URL |
+|-----|----------|------------|
+| Redis (Docker) | `docker compose up -d redis` | 6379 |
+| Optimizer (Python) | `npm run dev:optimizer` | http://127.0.0.1:8000 |
+| API (NestJS) | `npm run dev:api` | http://localhost:3000 |
+| Web (Vite) | `npm run dev:web` | http://localhost:5173 |
+| Mobil (Expo) | `npm run dev:mobile` | Expo Dev Tools (QR-kode) |
+
+**API + web + mobil samtidig** (én terminal):
+
+```powershell
+npm run dev
+```
+
+**Alt** (når du skal optimalisere ruter — én kommando per terminal):
+
+```powershell
+docker compose up -d redis
+npm run dev:optimizer
+npm run dev:api
+npm run dev:web
+npm run dev:mobile
+```
+
+Redis og optimizer trengs bare for ruteoptimalisering i web. For innlogging, CRUD og dashboard holder det med API + web.
+
+---
+
 ## Project Goal
 
 The goal of this project is to build a logistics platform that can answer questions such as:

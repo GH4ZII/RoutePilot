@@ -12,3 +12,15 @@ export const DELIVERY_MARKER_COLORS: Record<DeliveryStatus, string> = {
 export const DEPOT_MARKER_COLOR = '#7c3aed'
 
 export const ROUTE_LINE_COLOR = '#4f46e5'
+
+/** Distinct colors for multiple live routes on the dashboard map. */
+export const LIVE_ROUTE_COLORS = [
+  '#4f46e5',
+  '#0891b2',
+  '#16a34a',
+  '#d97706',
+  '#db2777',
+  '#7c3aed',
+  '#0d9488',
+  '#ea580c',
+] as const

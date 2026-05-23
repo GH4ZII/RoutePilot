@@ -283,3 +283,96 @@ export type OptimizationJob = {
   createdAt: string
   updatedAt: string
 }
+
+export type DashboardAlertType =
+  | 'DEADLINE_AT_RISK'
+  | 'OVER_CAPACITY'
+  | 'NO_DRIVER'
+  | 'FAILED_DELIVERY'
+
+export type DashboardAlert = {
+  type: DashboardAlertType
+  severity: 'warning' | 'error'
+  message: string
+  deliveryId?: string
+  routeId?: string
+  driverId?: string
+}
+
+export type DashboardSummary = {
+  date: string
+  metrics: {
+    deliveries: {
+      total: number
+      pending: number
+      assigned: number
+      inProgress: number
+      delivered: number
+      failed: number
+      cancelled: number
+    }
+    routes: {
+      active: number
+      plannedToday: number
+      completedToday: number
+    }
+    delayedDeliveries: number
+    averageRouteDurationSeconds: number | null
+    totalEstimatedDistanceMeters: number
+    capacityUtilizationPercent: number | null
+  }
+  alerts: DashboardAlert[]
+}
+
+export type LiveRouteStop = {
+  id: string
+  stopOrder: number
+  status: RouteStopStatus
+  estimatedArrival: string | null
+  actualArrival: string | null
+  isDelayed: boolean
+  delivery: {
+    id: string
+    customerName: string
+    address: string
+    latitude: number
+    longitude: number
+    status: DeliveryStatus
+    priority: string
+    phone: string | null
+  }
+}
+
+export type LiveRoute = {
+  id: string
+  status: RouteStatus
+  plannedDate: string
+  driver: { id: string; name: string; phone: string | null } | null
+  vehicle: {
+    id: string
+    name: string
+    startLatitude: number
+    startLongitude: number
+    endLatitude: number
+    endLongitude: number
+    maxWeightKg: number
+  } | null
+  totalDistanceMeters: number | null
+  capacityUsedKg: number | null
+  stops: LiveRouteStop[]
+  completedStops: number
+  totalStops: number
+}
+
+export type DashboardDeliveriesStatus = {
+  date: string
+  byStatus: Array<{ status: DeliveryStatus; count: number }>
+  delayed: Array<{
+    id: string
+    customerName: string
+    address: string
+    status: DeliveryStatus
+    deadline: string | null
+    reason: string
+  }>
+}

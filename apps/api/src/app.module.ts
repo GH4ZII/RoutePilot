@@ -15,6 +15,7 @@ import { DriversModule } from './drivers/drivers.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { DeliveriesModule } from './deliveries/deliveries.module';
 import { RouteStopsModule } from './route-stops/route-stops.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { RouteStopsModule } from './route-stops/route-stops.module';
     VehiclesModule,
     DeliveriesModule,
     RouteStopsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

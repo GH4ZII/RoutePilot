@@ -25,6 +25,9 @@ import type {
   OptimizationJob,
   RouteDetail,
   RouteStatus,
+  DashboardSummary,
+  LiveRoute,
+  DashboardDeliveriesStatus,
 } from '../types/domain'
 import { getStoredToken } from './auth-storage'
 
@@ -253,6 +256,25 @@ export function assignRoute(
     method: 'POST',
     body: JSON.stringify({ driverId }),
   })
+}
+
+export function getDashboardSummary(date?: string): Promise<DashboardSummary> {
+  const query = date ? `?date=${encodeURIComponent(date)}` : ''
+  return request<DashboardSummary>(`/dashboard/summary${query}`)
+}
+
+export function getDashboardLiveRoutes(date?: string): Promise<LiveRoute[]> {
+  const query = date ? `?date=${encodeURIComponent(date)}` : ''
+  return request<LiveRoute[]>(`/dashboard/routes/live${query}`)
+}
+
+export function getDashboardDeliveriesStatus(
+  date?: string,
+): Promise<DashboardDeliveriesStatus> {
+  const query = date ? `?date=${encodeURIComponent(date)}` : ''
+  return request<DashboardDeliveriesStatus>(
+    `/dashboard/deliveries/status${query}`,
+  )
 }
 
 export async function pollOptimizationJob(

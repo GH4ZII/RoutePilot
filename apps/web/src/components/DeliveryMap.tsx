@@ -36,12 +36,24 @@ export type DepotPoint = {
 export type RouteLine = {
   id: string
   positions: L.LatLngExpression[]
+  color?: string
+  label?: string
+}
+
+export type NumberedStop = {
+  id: string
+  stopOrder: number
+  latitude: number
+  longitude: number
+  label?: string
+  color?: string
 }
 
 type DeliveryMapProps = {
   deliveries: Delivery[]
   depots?: DepotPoint[]
   routeLines?: RouteLine[]
+  numberedStops?: NumberedStop[]
   selectedDeliveryId?: string | null
   onSelectDelivery?: (delivery: Delivery | null) => void
   className?: string
@@ -66,10 +78,20 @@ function escapeHtml(value: string): string {
     .replaceAll('"', '&quot;')
 }
 
+function createNumberedIcon(order: number, color: string): L.DivIcon {
+  return L.divIcon({
+    className: 'numbered-stop-marker',
+    html: `<span class="numbered-stop-marker__badge" style="background:${color}">${order}</span>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+  })
+}
+
 export default function DeliveryMap({
   deliveries,
   depots = [],
   routeLines = [],
+  numberedStops = [],
   selectedDeliveryId,
   onSelectDelivery,
   className = '',
@@ -79,6 +101,7 @@ export default function DeliveryMap({
   const deliveryLayersRef = useRef<L.LayerGroup | null>(null)
   const depotLayersRef = useRef<L.LayerGroup | null>(null)
   const routeLayersRef = useRef<L.LayerGroup | null>(null)
+  const numberedLayersRef = useRef<L.LayerGroup | null>(null)
   const markerByIdRef = useRef<Map<string, L.CircleMarker>>(new Map())
 
   useEffect(() => {
@@ -95,6 +118,7 @@ export default function DeliveryMap({
     }).addTo(map)
 
     routeLayersRef.current = L.layerGroup().addTo(map)
+    numberedLayersRef.current = L.layerGroup().addTo(map)
     deliveryLayersRef.current = L.layerGroup().addTo(map)
     depotLayersRef.current = L.layerGroup().addTo(map)
     mapRef.current = map
@@ -103,6 +127,7 @@ export default function DeliveryMap({
       map.remove()
       mapRef.current = null
       routeLayersRef.current = null
+      numberedLayersRef.current = null
       deliveryLayersRef.current = null
       depotLayersRef.current = null
       markerByIdRef.current.clear()
@@ -114,9 +139,19 @@ export default function DeliveryMap({
     const deliveryLayers = deliveryLayersRef.current
     const depotLayers = depotLayersRef.current
     const routeLayers = routeLayersRef.current
-    if (!map || !deliveryLayers || !depotLayers || !routeLayers) return
+    const numberedLayers = numberedLayersRef.current
+    if (
+      !map ||
+      !deliveryLayers ||
+      !depotLayers ||
+      !routeLayers ||
+      !numberedLayers
+    ) {
+      return
+    }
 
     routeLayers.clearLayers()
+    numberedLayers.clearLayers()
     deliveryLayers.clearLayers()
     depotLayers.clearLayers()
     markerByIdRef.current.clear()
@@ -126,13 +161,14 @@ export default function DeliveryMap({
     for (const line of routeLines) {
       if (line.positions.length < 2) continue
       const polyline = L.polyline(line.positions, {
-        color: ROUTE_LINE_COLOR,
+        color: line.color ?? ROUTE_LINE_COLOR,
         weight: 5,
         opacity: 0.85,
         lineJoin: 'round',
       })
+      const lineTitle = line.label ? escapeHtml(line.label) : 'Rute'
       polyline.bindPopup(
-        `<div class="map-popup"><strong>Rute</strong><p>Optimalisert kjørerute langs vei</p></div>`,
+        `<div class="map-popup"><strong>${lineTitle}</strong><p>Kjørerute langs vei</p></div>`,
       )
       routeLayers.addLayer(polyline)
       for (const pos of line.positions) {
@@ -153,6 +189,20 @@ export default function DeliveryMap({
       )
       depotLayers.addLayer(marker)
       boundsPoints.push([depot.latitude, depot.longitude])
+    }
+
+    for (const stop of numberedStops) {
+      const latLng: L.LatLngExpression = [stop.latitude, stop.longitude]
+      boundsPoints.push(latLng)
+      const color = stop.color ?? ROUTE_LINE_COLOR
+      const marker = L.marker(latLng, {
+        icon: createNumberedIcon(stop.stopOrder, color),
+      })
+      const title = stop.label
+        ? `${stop.stopOrder}. ${escapeHtml(stop.label)}`
+        : `Stopp ${stop.stopOrder}`
+      marker.bindPopup(`<div class="map-popup"><strong>${title}</strong></div>`)
+      numberedLayers.addLayer(marker)
     }
 
     for (const delivery of deliveries) {
@@ -186,7 +236,7 @@ export default function DeliveryMap({
       const bounds = L.latLngBounds(boundsPoints)
       map.fitBounds(bounds.pad(0.12), { maxZoom: 14 })
     }
-  }, [deliveries, depots, routeLines, onSelectDelivery])
+  }, [deliveries, depots, routeLines, numberedStops, onSelectDelivery])
 
   useEffect(() => {
     for (const [id, marker] of markerByIdRef.current) {

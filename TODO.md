@@ -10,7 +10,7 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 | Område        | Status      |
 |---------------|-------------|
-| Web           | Startet (innlogging) |
+| Web           | Startet (dashboard) |
 | Mobile (Expo) | Startet (sjåfør-workflow) |
 | Backend       | Startet (auth) |
 | Database      | Startet (Prisma) |
@@ -115,12 +115,12 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 
 ## Fase 7: Dashboard
 
-- [ ] `GET /dashboard/summary`
-- [ ] `GET /dashboard/routes/live`
-- [ ] `GET /dashboard/deliveries/status`
-- [ ] Metrikker: totalt, pending, assigned, completed, failed, aktive ruter, forsinkelser
-- [ ] Advarsler: deadline i fare, over kapasitet, ingen sjåfør, mislykkede leveringer
-- [ ] Kart: ruter per sjåfør, nummererte stopp, rute-linjer, toggle synlighet
+- [x] `GET /dashboard/summary`
+- [x] `GET /dashboard/routes/live`
+- [x] `GET /dashboard/deliveries/status`
+- [x] Metrikker: totalt, pending, assigned, completed, failed, aktive ruter, forsinkelser
+- [x] Advarsler: deadline i fare, over kapasitet, ingen sjåfør, mislykkede leveringer
+- [x] Kart: ruter per sjåfør, nummererte stopp, rute-linjer, toggle synlighet
 
 ---
 
@@ -155,7 +155,7 @@ Basert på [README.md](./README.md). Repoet er foreløpig greenfield (kun README
 - [x] Rute-tildeling til sjåfør
 - [x] Sjåfør-rutevisning (Expo mobile app)
 - [x] Marker stopp som levert eller feilet
-- [ ] Dispatcher-dashboard
+- [x] Dispatcher-dashboard
 
 ---
 
@@ -188,7 +188,8 @@ Se [README.md §17 Project Architecture](./README.md#17-project-architecture).
 - [ ] Vehicles
 - [ ] Deliveries
 - [ ] Routes
-- [ ] Optimization
+- [x] Optimization
+- [x] Dashboard
 - [ ] Reports
 
 ---

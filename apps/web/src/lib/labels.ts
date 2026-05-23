@@ -1,4 +1,5 @@
 import type {
+  DashboardAlertType,
   DeliveryPriority,
   DeliveryStatus,
   DriverStatus,
@@ -33,6 +34,13 @@ export const DELIVERY_STATUS_LABELS: Record<DeliveryStatus, string> = {
   DELIVERED: 'Levert',
   FAILED: 'Feilet',
   CANCELLED: 'Kansellert',
+}
+
+export const DASHBOARD_ALERT_LABELS: Record<DashboardAlertType, string> = {
+  DEADLINE_AT_RISK: 'Deadline',
+  OVER_CAPACITY: 'Kapasitet',
+  NO_DRIVER: 'Sjåfør',
+  FAILED_DELIVERY: 'Feilet levering',
 }
 
 export const DELIVERY_PRIORITY_LABELS: Record<DeliveryPriority, string> = {
