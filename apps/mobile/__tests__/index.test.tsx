@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react-native';
-import HomeScreen from './index';
+import HomeScreen from '@/app/(tabs)/index';
 import type { DriverRoute } from '@/types/routes';
 
 const mockRoute: DriverRoute = {

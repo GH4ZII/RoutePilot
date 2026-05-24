@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import DeliveryMap, {
   type DepotPoint,
+  type DriverMarker,
   type NumberedStop,
   type RouteLine,
 } from '../components/DeliveryMap'
@@ -18,10 +19,31 @@ import {
   deliveryPriorityClass,
   deliveryStatusClass,
 } from '../lib/labels'
-import { ROUTE_LINE_COLOR } from '../lib/map-colors'
+import {
+  DRIVER_MARKER_COLOR,
+  ROUTE_LINE_COLOR,
+  ROUTE_STOP_MARKER_COLORS,
+} from '../lib/map-colors'
 import { getActiveRoutes, getArchivedDeliveryIds } from '../lib/routes'
+import { subscribeToEvents } from '../lib/sse'
 import { useAsync } from '../lib/useAsync'
-import type { Delivery, DeliveryStatus, RouteDetail, Vehicle } from '../types/domain'
+import type {
+  Delivery,
+  DeliveryStatus,
+  RouteDetail,
+  RouteStopStatus,
+  Vehicle,
+} from '../types/domain'
+
+const POLL_MS = 30_000
+
+const ROUTE_STOP_STATUS_LABELS: Record<RouteStopStatus, string> = {
+  PENDING: 'Venter',
+  IN_PROGRESS: 'Pågår',
+  COMPLETED: 'Levert',
+  FAILED: 'Feilet',
+  SKIPPED: 'Hoppet over',
+}
 
 const STATUSES: DeliveryStatus[] = [
   'PENDING',
@@ -89,7 +111,11 @@ export default function MapPage() {
   )
 
   const { data: vehicles } = useAsync(() => api.listVehicles(), [])
-  const { data: routes, error: routesError } = useAsync(() => api.listRoutes(), [])
+  const {
+    data: routes,
+    error: routesError,
+    reload: reloadRoutes,
+  } = useAsync(() => api.listRoutes(), [])
 
   const activeRoutes = useMemo(
     () => getActiveRoutes(routes ?? []),
@@ -121,6 +147,36 @@ export default function MapPage() {
     }
     return activeRoutes[0]
   }, [activeRoutes, selectedRouteId])
+
+  const liveRouteDate = selectedRoute?.plannedDate.slice(0, 10) ?? ''
+  const { data: liveRoutes, reload: reloadLiveRoutes } = useAsync(
+    () =>
+      liveRouteDate
+        ? api.getDashboardLiveRoutes(liveRouteDate)
+        : Promise.resolve([]),
+    [liveRouteDate],
+  )
+
+  const liveRouteForSelected = useMemo(
+    () => liveRoutes?.find((route) => route.id === selectedRoute?.id),
+    [liveRoutes, selectedRoute?.id],
+  )
+
+  useEffect(() => {
+    const refresh = () => {
+      void reloadDeliveries({ silent: true })
+      void reloadRoutes({ silent: true })
+      void reloadLiveRoutes({ silent: true })
+    }
+
+    const pollId = window.setInterval(refresh, POLL_MS)
+    const unsubscribe = subscribeToEvents(refresh, refresh)
+
+    return () => {
+      window.clearInterval(pollId)
+      unsubscribe()
+    }
+  }, [reloadDeliveries, reloadRoutes, reloadLiveRoutes])
 
   useEffect(() => {
     if (activeRoutes.length && !selectedRouteId) {
@@ -213,9 +269,23 @@ export default function MapPage() {
         latitude: stop.delivery.latitude,
         longitude: stop.delivery.longitude,
         label: stop.delivery.customerName,
-        color: ROUTE_LINE_COLOR,
+        color: ROUTE_STOP_MARKER_COLORS[stop.status],
       }))
   }, [selectedRoute])
+
+  const driverMarkers: DriverMarker[] = useMemo(() => {
+    if (!liveRouteForSelected?.driver || !liveRouteForSelected.driverLocation) {
+      return []
+    }
+    return [
+      {
+        id: liveRouteForSelected.driver.id,
+        label: liveRouteForSelected.driver.name,
+        latitude: liveRouteForSelected.driverLocation.latitude,
+        longitude: liveRouteForSelected.driverLocation.longitude,
+      },
+    ]
+  }, [liveRouteForSelected])
 
   const error = deliveriesError ?? routesError
 
@@ -291,6 +361,15 @@ export default function MapPage() {
             />
             Kjørerute
           </span>
+          {driverMarkers.length > 0 ? (
+            <span className="map-legend-item">
+              <span
+                className="map-legend-dot"
+                style={{ background: DRIVER_MARKER_COLOR }}
+              />
+              Sjåfør (live)
+            </span>
+          ) : null}
         </div>
       </div>
 
@@ -310,6 +389,7 @@ export default function MapPage() {
             className="map-layout-map"
             deliveries={visibleDeliveries}
             depots={depots}
+            driverMarkers={driverMarkers}
             routeLines={routeLines}
             numberedStops={numberedStops}
             selectedDeliveryId={selected?.id ?? null}
@@ -400,16 +480,40 @@ export default function MapPage() {
                 <p className="page-muted">
                   {selectedRoute.stops.length} leveringsstopp ·{' '}
                   {selectedRoute.status}
+                  {liveRouteForSelected
+                    ? ` · ${liveRouteForSelected.completedStops}/${liveRouteForSelected.totalStops} fullført`
+                    : ''}
                 </p>
+                {!driverMarkers.length &&
+                selectedRoute.status === 'IN_PROGRESS' ? (
+                  <p className="field-hint">
+                    Sjåførposisjon vises når mobilappen sender GPS under aktiv
+                    rute.
+                  </p>
+                ) : null}
                 <ol className="map-route-stop-list">
-                  {selectedRoute.stops.map((stop) => (
-                    <li key={stop.id}>
-                      <span className="route-stops-list__order">
-                        {stop.stopOrder}
-                      </span>
-                      <span>{stop.delivery.customerName}</span>
-                    </li>
-                  ))}
+                  {[...selectedRoute.stops]
+                    .sort((a, b) => a.stopOrder - b.stopOrder)
+                    .map((stop) => (
+                      <li key={stop.id}>
+                        <span
+                          className="route-stops-list__order"
+                          style={{
+                            backgroundColor:
+                              ROUTE_STOP_MARKER_COLORS[stop.status],
+                          }}
+                        >
+                          {stop.stopOrder}
+                        </span>
+                        <span>
+                          {stop.delivery.customerName}
+                          <span className="table-sub">
+                            {' '}
+                            · {ROUTE_STOP_STATUS_LABELS[stop.status]}
+                          </span>
+                        </span>
+                      </li>
+                    ))}
                 </ol>
                 <p className="field-hint">
                   Den lilla streken følger veinettet (OSRM).

@@ -1,4 +1,4 @@
-import type { DeliveryStatus } from '../types/domain'
+import type { DeliveryStatus, RouteStopStatus } from '../types/domain'
 
 export const DELIVERY_MARKER_COLORS: Record<DeliveryStatus, string> = {
   PENDING: '#64748b',
@@ -14,6 +14,14 @@ export const DEPOT_MARKER_COLOR = '#7c3aed'
 export const DRIVER_MARKER_COLOR = '#0284c7'
 
 export const ROUTE_LINE_COLOR = '#4f46e5'
+
+export const ROUTE_STOP_MARKER_COLORS: Record<RouteStopStatus, string> = {
+  PENDING: ROUTE_LINE_COLOR,
+  IN_PROGRESS: '#2563eb',
+  COMPLETED: '#16a34a',
+  FAILED: '#dc2626',
+  SKIPPED: '#94a3b8',
+}
 
 /** Distinct colors for multiple live routes on the dashboard map. */
 export const LIVE_ROUTE_COLORS = [

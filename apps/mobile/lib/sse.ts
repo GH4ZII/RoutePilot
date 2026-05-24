@@ -10,6 +10,12 @@ export type SseMessage = {
 export function subscribeToEvents(
   onMessage: (event: SseMessage) => void,
 ): () => void {
+  // EventSource is a browser API and is not available in React Native.
+  // Driver screens already poll via React Query refetchInterval.
+  if (typeof EventSource === 'undefined') {
+    return () => {};
+  }
+
   let closed = false;
   let source: EventSource | null = null;
 

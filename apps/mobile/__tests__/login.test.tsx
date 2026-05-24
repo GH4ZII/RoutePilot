@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import LoginScreen from './login';
+import LoginScreen from '@/app/login';
 
 const mockLogin = jest.fn();
 
