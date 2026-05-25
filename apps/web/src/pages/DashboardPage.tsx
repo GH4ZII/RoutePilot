@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import DeliveryMap, {
   type DepotPoint,
   type DriverMarker,
@@ -13,7 +13,10 @@ import {
   DELIVERY_STATUS_LABELS,
   deliveryStatusClass,
 } from '../lib/labels'
-import { LIVE_ROUTE_COLORS } from '../lib/map-colors'
+import {
+  liveRouteColorForIndex,
+  liveRouteColorForRoute,
+} from '../lib/map-colors'
 import { fetchDrivingRouteGeometry } from '../lib/osrm-route'
 import { buildLiveRouteWaypoints } from '../lib/route-waypoints'
 import { subscribeToEvents } from '../lib/sse'
@@ -144,11 +147,10 @@ export default function DashboardPage() {
 
   const routeLines: RouteLine[] = useMemo(() => {
     const lines: RouteLine[] = []
-    visibleRoutes.forEach((route, index) => {
+    visibleRoutes.forEach((route) => {
       const geometry = routeGeometries[route.id]
       if (!geometry || geometry.length < 2) return
-      const color =
-        LIVE_ROUTE_COLORS[index % LIVE_ROUTE_COLORS.length] ?? LIVE_ROUTE_COLORS[0]
+      const color = liveRouteColorForRoute(route.id, liveRoutes)
       const driverName = route.driver?.name ?? 'Uten sjåfør'
       lines.push({
         id: route.id,
@@ -158,14 +160,12 @@ export default function DashboardPage() {
       })
     })
     return lines
-  }, [visibleRoutes, routeGeometries])
+  }, [visibleRoutes, routeGeometries, liveRoutes])
 
   const numberedStops: NumberedStop[] = useMemo(() => {
     const stops: NumberedStop[] = []
-    visibleRoutes.forEach((route, routeIndex) => {
-      const color =
-        LIVE_ROUTE_COLORS[routeIndex % LIVE_ROUTE_COLORS.length] ??
-        LIVE_ROUTE_COLORS[0]
+    visibleRoutes.forEach((route) => {
+      const color = liveRouteColorForRoute(route.id, liveRoutes)
       for (const stop of route.stops) {
         if (
           stop.status === 'COMPLETED' ||
@@ -184,7 +184,7 @@ export default function DashboardPage() {
       }
     })
     return stops
-  }, [visibleRoutes])
+  }, [visibleRoutes, liveRoutes])
 
   const driverMarkers: DriverMarker[] = useMemo(() => {
     const markers: DriverMarker[] = []
@@ -266,181 +266,274 @@ export default function DashboardPage() {
   const summary = data?.summary
   const deliveriesStatus = data?.deliveriesStatus
 
+  const deliveryTotal = summary?.metrics.deliveries.total ?? 0
+  const deliveredCount = summary?.metrics.deliveries.delivered ?? 0
+  const deliveryProgress =
+    deliveryTotal > 0 ? Math.round((deliveredCount / deliveryTotal) * 100) : 0
+
   return (
     <div className="page-content dashboard-page">
-      <div className="page-toolbar">
-        <div>
-          <h1>Dashboard</h1>
-          <p className="page-muted">
+      <header className="dashboard-header">
+        <div className="dashboard-header-text">
+          <div className="dashboard-header-title-row">
+            <h1>Dashboard</h1>
+            <span className="dashboard-live-badge" aria-live="polite">
+              <span className="dashboard-live-dot" aria-hidden />
+              Live
+            </span>
+          </div>
+          <p className="dashboard-header-subtitle">
             Operasjonsoversikt
-            {summary?.date ? ` — ${summary.date}` : ''}
-            {isLoading ? ' (oppdaterer…)' : ''}
+            {summary?.date ? (
+              <>
+                {' '}
+                · <time dateTime={summary.date}>{summary.date}</time>
+              </>
+            ) : null}
+            {isLoading ? (
+              <span className="dashboard-header-loading"> · Oppdaterer…</span>
+            ) : null}
           </p>
         </div>
-        <div className="page-toolbar-actions">
-          <button type="button" className="btn-secondary" onClick={() => reload()}>
-            Oppdater
-          </button>
-        </div>
-      </div>
+        <button
+          type="button"
+          className="dashboard-refresh-btn"
+          onClick={() => reload()}
+          disabled={isLoading}
+        >
+          Oppdater
+        </button>
+      </header>
 
-      {error ? <p className="page-error">{error}</p> : null}
-
-      {summary ? (
-        <section className="dashboard-metrics" aria-label="Nøkkeltall">
-          <MetricCard label="Totalt" value={summary.metrics.deliveries.total} />
-          <MetricCard
-            label="Venter"
-            value={summary.metrics.deliveries.pending}
-            variant="muted"
-          />
-          <MetricCard
-            label="Tildelt"
-            value={summary.metrics.deliveries.assigned}
-          />
-          <MetricCard
-            label="Underveis"
-            value={summary.metrics.deliveries.inProgress}
-          />
-          <MetricCard
-            label="Levert"
-            value={summary.metrics.deliveries.delivered}
-            variant="success"
-          />
-          <MetricCard
-            label="Feilet"
-            value={summary.metrics.deliveries.failed}
-            variant="danger"
-          />
-          <MetricCard
-            label="Aktive ruter"
-            value={summary.metrics.routes.active}
-          />
-          <MetricCard
-            label="Forsinket"
-            value={summary.metrics.delayedDeliveries}
-            variant={
-              summary.metrics.delayedDeliveries > 0 ? 'danger' : undefined
-            }
-          />
-        </section>
-      ) : null}
+      {error ? <p className="page-error dashboard-error">{error}</p> : null}
 
       {summary ? (
-        <section className="dashboard-secondary-metrics">
-          <p>
-            <span className="dashboard-secondary-label">Estimert distanse i dag:</span>{' '}
-            {formatDistance(summary.metrics.totalEstimatedDistanceMeters)}
-          </p>
-          <p>
-            <span className="dashboard-secondary-label">Snitt rutevarighet:</span>{' '}
-            {formatDuration(summary.metrics.averageRouteDurationSeconds)}
-          </p>
-          <p>
-            <span className="dashboard-secondary-label">Kapasitetsutnyttelse:</span>{' '}
-            {summary.metrics.capacityUtilizationPercent != null
-              ? `${summary.metrics.capacityUtilizationPercent} %`
-              : '—'}
-          </p>
-          <p>
-            <span className="dashboard-secondary-label">Ruter i dag:</span>{' '}
-            {summary.metrics.routes.plannedToday} planlagt,{' '}
-            {summary.metrics.routes.completedToday} fullført
-          </p>
-        </section>
+        <>
+          <section className="dashboard-kpi-grid" aria-label="Nøkkeltall">
+            <MetricCard
+              label="Levert i dag"
+              value={deliveredCount}
+              variant="success"
+              highlight
+              hint={`${deliveryProgress} % av ${deliveryTotal}`}
+            />
+            <MetricCard
+              label="Underveis"
+              value={summary.metrics.deliveries.inProgress}
+              variant="accent"
+            />
+            <MetricCard
+              label="Aktive ruter"
+              value={summary.metrics.routes.active}
+            />
+            <MetricCard
+              label="Forsinket"
+              value={summary.metrics.delayedDeliveries}
+              variant={
+                summary.metrics.delayedDeliveries > 0 ? 'danger' : 'muted'
+              }
+            />
+          </section>
+
+          <section className="dashboard-metrics" aria-label="Leveringsdetaljer">
+            <MetricCard label="Totalt" value={summary.metrics.deliveries.total} />
+            <MetricCard
+              label="Venter"
+              value={summary.metrics.deliveries.pending}
+              variant="muted"
+            />
+            <MetricCard
+              label="Tildelt"
+              value={summary.metrics.deliveries.assigned}
+            />
+            <MetricCard
+              label="Levert"
+              value={summary.metrics.deliveries.delivered}
+              variant="success"
+            />
+            <MetricCard
+              label="Feilet"
+              value={summary.metrics.deliveries.failed}
+              variant="danger"
+            />
+          </section>
+
+          <section
+            className="dashboard-insights"
+            aria-label="Dagens innsikt"
+          >
+            <InsightChip
+              label="Estimert distanse"
+              value={formatDistance(summary.metrics.totalEstimatedDistanceMeters)}
+            />
+            <InsightChip
+              label="Snitt rutevarighet"
+              value={formatDuration(summary.metrics.averageRouteDurationSeconds)}
+            />
+            <InsightChip
+              label="Kapasitet"
+              value={
+                summary.metrics.capacityUtilizationPercent != null
+                  ? `${summary.metrics.capacityUtilizationPercent} %`
+                  : '—'
+              }
+            />
+            <InsightChip
+              label="Ruter i dag"
+              value={`${summary.metrics.routes.plannedToday} planlagt · ${summary.metrics.routes.completedToday} fullført`}
+            />
+          </section>
+        </>
       ) : null}
 
-      <div className="dashboard-grid">
-        <section className="dashboard-panel">
-          <h2>Advarsler</h2>
-          {summary?.alerts.length ? (
-            <ul className="dashboard-alerts">
-              {summary.alerts.map((alert, i) => (
-                <li key={`${alert.type}-${alert.deliveryId ?? alert.routeId ?? i}`} className={alertClass(alert)}>
-                  <span className="dashboard-alert-type">
-                    {DASHBOARD_ALERT_LABELS[alert.type]}
-                  </span>
-                  <span>{alert.message}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="page-muted">Ingen advarsler akkurat nå.</p>
-          )}
-        </section>
-
-        <section className="dashboard-panel">
-          <h2>Leveringsstatus</h2>
-          {deliveriesStatus ? (
-            <ul className="dashboard-status-list">
-              {deliveriesStatus.byStatus
-                .filter((row) => row.count > 0)
-                .map((row) => (
-                  <li key={row.status}>
-                    <StatusBadge
-                      label={DELIVERY_STATUS_LABELS[row.status]}
-                      className={deliveryStatusClass(row.status)}
-                    />
-                    <span className="dashboard-status-count">{row.count}</span>
-                  </li>
-                ))}
-            </ul>
-          ) : null}
-          {deliveriesStatus?.delayed.length ? (
-            <>
-              <h3 className="dashboard-subheading">Forsinket / i fare</h3>
-              <ul className="dashboard-delayed-list">
-                {deliveriesStatus.delayed.map((d) => (
-                  <li key={d.id}>
-                    <strong>{d.customerName}</strong>
-                    <span>{d.reason}</span>
-                    {d.deadline ? (
-                      <span className="dashboard-delayed-meta">
-                        Deadline: {formatDateTime(d.deadline)}
-                      </span>
-                    ) : null}
+      <div className="dashboard-main">
+        <div className="dashboard-sidebar">
+          <section className="dashboard-panel">
+            <PanelHeader title="Advarsler" count={summary?.alerts.length} />
+            {summary?.alerts.length ? (
+              <ul className="dashboard-alerts">
+                {summary.alerts.map((alert, i) => (
+                  <li
+                    key={`${alert.type}-${alert.deliveryId ?? alert.routeId ?? i}`}
+                    className={alertClass(alert)}
+                  >
+                    <span className="dashboard-alert-type">
+                      {DASHBOARD_ALERT_LABELS[alert.type]}
+                    </span>
+                    <span>{alert.message}</span>
                   </li>
                 ))}
               </ul>
-            </>
-          ) : null}
-        </section>
+            ) : (
+              <p className="dashboard-empty">Ingen advarsler akkurat nå.</p>
+            )}
+          </section>
 
-        <section className="dashboard-panel dashboard-panel--routes">
-          <h2>Aktive ruter</h2>
-          {liveRoutes.length === 0 ? (
-            <p className="page-muted">Ingen aktive ruter akkurat nå.</p>
-          ) : (
-            <ul className="dashboard-route-toggles">
-              {liveRoutes.map((route, index) => (
-                <LiveRouteToggle
-                  key={route.id}
-                  route={route}
-                  color={
-                    LIVE_ROUTE_COLORS[index % LIVE_ROUTE_COLORS.length] ??
-                    LIVE_ROUTE_COLORS[0]
-                  }
-                  visible={visibleRouteIds.has(route.id)}
-                  onToggle={() => toggleRoute(route.id)}
-                />
-              ))}
-            </ul>
-          )}
+          <section className="dashboard-panel">
+            <PanelHeader title="Leveringsstatus" />
+            {deliveriesStatus ? (
+              <ul className="dashboard-status-list">
+                {deliveriesStatus.byStatus
+                  .filter((row) => row.count > 0)
+                  .map((row) => {
+                    const share =
+                      deliveryTotal > 0
+                        ? Math.round((row.count / deliveryTotal) * 100)
+                        : 0
+                    return (
+                      <li key={row.status}>
+                        <div className="dashboard-status-row">
+                          <StatusBadge
+                            label={DELIVERY_STATUS_LABELS[row.status]}
+                            className={deliveryStatusClass(row.status)}
+                          />
+                          <span className="dashboard-status-count">
+                            {row.count}
+                          </span>
+                        </div>
+                        <div
+                          className="dashboard-status-bar"
+                          role="presentation"
+                        >
+                          <span
+                            className="dashboard-status-bar-fill"
+                            style={{ width: `${share}%` }}
+                          />
+                        </div>
+                      </li>
+                    )
+                  })}
+              </ul>
+            ) : null}
+            {deliveriesStatus?.delayed.length ? (
+              <>
+                <h3 className="dashboard-subheading">Forsinket / i fare</h3>
+                <ul className="dashboard-delayed-list">
+                  {deliveriesStatus.delayed.map((d) => (
+                    <li key={d.id}>
+                      <strong>{d.customerName}</strong>
+                      <span>{d.reason}</span>
+                      {d.deadline ? (
+                        <span className="dashboard-delayed-meta">
+                          Deadline: {formatDateTime(d.deadline)}
+                        </span>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+          </section>
+
+          <section className="dashboard-panel dashboard-panel--routes">
+            <PanelHeader title="Aktive ruter" count={liveRoutes.length} />
+            {liveRoutes.length === 0 ? (
+              <p className="dashboard-empty">Ingen aktive ruter akkurat nå.</p>
+            ) : (
+              <div className="dashboard-route-scroll">
+                <ul className="dashboard-route-toggles">
+                  {liveRoutes.map((route, index) => (
+                    <LiveRouteToggle
+                      key={route.id}
+                      route={route}
+                      color={liveRouteColorForIndex(index)}
+                      visible={visibleRouteIds.has(route.id)}
+                      onToggle={() => toggleRoute(route.id)}
+                    />
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+        </div>
+
+        <section className="dashboard-map-card">
+          <PanelHeader
+            title="Live kart"
+            subtitle={`${visibleRoutes.length} av ${liveRoutes.length} ruter synlig`}
+          />
+          <DeliveryMap
+            deliveries={mapDeliveries}
+            depots={depots}
+            driverMarkers={driverMarkers}
+            routeLines={routeLines}
+            numberedStops={numberedStops}
+            fitBoundsKey={[...visibleRouteIds].sort().join(',') || 'none'}
+            className="dashboard-map"
+          />
         </section>
       </div>
+    </div>
+  )
+}
 
-      <section className="dashboard-map-section">
-        <h2>Kart — live ruter</h2>
-        <DeliveryMap
-          deliveries={mapDeliveries}
-          depots={depots}
-          driverMarkers={driverMarkers}
-          routeLines={routeLines}
-          numberedStops={numberedStops}
-          fitBoundsKey={[...visibleRouteIds].sort().join(',') || 'none'}
-          className="dashboard-map"
-        />
-      </section>
+function PanelHeader({
+  title,
+  subtitle,
+  count,
+}: {
+  title: string
+  subtitle?: string
+  count?: number
+}) {
+  return (
+    <div className="dashboard-panel-header">
+      <div>
+        <h2>{title}</h2>
+        {subtitle ? <p className="dashboard-panel-subtitle">{subtitle}</p> : null}
+      </div>
+      {count != null && count > 0 ? (
+        <span className="dashboard-panel-count">{count}</span>
+      ) : null}
+    </div>
+  )
+}
+
+function InsightChip({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="dashboard-insight-chip">
+      <span className="dashboard-insight-label">{label}</span>
+      <span className="dashboard-insight-value">{value}</span>
     </div>
   )
 }
@@ -449,15 +542,28 @@ function MetricCard({
   label,
   value,
   variant,
+  highlight,
+  hint,
 }: {
   label: string
   value: number
-  variant?: 'success' | 'danger' | 'muted'
+  variant?: 'success' | 'danger' | 'muted' | 'accent'
+  highlight?: boolean
+  hint?: string
 }) {
   return (
-    <div className={`dashboard-metric-card dashboard-metric-card--${variant ?? 'default'}`}>
+    <div
+      className={[
+        'dashboard-metric-card',
+        `dashboard-metric-card--${variant ?? 'default'}`,
+        highlight ? 'dashboard-metric-card--highlight' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <span className="dashboard-metric-value">{value}</span>
       <span className="dashboard-metric-label">{label}</span>
+      {hint ? <span className="dashboard-metric-hint">{hint}</span> : null}
     </div>
   )
 }
@@ -475,20 +581,46 @@ function LiveRouteToggle({
 }) {
   const driverLabel = route.driver?.name ?? 'Ingen sjåfør'
   const vehicleLabel = route.vehicle?.name ?? '—'
+  const progress =
+    route.totalStops > 0
+      ? Math.round((route.completedStops / route.totalStops) * 100)
+      : 0
 
   return (
-    <li className="dashboard-route-toggle">
+    <li
+      className={[
+        'dashboard-route-toggle',
+        visible ? 'dashboard-route-toggle--active' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      style={{ '--route-color': color } as CSSProperties}
+    >
       <label>
-        <input type="checkbox" checked={visible} onChange={onToggle} />
+        <input
+          type="checkbox"
+          className="dashboard-route-checkbox"
+          checked={visible}
+          onChange={onToggle}
+        />
         <span
           className="dashboard-route-color"
-          style={{ backgroundColor: color }}
+          style={{ backgroundColor: color, boxShadow: `0 0 0 3px ${color}33` }}
           aria-hidden
         />
         <span className="dashboard-route-toggle-text">
-          <strong>{driverLabel}</strong>
+          <span className="dashboard-route-toggle-top">
+            <strong>{driverLabel}</strong>
+            <span className="dashboard-route-progress-pct">{progress}%</span>
+          </span>
           <span>
             {vehicleLabel} · {route.completedStops}/{route.totalStops} stopp
+          </span>
+          <span className="dashboard-route-progress" role="presentation">
+            <span
+              className="dashboard-route-progress-fill"
+              style={{ width: `${progress}%` }}
+            />
           </span>
         </span>
       </label>

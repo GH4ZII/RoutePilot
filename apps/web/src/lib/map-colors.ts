@@ -34,3 +34,16 @@ export const LIVE_ROUTE_COLORS = [
   '#0d9488',
   '#ea580c',
 ] as const
+
+/** Stable color from a route's index in the full live-routes list (not visibility filter). */
+export function liveRouteColorForIndex(index: number): string {
+  return LIVE_ROUTE_COLORS[index % LIVE_ROUTE_COLORS.length] ?? LIVE_ROUTE_COLORS[0]
+}
+
+export function liveRouteColorForRoute(
+  routeId: string,
+  routes: readonly { id: string }[],
+): string {
+  const index = routes.findIndex((r) => r.id === routeId)
+  return liveRouteColorForIndex(index >= 0 ? index : 0)
+}
