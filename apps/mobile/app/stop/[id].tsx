@@ -19,6 +19,7 @@ import SignaturePad from '@/components/SignaturePad';
 import { authTheme } from '@/constants/authTheme';
 import * as api from '@/lib/api';
 import { ApiError } from '@/lib/api';
+import { syncMyRoutes } from '@/lib/my-routes-sync';
 
 export default function ProofOfDeliveryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -76,7 +77,7 @@ export default function ProofOfDeliveryScreen() {
         capturedAt: new Date().toISOString(),
       });
 
-      await queryClient.invalidateQueries({ queryKey: ['my-routes'] });
+      await syncMyRoutes(queryClient);
       Alert.alert('Lagret', 'Leveringsbevis er registrert.', [
         { text: 'OK', onPress: () => router.back() },
       ]);

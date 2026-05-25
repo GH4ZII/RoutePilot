@@ -65,6 +65,8 @@ type DeliveryMapProps = {
   numberedStops?: NumberedStop[]
   selectedDeliveryId?: string | null
   onSelectDelivery?: (delivery: Delivery | null) => void
+  /** Refit map bounds only when this value changes (e.g. selected route id). */
+  fitBoundsKey?: string
   className?: string
 }
 
@@ -104,10 +106,12 @@ export default function DeliveryMap({
   numberedStops = [],
   selectedDeliveryId,
   onSelectDelivery,
+  fitBoundsKey,
   className = '',
 }: DeliveryMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
+  const lastFitBoundsKeyRef = useRef<string | undefined>(undefined)
   const deliveryLayersRef = useRef<L.LayerGroup | null>(null)
   const depotLayersRef = useRef<L.LayerGroup | null>(null)
   const driverLayersRef = useRef<L.LayerGroup | null>(null)
@@ -278,11 +282,24 @@ export default function DeliveryMap({
       markerByIdRef.current.set(delivery.id, marker)
     }
 
-    if (boundsPoints.length > 0) {
+    if (
+      fitBoundsKey != null &&
+      fitBoundsKey !== lastFitBoundsKeyRef.current &&
+      boundsPoints.length > 0
+    ) {
+      lastFitBoundsKeyRef.current = fitBoundsKey
       const bounds = L.latLngBounds(boundsPoints)
       map.fitBounds(bounds.pad(0.12), { maxZoom: 14 })
     }
-  }, [deliveries, depots, driverMarkers, routeLines, numberedStops, onSelectDelivery])
+  }, [
+    deliveries,
+    depots,
+    driverMarkers,
+    routeLines,
+    numberedStops,
+    onSelectDelivery,
+    fitBoundsKey,
+  ])
 
   useEffect(() => {
     for (const [id, marker] of markerByIdRef.current) {

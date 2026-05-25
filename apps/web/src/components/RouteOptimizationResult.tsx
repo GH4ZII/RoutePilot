@@ -64,15 +64,19 @@ function SingleRouteView({
   return (
     <article className="route-result__single">
       <header className="route-result__single-header">
-        <h3>
-          {resolvedVehicle?.name ?? 'Kjøretøy'}
-          {resolvedDriver ? ` · ${resolvedDriver.name}` : ''}
-        </h3>
-        <p className="page-muted route-result__mono">{route.routeId}</p>
+        <div className="route-result__identity">
+          <h3>{resolvedVehicle?.name ?? 'Kjøretøy'}</h3>
+          {resolvedDriver ? (
+            <p className="route-result__driver">{resolvedDriver.name}</p>
+          ) : null}
+        </div>
+        <span className="route-result__route-id" title={route.routeId}>
+          #{route.routeId.slice(-8)}
+        </span>
       </header>
 
       <dl className="route-result__stats">
-        <div>
+        <div className="route-result__stat">
           <dt>Total distanse</dt>
           <dd>
             {totalDistanceMeters > 0
@@ -80,7 +84,7 @@ function SingleRouteView({
               : '—'}
           </dd>
         </div>
-        <div>
+        <div className="route-result__stat">
           <dt>Estimert kjøretid</dt>
           <dd>
             {totalDurationSeconds > 0
@@ -88,12 +92,12 @@ function SingleRouteView({
               : '—'}
           </dd>
         </div>
-        <div>
+        <div className="route-result__stat">
           <dt>Stopp</dt>
           <dd>{stops.length}</dd>
         </div>
         {route.capacityUsedKg != null ? (
-          <div>
+          <div className="route-result__stat">
             <dt>Kapasitet brukt</dt>
             <dd>{route.capacityUsedKg.toFixed(1)} kg</dd>
           </div>
@@ -101,18 +105,26 @@ function SingleRouteView({
       </dl>
 
       <ol className="route-stops-list">
-        {stops.map((stop) => {
+        {stops.map((stop, index) => {
           const delivery = deliveryById.get(stop.deliveryId)
+          const isLast = index === stops.length - 1
           return (
-            <li key={stop.deliveryId} className="route-stops-list__item">
-              <span className="route-stops-list__order">{stop.order}</span>
+            <li
+              key={stop.deliveryId}
+              className={`route-stops-list__item${isLast ? ' route-stops-list__item--last' : ''}`}
+            >
+              <div className="route-stops-list__timeline" aria-hidden>
+                <span className="route-stops-list__order">{stop.order}</span>
+              </div>
               <div className="route-stops-list__body">
-                <strong>{delivery?.customerName ?? stop.deliveryId}</strong>
+                <div className="route-stops-list__top">
+                  <strong>{delivery?.customerName ?? stop.deliveryId}</strong>
+                  <span className="route-stops-list__eta">
+                    {formatDateTime(stop.estimatedArrival)}
+                  </span>
+                </div>
                 <span className="route-stops-list__address">
                   {delivery?.address ?? 'Ukjent adresse'}
-                </span>
-                <span className="route-stops-list__eta">
-                  ETA {formatDateTime(stop.estimatedArrival)}
                 </span>
               </div>
             </li>
@@ -143,15 +155,18 @@ export default function RouteOptimizationResult({
   return (
     <section className="route-result" aria-labelledby="route-result-title">
       <div className="route-result__header">
-        <div>
+        <div className="route-result__title-block">
           <h2 id="route-result-title">
             {allRoutes.length > 1
               ? `Optimaliserte ruter (${allRoutes.length})`
               : 'Optimalisert rute'}
           </h2>
-          <p className="page-muted">Planlagt {plannedDate}</p>
+          <p className="route-result__planned-date">
+            <span className="route-result__planned-label">Planlagt</span>
+            {plannedDate}
+          </p>
         </div>
-        <Link to="/map" className="btn-secondary">
+        <Link to="/map" className="btn-secondary route-result__map-link">
           Vis på kart
         </Link>
       </div>

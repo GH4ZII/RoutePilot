@@ -32,6 +32,7 @@ export default function AssignRoutePanel({
   const [success, setSuccess] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
+  const isInProgress = route.status === 'IN_PROGRESS'
   const isConfirmed = route.status === 'ASSIGNED'
 
   useEffect(() => {
@@ -71,6 +72,11 @@ export default function AssignRoutePanel({
     setIsSaving(true)
     try {
       await api.assignRoute(route.id, driverId)
+      if (isInProgress && !isUnchanged) {
+        setSuccess(
+          `${drivers.find((d) => d.id === driverId)?.name ?? 'Sjåfør'} har overtatt ruten.`,
+        )
+      }
       await onAssigned()
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Tildeling feilet')
@@ -81,16 +87,29 @@ export default function AssignRoutePanel({
 
   if (
     route.status !== 'PLANNED' &&
-    route.status !== 'ASSIGNED'
+    route.status !== 'ASSIGNED' &&
+    route.status !== 'IN_PROGRESS'
   ) {
     return null
   }
 
   return (
     <form className="assign-route-panel" onSubmit={handleSubmit}>
-      <h3>{hasAssignedDriver ? 'Sjåfør' : 'Tildel sjåfør'}</h3>
+      <h3>
+        {isInProgress
+          ? 'Bytt sjåfør'
+          : hasAssignedDriver
+            ? 'Sjåfør'
+            : 'Tildel sjåfør'}
+      </h3>
 
-      {isConfirmed && isUnchanged ? (
+      {isInProgress ? (
+        <p className="page-muted">
+          {hasAssignedDriver
+            ? `${driverName(route, drivers)} kjører ruten nå. Velg en annen tilgjengelig sjåfør ved sykdom eller andre hindringer.`
+            : 'Velg sjåfør som skal ta over ruten.'}
+        </p>
+      ) : isConfirmed && isUnchanged ? (
         <p className="assign-route-panel__success" role="status">
           {success ?? `${driverName(route, drivers)} er bekreftet for ruten.`}
         </p>
@@ -119,13 +138,16 @@ export default function AssignRoutePanel({
             <option key={d.id} value={d.id}>
               {d.name}
               {d.id === initialDriverId && isConfirmed ? ' (bekreftet)' : ''}
-              {d.id === initialDriverId && !isConfirmed ? ' (tildelt)' : ''}
+              {d.id === initialDriverId && !isConfirmed && !isInProgress
+                ? ' (tildelt)'
+                : ''}
+              {d.id === initialDriverId && isInProgress ? ' (nåværende)' : ''}
             </option>
           ))}
         </select>
       </label>
       {error ? <p className="page-error" role="alert">{error}</p> : null}
-      {success && !isConfirmed ? (
+      {success && (isInProgress || !isConfirmed) ? (
         <p className="assign-route-panel__success" role="status">
           {success}
         </p>
@@ -133,17 +155,25 @@ export default function AssignRoutePanel({
       <button
         type="submit"
         className="btn-primary"
-        disabled={isSaving || (isConfirmed && isUnchanged)}
+        disabled={
+          isSaving ||
+          (!isInProgress && isConfirmed && isUnchanged) ||
+          (isInProgress && isUnchanged)
+        }
       >
         {isSaving
           ? 'Lagrer…'
-          : isConfirmed && isUnchanged
-            ? 'Sjåfør bekreftet'
-            : isUnchanged
-              ? 'Bekreft sjåfør'
-              : hasAssignedDriver
-                ? 'Endre sjåfør'
-                : 'Tildel rute'}
+          : isInProgress
+            ? isUnchanged
+              ? 'Velg annen sjåfør'
+              : 'Bytt sjåfør'
+            : isConfirmed && isUnchanged
+              ? 'Sjåfør bekreftet'
+              : isUnchanged
+                ? 'Bekreft sjåfør'
+                : hasAssignedDriver
+                  ? 'Endre sjåfør'
+                  : 'Tildel rute'}
       </button>
     </form>
   )

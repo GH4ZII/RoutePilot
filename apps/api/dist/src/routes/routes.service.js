@@ -95,15 +95,18 @@ let RoutesService = class RoutesService {
     async assign(user, id, driverId) {
         this.assertStaff(user);
         const route = await this.findScopedOrThrow(user, id);
-        if (route.status !== client_1.RouteStatus.PLANNED &&
-            route.status !== client_1.RouteStatus.ASSIGNED) {
-            throw new common_1.BadRequestException('Ruten kan kun tildeles når status er PLANNED eller ASSIGNED');
-        }
         const driver = await this.prisma.driver.findFirst({
             where: this.orgScope.forOrganization(user, { id: driverId }),
         });
         if (!driver) {
             throw new common_1.NotFoundException('Sjåfør ikke funnet');
+        }
+        if (route.status === client_1.RouteStatus.IN_PROGRESS) {
+            return this.assignDriverWhileInProgress(user, route, driverId, driver);
+        }
+        if (route.status !== client_1.RouteStatus.PLANNED &&
+            route.status !== client_1.RouteStatus.ASSIGNED) {
+            throw new common_1.BadRequestException('Ruten kan kun tildeles når status er PLANNED eller ASSIGNED');
         }
         const isSameDriver = route.driverId === driverId;
         if (driver.status !== client_1.DriverStatus.AVAILABLE &&
@@ -128,6 +131,45 @@ let RoutesService = class RoutesService {
                 },
                 include: routeInclude,
             });
+        });
+        return toRouteResponse(updated);
+    }
+    async assignDriverWhileInProgress(user, route, driverId, newDriver) {
+        if (!route.driverId) {
+            throw new common_1.BadRequestException('Ruten må ha tildelt sjåfør før bytte under kjøring');
+        }
+        if (route.driverId === driverId) {
+            return toRouteResponse(route);
+        }
+        if (newDriver.status !== client_1.DriverStatus.AVAILABLE) {
+            throw new common_1.BadRequestException('Ny sjåfør må være tilgjengelig for å ta over ruten');
+        }
+        const previousDriverId = route.driverId;
+        const updated = await this.prisma.$transaction(async (tx) => {
+            await tx.driver.update({
+                where: { id: previousDriverId },
+                data: {
+                    activeRouteId: null,
+                    status: client_1.DriverStatus.AVAILABLE,
+                },
+            });
+            await tx.driver.update({
+                where: { id: driverId },
+                data: {
+                    activeRouteId: route.id,
+                    status: client_1.DriverStatus.ON_ROUTE,
+                },
+            });
+            return tx.route.update({
+                where: { id: route.id },
+                data: { driverId },
+                include: routeInclude,
+            });
+        });
+        this.events.publish(user.organizationId, 'route.updated', {
+            routeId: route.id,
+            status: client_1.RouteStatus.IN_PROGRESS,
+            driverId,
         });
         return toRouteResponse(updated);
     }
@@ -224,12 +266,9 @@ let RoutesService = class RoutesService {
     }
     async remove(user, id) {
         const route = await this.findScopedOrThrow(user, id);
-        if (route.status === client_1.RouteStatus.IN_PROGRESS) {
-            throw new common_1.BadRequestException('Kan ikke slette rute som er under kjøring');
-        }
         await this.prisma.$transaction(async (tx) => {
             for (const stop of route.stops) {
-                if (stop.delivery.status !== client_1.DeliveryStatus.ASSIGNED) {
+                if (stop.delivery.status === client_1.DeliveryStatus.DELIVERED) {
                     continue;
                 }
                 const otherStops = await tx.routeStop.count({
@@ -253,6 +292,10 @@ let RoutesService = class RoutesService {
                 },
             });
             await tx.route.delete({ where: { id: route.id } });
+        });
+        this.events.publish(user.organizationId, 'route.updated', {
+            routeId: route.id,
+            deleted: true,
         });
     }
     async findStopScoped(user, stopId) {

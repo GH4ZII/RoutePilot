@@ -437,6 +437,7 @@ export default function DashboardPage() {
           driverMarkers={driverMarkers}
           routeLines={routeLines}
           numberedStops={numberedStops}
+          fitBoundsKey={[...visibleRouteIds].sort().join(',') || 'none'}
           className="dashboard-map"
         />
       </section>

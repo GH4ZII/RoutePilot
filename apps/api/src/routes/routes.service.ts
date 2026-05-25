@@ -184,6 +184,17 @@ export class RoutesService {
     this.assertStaff(user);
 
     const route = await this.findScopedOrThrow(user, id);
+    const driver = await this.prisma.driver.findFirst({
+      where: this.orgScope.forOrganization(user, { id: driverId }),
+    });
+    if (!driver) {
+      throw new NotFoundException('Sjåfør ikke funnet');
+    }
+
+    if (route.status === RouteStatus.IN_PROGRESS) {
+      return this.assignDriverWhileInProgress(user, route, driverId, driver);
+    }
+
     if (
       route.status !== RouteStatus.PLANNED &&
       route.status !== RouteStatus.ASSIGNED
@@ -191,13 +202,6 @@ export class RoutesService {
       throw new BadRequestException(
         'Ruten kan kun tildeles når status er PLANNED eller ASSIGNED',
       );
-    }
-
-    const driver = await this.prisma.driver.findFirst({
-      where: this.orgScope.forOrganization(user, { id: driverId }),
-    });
-    if (!driver) {
-      throw new NotFoundException('Sjåfør ikke funnet');
     }
 
     const isSameDriver = route.driverId === driverId;
@@ -228,6 +232,63 @@ export class RoutesService {
         },
         include: routeInclude,
       });
+    });
+
+    return toRouteResponse(updated);
+  }
+
+  private async assignDriverWhileInProgress(
+    user: JwtPayload,
+    route: Awaited<ReturnType<typeof this.findScopedOrThrow>>,
+    driverId: string,
+    newDriver: { id: string; status: DriverStatus },
+  ): Promise<RouteResponse> {
+    if (!route.driverId) {
+      throw new BadRequestException(
+        'Ruten må ha tildelt sjåfør før bytte under kjøring',
+      );
+    }
+
+    if (route.driverId === driverId) {
+      return toRouteResponse(route);
+    }
+
+    if (newDriver.status !== DriverStatus.AVAILABLE) {
+      throw new BadRequestException(
+        'Ny sjåfør må være tilgjengelig for å ta over ruten',
+      );
+    }
+
+    const previousDriverId = route.driverId;
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.driver.update({
+        where: { id: previousDriverId },
+        data: {
+          activeRouteId: null,
+          status: DriverStatus.AVAILABLE,
+        },
+      });
+
+      await tx.driver.update({
+        where: { id: driverId },
+        data: {
+          activeRouteId: route.id,
+          status: DriverStatus.ON_ROUTE,
+        },
+      });
+
+      return tx.route.update({
+        where: { id: route.id },
+        data: { driverId },
+        include: routeInclude,
+      });
+    });
+
+    this.events.publish(user.organizationId, 'route.updated', {
+      routeId: route.id,
+      status: RouteStatus.IN_PROGRESS,
+      driverId,
     });
 
     return toRouteResponse(updated);
@@ -358,15 +419,9 @@ export class RoutesService {
   async remove(user: JwtPayload, id: string): Promise<void> {
     const route = await this.findScopedOrThrow(user, id);
 
-    if (route.status === RouteStatus.IN_PROGRESS) {
-      throw new BadRequestException(
-        'Kan ikke slette rute som er under kjøring',
-      );
-    }
-
     await this.prisma.$transaction(async (tx) => {
       for (const stop of route.stops) {
-        if (stop.delivery.status !== DeliveryStatus.ASSIGNED) {
+        if (stop.delivery.status === DeliveryStatus.DELIVERED) {
           continue;
         }
 
@@ -394,6 +449,11 @@ export class RoutesService {
       });
 
       await tx.route.delete({ where: { id: route.id } });
+    });
+
+    this.events.publish(user.organizationId, 'route.updated', {
+      routeId: route.id,
+      deleted: true,
     });
   }
 

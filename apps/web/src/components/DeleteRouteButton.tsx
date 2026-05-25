@@ -8,6 +8,7 @@ type DeleteRouteButtonProps = {
   onDeleted: () => void | Promise<void>
   className?: string
   confirmMessage?: string
+  inProgress?: boolean
 }
 
 export default function DeleteRouteButton({
@@ -15,13 +16,18 @@ export default function DeleteRouteButton({
   routeLabel,
   onDeleted,
   className = 'btn-link btn-link--danger',
-  confirmMessage = `Slette ruten ${routeLabel}? Leveranser som kun var tildelt denne ruten settes tilbake til «Venter».`,
+  confirmMessage,
+  inProgress = false,
 }: DeleteRouteButtonProps) {
+  const defaultConfirmMessage = inProgress
+    ? `Slette ruten ${routeLabel} under kjøring? Leverte leveranser beholder status «Levert». Alle andre settes til «Venter».`
+    : `Slette ruten ${routeLabel}? Leveranser som kun var tildelt denne ruten settes tilbake til «Venter».`
+  const resolvedConfirmMessage = confirmMessage ?? defaultConfirmMessage
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleDelete() {
-    if (!confirm(confirmMessage)) {
+    if (!confirm(resolvedConfirmMessage)) {
       return
     }
 

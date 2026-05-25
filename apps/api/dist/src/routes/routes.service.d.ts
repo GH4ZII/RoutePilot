@@ -79,6 +79,7 @@ export declare class RoutesService {
     findMyRoutes(user: JwtPayload): Promise<RouteResponse[]>;
     findMyToday(user: JwtPayload): Promise<RouteResponse | null>;
     assign(user: JwtPayload, id: string, driverId: string): Promise<RouteResponse>;
+    private assignDriverWhileInProgress;
     start(user: JwtPayload, id: string): Promise<RouteResponse>;
     finish(user: JwtPayload, id: string): Promise<RouteResponse>;
     remove(user: JwtPayload, id: string): Promise<void>;
@@ -92,8 +93,8 @@ export declare class RoutesService {
             status: DeliveryStatus;
             latitude: import("@prisma/client-runtime-utils").Decimal;
             longitude: import("@prisma/client-runtime-utils").Decimal;
-            address: string;
             customerName: string;
+            address: string;
             weightKg: import("@prisma/client-runtime-utils").Decimal;
             volumeM3: import("@prisma/client-runtime-utils").Decimal | null;
             priority: import("../generated/prisma/enums").DeliveryPriority;
@@ -104,12 +105,12 @@ export declare class RoutesService {
         };
         route: {
             driver: {
-                id: string;
+                email: string | null;
                 name: string;
+                id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 organizationId: string;
-                email: string | null;
                 userId: string | null;
                 vehicleId: string | null;
                 activeRouteId: string | null;
@@ -117,8 +118,8 @@ export declare class RoutesService {
                 status: DriverStatus;
             } | null;
             vehicle: {
-                id: string;
                 name: string;
+                id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 organizationId: string;
@@ -144,8 +145,8 @@ export declare class RoutesService {
                     status: DeliveryStatus;
                     latitude: import("@prisma/client-runtime-utils").Decimal;
                     longitude: import("@prisma/client-runtime-utils").Decimal;
-                    address: string;
                     customerName: string;
+                    address: string;
                     weightKg: import("@prisma/client-runtime-utils").Decimal;
                     volumeM3: import("@prisma/client-runtime-utils").Decimal | null;
                     priority: import("../generated/prisma/enums").DeliveryPriority;
@@ -170,11 +171,11 @@ export declare class RoutesService {
                 createdAt: Date;
                 updatedAt: Date;
                 status: RouteStopStatus;
-                routeId: string;
-                deliveryId: string;
                 stopOrder: number;
                 estimatedArrival: Date | null;
                 actualArrival: Date | null;
+                routeId: string;
+                deliveryId: string;
             })[];
         } & {
             id: string;
@@ -183,26 +184,26 @@ export declare class RoutesService {
             organizationId: string;
             vehicleId: string | null;
             status: RouteStatus;
-            driverId: string | null;
             plannedDate: Date;
+            startedAt: Date | null;
             totalDistanceMeters: number | null;
             totalDurationSeconds: number | null;
             actualDistanceMeters: number | null;
             actualDurationSeconds: number | null;
             capacityUsedKg: import("@prisma/client-runtime-utils").Decimal | null;
-            startedAt: Date | null;
             finishedAt: Date | null;
+            driverId: string | null;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: RouteStopStatus;
-        routeId: string;
-        deliveryId: string;
         stopOrder: number;
         estimatedArrival: Date | null;
         actualArrival: Date | null;
+        routeId: string;
+        deliveryId: string;
     }>;
     private assertStaff;
     private assertDriverCanOperate;

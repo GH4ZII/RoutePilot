@@ -16,8 +16,10 @@ import { buildRouteWaypoints } from '../lib/route-waypoints'
 import {
   DELIVERY_PRIORITY_LABELS,
   DELIVERY_STATUS_LABELS,
+  ROUTE_STATUS_LABELS,
   deliveryPriorityClass,
   deliveryStatusClass,
+  routeStatusClass,
 } from '../lib/labels'
 import {
   DRIVER_MARKER_COLOR,
@@ -29,13 +31,62 @@ import { subscribeToEvents } from '../lib/sse'
 import { useAsync } from '../lib/useAsync'
 import type {
   Delivery,
+  DeliveryPriority,
   DeliveryStatus,
   RouteDetail,
   RouteStopStatus,
   Vehicle,
 } from '../types/domain'
 
-const POLL_MS = 30_000
+function routeStopsToDeliveries(route: RouteDetail): Delivery[] {
+  return route.stops.map((stop) => ({
+    id: stop.delivery.id,
+    organizationId: route.organizationId,
+    customerName: stop.delivery.customerName,
+    phone: stop.delivery.phone,
+    address: stop.delivery.address,
+    latitude: stop.delivery.latitude,
+    longitude: stop.delivery.longitude,
+    weightKg: stop.delivery.weightKg,
+    volumeM3: stop.delivery.volumeM3,
+    priority: stop.delivery.priority as DeliveryPriority,
+    deadline: null,
+    timeWindowStart: null,
+    timeWindowEnd: null,
+    notes: stop.delivery.notes,
+    status: stop.delivery.status,
+    createdAt: route.createdAt,
+    updatedAt: route.updatedAt,
+  }))
+}
+
+function routeMapLabel(route: RouteDetail): string {
+  const date = route.plannedDate.slice(0, 10)
+  const driver = route.driver?.name ?? 'Ingen sjåfør'
+  return `${date} · ${driver}`
+}
+
+function vehicleFromRoute(route: RouteDetail): Vehicle | null {
+  if (!route.vehicle) return null
+  return {
+    id: route.vehicle.id,
+    organizationId: route.organizationId,
+    depotId: null,
+    name: route.vehicle.name,
+    registrationNumber: '',
+    startAddress: route.vehicle.startAddress,
+    endAddress: route.vehicle.endAddress,
+    maxWeightKg: 0,
+    maxVolumeM3: 0,
+    startLatitude: route.vehicle.startLatitude,
+    startLongitude: route.vehicle.startLongitude,
+    endLatitude: route.vehicle.endLatitude,
+    endLongitude: route.vehicle.endLongitude,
+    status: 'AVAILABLE',
+    createdAt: route.createdAt,
+    updatedAt: route.updatedAt,
+  }
+}
 
 const ROUTE_STOP_STATUS_LABELS: Record<RouteStopStatus, string> = {
   PENDING: 'Venter',
@@ -127,17 +178,12 @@ export default function MapPage() {
     [routes],
   )
 
-  const visibleDeliveries = useMemo(
+  const overviewDeliveries = useMemo(
     () =>
       (deliveries ?? []).filter(
         (delivery) => !archivedDeliveryIds.has(delivery.id),
       ),
     [deliveries, archivedDeliveryIds],
-  )
-
-  const depots = useMemo(
-    () => (vehicles ? buildDepots(vehicles) : []),
-    [vehicles],
   )
 
   const selectedRoute: RouteDetail | undefined = useMemo(() => {
@@ -163,19 +209,27 @@ export default function MapPage() {
   )
 
   useEffect(() => {
-    const refresh = () => {
-      void reloadDeliveries({ silent: true })
-      void reloadRoutes({ silent: true })
-      void reloadLiveRoutes({ silent: true })
-    }
+    const unsubscribe = subscribeToEvents((event) => {
+      switch (event.type) {
+        case 'driver.location':
+          void reloadLiveRoutes({ silent: true })
+          break
+        case 'route.updated':
+        case 'stop.updated':
+          void reloadRoutes({ silent: true })
+          void reloadLiveRoutes({ silent: true })
+          break
+        case 'optimization.completed':
+          void reloadDeliveries({ silent: true })
+          void reloadRoutes({ silent: true })
+          void reloadLiveRoutes({ silent: true })
+          break
+        default:
+          break
+      }
+    })
 
-    const pollId = window.setInterval(refresh, POLL_MS)
-    const unsubscribe = subscribeToEvents(refresh, refresh)
-
-    return () => {
-      window.clearInterval(pollId)
-      unsubscribe()
-    }
+    return unsubscribe
   }, [reloadDeliveries, reloadRoutes, reloadLiveRoutes])
 
   useEffect(() => {
@@ -193,6 +247,16 @@ export default function MapPage() {
       setSelectedRouteId(activeRoutes[0].id)
     }
   }, [activeRoutes, selectedRouteId])
+
+  useEffect(() => {
+    if (!selected || !selectedRoute) return
+    const onRoute = selectedRoute.stops.some(
+      (stop) => stop.delivery.id === selected.id,
+    )
+    if (!onRoute) {
+      setSelected(null)
+    }
+  }, [selectedRoute, selected])
 
   async function updateDeliveryStatus(status: 'DELIVERED' | 'CANCELLED') {
     if (!selected) return
@@ -273,6 +337,31 @@ export default function MapPage() {
       }))
   }, [selectedRoute])
 
+  const mapDeliveries = useMemo(() => {
+    if (!selectedRoute) {
+      return overviewDeliveries
+    }
+    let routeDeliveries = routeStopsToDeliveries(selectedRoute)
+    if (statusFilter) {
+      routeDeliveries = routeDeliveries.filter(
+        (delivery) => delivery.status === statusFilter,
+      )
+    }
+    return routeDeliveries
+  }, [selectedRoute, overviewDeliveries, statusFilter])
+
+  const mapDepots = useMemo(() => {
+    const routeVehicle = selectedRoute ? vehicleFromRoute(selectedRoute) : null
+    if (routeVehicle) {
+      return buildDepots([routeVehicle])
+    }
+    return vehicles ? buildDepots(vehicles) : []
+  }, [selectedRoute, vehicles])
+
+  const mapFitBoundsKey = selectedRoute
+    ? `route-${selectedRoute.id}`
+    : `overview-${statusFilter || 'all'}`
+
   const driverMarkers: DriverMarker[] = useMemo(() => {
     if (!liveRouteForSelected?.driver || !liveRouteForSelected.driverLocation) {
       return []
@@ -296,43 +385,55 @@ export default function MapPage() {
         description="Leveranser, depot og kjørerute. Klikk en markør for detaljer."
       />
 
-      <div className="filter-bar map-page-filters">
-        <label>
-          Filtrer leveringsstatus
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value as DeliveryStatus | '')
-              setSelected(null)
-            }}
-          >
-            <option value="">Alle</option>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {DELIVERY_STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Vis rute
-          <select
-            value={selectedRouteId}
-            onChange={(e) => setSelectedRouteId(e.target.value)}
-            disabled={!activeRoutes.length}
-          >
-            {!activeRoutes.length ? (
-              <option value="">Ingen aktive ruter</option>
-            ) : (
-              activeRoutes.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.plannedDate.slice(0, 10)} · {r.stops.length} stopp ·{' '}
-                  {r.status}
+      <section className="map-toolbar" aria-label="Kartfiltre">
+        <div className="map-toolbar__fields">
+          <label className="map-toolbar__field">
+            <span className="map-toolbar__label">Filtrer leveringsstatus</span>
+            <select
+              className="map-toolbar__select"
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value as DeliveryStatus | '')
+                setSelected(null)
+              }}
+              disabled={Boolean(selectedRoute)}
+              title={
+                selectedRoute
+                  ? 'Statusfilter gjelder kun oversiktskart uten valgt rute'
+                  : undefined
+              }
+            >
+              <option value="">Alle</option>
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {DELIVERY_STATUS_LABELS[s]}
                 </option>
-              ))
-            )}
-          </select>
-        </label>
+              ))}
+            </select>
+          </label>
+          <label className="map-toolbar__field map-toolbar__field--route">
+            <span className="map-toolbar__label">Vis rute</span>
+            <select
+              className="map-toolbar__select map-toolbar__select--route"
+              value={selectedRouteId}
+              onChange={(e) => {
+                setSelectedRouteId(e.target.value)
+                setSelected(null)
+              }}
+              disabled={!activeRoutes.length}
+            >
+              {!activeRoutes.length ? (
+                <option value="">Ingen aktive ruter</option>
+              ) : (
+                activeRoutes.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {routeMapLabel(r)}
+                  </option>
+                ))
+              )}
+            </select>
+          </label>
+        </div>
         <div className="map-legend">
           <span className="map-legend-item">
             <span
@@ -341,13 +442,15 @@ export default function MapPage() {
             />
             Depot
           </span>
-          <span className="map-legend-item">
-            <span
-              className="map-legend-dot"
-              style={{ background: '#64748b' }}
-            />
-            Leveranse
-          </span>
+          {!selectedRoute ? (
+            <span className="map-legend-item">
+              <span
+                className="map-legend-dot"
+                style={{ background: '#64748b' }}
+              />
+              Leveranse
+            </span>
+          ) : null}
           {numberedStops.length > 0 ? (
             <span className="map-legend-item">
               <span className="map-legend-numbered">1</span>
@@ -371,7 +474,7 @@ export default function MapPage() {
             </span>
           ) : null}
         </div>
-      </div>
+      </section>
 
       {geometryLoading ? (
         <p className="page-muted">Laster rute på kart…</p>
@@ -387,13 +490,14 @@ export default function MapPage() {
         <div className="map-layout">
           <DeliveryMap
             className="map-layout-map"
-            deliveries={visibleDeliveries}
-            depots={depots}
+            deliveries={mapDeliveries}
+            depots={mapDepots}
             driverMarkers={driverMarkers}
             routeLines={routeLines}
             numberedStops={numberedStops}
             selectedDeliveryId={selected?.id ?? null}
             onSelectDelivery={setSelected}
+            fitBoundsKey={mapFitBoundsKey}
           />
 
           <aside className="map-detail-panel" aria-label="Leveringsdetaljer">
@@ -475,29 +579,55 @@ export default function MapPage() {
                 ) : null}
               </>
             ) : selectedRoute ? (
-              <>
-                <h2>Valgt rute</h2>
-                <p className="page-muted">
-                  {selectedRoute.stops.length} leveringsstopp ·{' '}
-                  {selectedRoute.status}
-                  {liveRouteForSelected
-                    ? ` · ${liveRouteForSelected.completedStops}/${liveRouteForSelected.totalStops} fullført`
-                    : ''}
-                </p>
+              <div className="map-route-panel">
+                <header className="map-route-panel__header">
+                  <div>
+                    <h2 className="map-route-panel__title">
+                      {selectedRoute.plannedDate.slice(0, 10)}
+                    </h2>
+                    <p className="map-route-panel__driver">
+                      {selectedRoute.driver?.name ?? 'Ingen sjåfør'}
+                      {selectedRoute.vehicle?.name
+                        ? ` · ${selectedRoute.vehicle.name}`
+                        : ''}
+                    </p>
+                  </div>
+                  <StatusBadge
+                    label={ROUTE_STATUS_LABELS[selectedRoute.status]}
+                    className={routeStatusClass(selectedRoute.status)}
+                  />
+                </header>
+
+                {liveRouteForSelected ? (
+                  <p className="map-route-panel__progress">
+                    <span className="map-route-panel__progress-value">
+                      {liveRouteForSelected.completedStops}/
+                      {liveRouteForSelected.totalStops}
+                    </span>
+                    <span className="map-route-panel__progress-label">
+                      stopp fullført
+                    </span>
+                  </p>
+                ) : (
+                  <p className="map-route-panel__meta">
+                    {selectedRoute.stops.length} stopp
+                  </p>
+                )}
+
                 {!driverMarkers.length &&
                 selectedRoute.status === 'IN_PROGRESS' ? (
-                  <p className="field-hint">
-                    Sjåførposisjon vises når mobilappen sender GPS under aktiv
-                    rute.
+                  <p className="map-route-panel__hint">
+                    Sjåførposisjon vises når mobilappen sender GPS.
                   </p>
                 ) : null}
+
                 <ol className="map-route-stop-list">
                   {[...selectedRoute.stops]
                     .sort((a, b) => a.stopOrder - b.stopOrder)
                     .map((stop) => (
-                      <li key={stop.id}>
+                      <li key={stop.id} className="map-route-stop-list__item">
                         <span
-                          className="route-stops-list__order"
+                          className="map-route-stop-list__order"
                           style={{
                             backgroundColor:
                               ROUTE_STOP_MARKER_COLORS[stop.status],
@@ -505,26 +635,26 @@ export default function MapPage() {
                         >
                           {stop.stopOrder}
                         </span>
-                        <span>
-                          {stop.delivery.customerName}
-                          <span className="table-sub">
-                            {' '}
-                            · {ROUTE_STOP_STATUS_LABELS[stop.status]}
+                        <div className="map-route-stop-list__body">
+                          <span className="map-route-stop-list__name">
+                            {stop.delivery.customerName}
                           </span>
-                        </span>
+                          <span className="map-route-stop-list__status">
+                            {ROUTE_STOP_STATUS_LABELS[stop.status]}
+                          </span>
+                        </div>
                       </li>
                     ))}
                 </ol>
-                <p className="field-hint">
-                  Den lilla streken følger veinettet (OSRM).
-                </p>
-              </>
+              </div>
             ) : (
               <p className="page-muted map-detail-empty">
                 Klikk en leveranse på kartet for detaljer.
-                {(visibleDeliveries.length ?? 0) === 0
+                {(mapDeliveries.length ?? 0) === 0
                   ? ' Ingen leveranser å vise med valgt filter.'
-                  : ' Optimaliser en rute under Leveranser for å se strek her.'}
+                  : selectedRoute
+                    ? ' Velg et rutestopp på kartet.'
+                    : ' Optimaliser en rute under Leveranser for å se strek her.'}
               </p>
             )}
           </aside>

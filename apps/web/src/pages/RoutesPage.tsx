@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import DeleteRouteButton from '../components/DeleteRouteButton'
 import AssignRoutePanel from '../components/AssignRoutePanel'
 import RouteOptimizationResult from '../components/RouteOptimizationResult'
 import PageToolbar from '../components/PageToolbar'
+import StatusBadge from '../components/StatusBadge'
 import * as api from '../lib/api'
 import { ApiError } from '../lib/api'
+import { ROUTE_STATUS_LABELS, routeStatusClass } from '../lib/labels'
 import {
   getActiveRoutes,
   getRoutesPendingDriverAssignment,
@@ -37,6 +39,7 @@ export default function RoutesPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const navigationState = location.state as RoutesPageState | null
+  const [selectedRouteId, setSelectedRouteId] = useState('')
   const [actionError, setActionError] = useState<string | null>(null)
   const [reoptimizing, setReoptimizing] = useState(false)
 
@@ -47,43 +50,67 @@ export default function RoutesPage() {
   const pendingRoutes = getRoutesPendingDriverAssignment(activeRoutes)
 
   const navigationRouteId = navigationState?.route.routeId
-  const navigationRoute = navigationRouteId
-    ? activeRoutes.find((route) => route.id === navigationRouteId)
-    : undefined
 
-  const defaultPending = pendingRoutes[0]
-  const defaultActive = defaultPending ?? activeRoutes[0]
+  useEffect(() => {
+    if (!activeRoutes.length) {
+      setSelectedRouteId('')
+      return
+    }
 
-  const activeRouteDetail =
-    navigationRoute ??
-    defaultActive ??
+    const fromNavigation =
+      navigationRouteId &&
+      activeRoutes.some((route) => route.id === navigationRouteId)
+        ? navigationRouteId
+        : null
+
+    setSelectedRouteId((prev) => {
+      if (prev && activeRoutes.some((route) => route.id === prev)) {
+        return prev
+      }
+      return (
+        fromNavigation ??
+        pendingRoutes[0]?.id ??
+        activeRoutes[0]?.id ??
+        ''
+      )
+    })
+  }, [activeRoutes, navigationRouteId, pendingRoutes])
+
+  const routeDetail =
+    activeRoutes.find((route) => route.id === selectedRouteId) ??
+    activeRoutes[0] ??
     null
 
-  const active = activeRouteDetail
-    ? routeDetailToJobShape(activeRouteDetail)
-    : null
+  const active = routeDetail ? routeDetailToJobShape(routeDetail) : null
 
-  const routeDetail = activeRouteDetail
-  const needsDriverConfirmation = routeDetail?.status === 'PLANNED'
+  const showDriverPanel =
+    routeDetail?.status === 'PLANNED' ||
+    routeDetail?.status === 'ASSIGNED' ||
+    routeDetail?.status === 'IN_PROGRESS'
   const pendingIndex = routeDetail
     ? pendingRoutes.findIndex((route) => route.id === routeDetail.id)
     : -1
 
+  async function selectRouteAfterChange(nextRoutes: RouteDetail[]) {
+    const nextPending = getRoutesPendingDriverAssignment(nextRoutes)
+    const nextId = nextPending[0]?.id ?? nextRoutes[0]?.id ?? ''
+    setSelectedRouteId(nextId)
+    navigate('/routes', { replace: true, state: null })
+  }
+
+  async function handleRouteDeleted() {
+    const refreshed = await reload({ silent: true })
+    await selectRouteAfterChange(getActiveRoutes(refreshed ?? []))
+  }
+
   async function advanceAfterAssignment() {
     const refreshed = await reload({ silent: true })
-    const nextPending = getRoutesPendingDriverAssignment(
-      getActiveRoutes(refreshed ?? []),
-    )
-
-    if (nextPending.length > 0) {
-      navigate('/routes', {
-        state: routeDetailToJobShape(nextPending[0]),
-        replace: true,
-      })
+    const nextRoutes = getActiveRoutes(refreshed ?? [])
+    const updated = nextRoutes.find((route) => route.id === selectedRouteId)
+    if (updated?.status === 'IN_PROGRESS') {
       return
     }
-
-    navigate('/routes', { replace: true, state: null })
+    await selectRouteAfterChange(nextRoutes)
   }
 
   if (isLoading) {
@@ -115,28 +142,6 @@ export default function RoutesPage() {
     )
   }
 
-  if (pendingRoutes.length === 0 && !navigationRoute) {
-    return (
-      <div className="page-content">
-        <PageToolbar
-          title="Ruter"
-          description="Alle planlagte ruter er bekreftet."
-        />
-        <div className="assign-route-panel__success" role="status">
-          Alle sjåfører er bekreftet for {activeRoutes.length}{' '}
-          {activeRoutes.length === 1 ? 'rute' : 'ruter'}.
-        </div>
-        <p className="page-muted" style={{ marginTop: 16 }}>
-          <Link to="/map" className="btn-secondary">
-            Vis på kart
-          </Link>
-          {' · '}
-          <Link to="/deliveries">Ny optimalisering</Link>
-        </p>
-      </div>
-    )
-  }
-
   if (!active?.route || !routeDetail) {
     return (
       <div className="page-content">
@@ -145,58 +150,69 @@ export default function RoutesPage() {
     )
   }
 
+  const toolbarDescription =
+    pendingRoutes.length > 0
+      ? `Bekreft sjåfør (${pendingRoutes.length} gjenstår)`
+      : `${activeRoutes.length} ${activeRoutes.length === 1 ? 'rute' : 'ruter'}`
+
   return (
     <div className="page-content">
       <PageToolbar
         title="Ruter"
-        description={
-          pendingRoutes.length > 0
-            ? `Bekreft sjåfør (${pendingRoutes.length} gjenstår)`
-            : 'Planlagte kjøreruter.'
-        }
+        description={toolbarDescription}
         action={
-          <Link to="/map" className="btn-secondary">
-            Vis på kart
-          </Link>
+          <>
+            <DeleteRouteButton
+              routeId={routeDetail.id}
+              routeLabel={routeOptionLabel(routeDetail)}
+              className="btn-secondary"
+              inProgress={routeDetail.status === 'IN_PROGRESS'}
+              onDeleted={handleRouteDeleted}
+            />
+            <Link to="/map" className="btn-secondary">
+              Vis på kart
+            </Link>
+          </>
         }
       />
 
-      {pendingRoutes.length > 1 ? (
+      {activeRoutes.length > 1 ? (
         <div className="filter-bar">
           <label>
             Velg rute
             <select
-              value={active.route.routeId}
-              onChange={(e) => {
-                const picked = pendingRoutes.find((r) => r.id === e.target.value)
-                if (picked) {
-                  navigate('/routes', {
-                    state: routeDetailToJobShape(picked),
-                    replace: true,
-                  })
-                }
-              }}
+              value={routeDetail.id}
+              onChange={(e) => setSelectedRouteId(e.target.value)}
             >
-              {pendingRoutes.map((r, index) => (
-                <option key={r.id} value={r.id}>
-                  {index + 1}. {routeOptionLabel(r)}
+              {activeRoutes.map((route) => (
+                <option key={route.id} value={route.id}>
+                  {routeOptionLabel(route)}
                 </option>
               ))}
             </select>
           </label>
-          {pendingIndex >= 0 ? (
+          {pendingRoutes.length > 0 && pendingIndex >= 0 ? (
             <span className="page-muted">
-              Rute {pendingIndex + 1} av {pendingRoutes.length}
+              {pendingIndex + 1} av {pendingRoutes.length} venter bekreftelse
             </span>
-          ) : null}
+          ) : (
+            <StatusBadge
+              label={ROUTE_STATUS_LABELS[routeDetail.status]}
+              className={routeStatusClass(routeDetail.status)}
+            />
+          )}
         </div>
-      ) : pendingRoutes.length === 1 ? (
-        <p className="page-muted">
-          Rute 1 av 1 · {routeOptionLabel(pendingRoutes[0])}
-        </p>
-      ) : null}
+      ) : (
+        <div className="routes-page-meta">
+          <StatusBadge
+            label={ROUTE_STATUS_LABELS[routeDetail.status]}
+            className={routeStatusClass(routeDetail.status)}
+          />
+          <span className="page-muted">{routeOptionLabel(routeDetail)}</span>
+        </div>
+      )}
 
-      {needsDriverConfirmation ? (
+      {showDriverPanel ? (
         <AssignRoutePanel
           key={routeDetail.id}
           route={routeDetail}
@@ -291,19 +307,6 @@ export default function RoutesPage() {
       {actionError && <p className="form-error">{actionError}</p>}
 
       <p className="page-muted route-empty__back">
-        {routeDetail.status !== 'IN_PROGRESS' ? (
-          <>
-            <DeleteRouteButton
-              routeId={routeDetail.id}
-              routeLabel={routeOptionLabel(routeDetail)}
-              onDeleted={async () => {
-                await reload()
-                await advanceAfterAssignment()
-              }}
-            />
-            {' · '}
-          </>
-        ) : null}
         <Link to="/deliveries">Ny optimalisering</Link>
         {' · '}
         <button

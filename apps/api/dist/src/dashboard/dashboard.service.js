@@ -208,6 +208,7 @@ let DashboardService = class DashboardService {
             this.prisma.route.count({
                 where: {
                     ...base,
+                    plannedDate,
                     status: { in: [client_1.RouteStatus.ASSIGNED, client_1.RouteStatus.IN_PROGRESS] },
                 },
             }),

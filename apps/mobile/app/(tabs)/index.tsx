@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  AppState,
   Modal,
   Platform,
   Pressable,
@@ -32,7 +33,11 @@ import {
   startDriverLocationUpdates,
 } from '@/lib/driver-location';
 import { mapsAppLabel, openRouteInMaps } from '@/lib/navigation';
-import { subscribeToEvents } from '@/lib/sse';
+import {
+  MY_ROUTES_QUERY_KEY,
+  startMyRoutesBackgroundSync,
+  syncMyRoutes,
+} from '@/lib/my-routes-sync';
 import type { DriverRoute, RouteStop } from '@/types/routes';
 
 const ROUTE_STATUS_LABELS: Record<string, string> = {
@@ -53,8 +58,6 @@ function allStopsHandled(route: DriverRoute): boolean {
   );
 }
 
-const MY_ROUTES_QUERY_KEY = ['my-routes'] as const;
-
 export default function HomeScreen() {
   const { user } = useAuth();
   const router = useRouter();
@@ -64,18 +67,17 @@ export default function HomeScreen() {
   const [failStopId, setFailStopId] = useState<string | null>(null);
   const [failReason, setFailReason] = useState('');
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
 
   const {
     data: routes = [],
     isLoading,
-    isRefetching,
-    refetch,
     error,
   } = useQuery({
     queryKey: MY_ROUTES_QUERY_KEY,
     queryFn: () => api.getMyRoutes(),
     enabled: user?.role === 'DRIVER',
-    refetchInterval: 30_000,
+    placeholderData: (previousData) => previousData,
   });
 
   const activeRoute = useMemo(
@@ -84,19 +86,36 @@ export default function HomeScreen() {
   );
 
   useEffect(() => {
+    if (user?.role !== 'DRIVER') return;
+
+    void syncMyRoutes(queryClient);
+
+    const stopBackgroundSync = startMyRoutesBackgroundSync(queryClient, {
+      isEnabled: () => user?.role === 'DRIVER',
+    });
+
+    const appStateSub = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        void syncMyRoutes(queryClient);
+      }
+    });
+
+    return () => {
+      stopBackgroundSync();
+      appStateSub.remove();
+    };
+  }, [user?.role, queryClient]);
+
+  useEffect(() => {
     if (!activeRoute) return;
     const stopLocation = startDriverLocationUpdates(
       () => activeRoute.status === 'IN_PROGRESS',
       activeRoute,
     );
-    const stopSse = subscribeToEvents(() => {
-      void queryClient.invalidateQueries({ queryKey: MY_ROUTES_QUERY_KEY });
-    });
     return () => {
       void stopLocation.then((stop) => stop());
-      stopSse();
     };
-  }, [activeRoute?.id, activeRoute?.status, queryClient]);
+  }, [activeRoute?.id, activeRoute?.status]);
 
   useEffect(() => {
     if (routes.length === 0) {
@@ -104,11 +123,12 @@ export default function HomeScreen() {
       return;
     }
     if (
-      !selectedRouteId ||
-      !routes.some((r) => r.id === selectedRouteId)
+      selectedRouteId &&
+      routes.some((route) => route.id === selectedRouteId)
     ) {
-      setSelectedRouteId(routes[0].id);
+      return;
     }
+    setSelectedRouteId(routes[0].id);
   }, [routes, selectedRouteId]);
 
   const route = useMemo(
@@ -140,7 +160,7 @@ export default function HomeScreen() {
         if (updated) {
           patchRoutesCache(updated);
         } else {
-          await refetch();
+          await syncMyRoutes(queryClient);
         }
       } catch (err) {
         setActionError(err instanceof ApiError ? err.message : 'Handling feilet');
@@ -148,8 +168,17 @@ export default function HomeScreen() {
         setBusy(false);
       }
     },
-    [patchRoutesCache, refetch],
+    [patchRoutesCache, queryClient],
   );
+
+  const handlePullRefresh = useCallback(async () => {
+    setIsPullRefreshing(true);
+    try {
+      await syncMyRoutes(queryClient);
+    } finally {
+      setIsPullRefreshing(false);
+    }
+  }, [queryClient]);
 
   if (!user) {
     return null;
@@ -173,8 +202,8 @@ export default function HomeScreen() {
       contentContainerStyle={styles.content}
       refreshControl={
         <RefreshControl
-          refreshing={isRefetching}
-          onRefresh={() => refetch()}
+          refreshing={isPullRefreshing}
+          onRefresh={() => void handlePullRefresh()}
           tintColor={authTheme.primary}
         />
       }>
@@ -383,9 +412,7 @@ export default function HomeScreen() {
               onPress={() =>
                 runAction(async () => {
                   await api.finishRoute(route.id);
-                  await queryClient.invalidateQueries({
-                    queryKey: MY_ROUTES_QUERY_KEY,
-                  });
+                  await syncMyRoutes(queryClient);
                   return null;
                 })
               }>
