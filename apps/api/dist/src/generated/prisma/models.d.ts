@@ -9,7 +9,6 @@ export type * from './models/Route.js';
 export type * from './models/RouteStop.js';
 export type * from './models/ProofOfDelivery.js';
 export type * from './models/RouteEvent.js';
-export type * from './models/RouteSummary.js';
 export type * from './models/CustomerNotification.js';
 export type * from './models/OptimizationJob.js';
 export type * from './commonInputTypes.js';

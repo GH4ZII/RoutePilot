@@ -17,6 +17,5 @@ export type Route = Prisma.RouteModel;
 export type RouteStop = Prisma.RouteStopModel;
 export type ProofOfDelivery = Prisma.ProofOfDeliveryModel;
 export type RouteEvent = Prisma.RouteEventModel;
-export type RouteSummary = Prisma.RouteSummaryModel;
 export type CustomerNotification = Prisma.CustomerNotificationModel;
 export type OptimizationJob = Prisma.OptimizationJobModel;

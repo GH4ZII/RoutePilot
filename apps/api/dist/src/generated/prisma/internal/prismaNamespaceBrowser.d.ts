@@ -22,7 +22,6 @@ export declare const ModelName: {
     readonly RouteStop: "RouteStop";
     readonly ProofOfDelivery: "ProofOfDelivery";
     readonly RouteEvent: "RouteEvent";
-    readonly RouteSummary: "RouteSummary";
     readonly CustomerNotification: "CustomerNotification";
     readonly OptimizationJob: "OptimizationJob";
 };
@@ -179,16 +178,6 @@ export declare const RouteEventScalarFieldEnum: {
     readonly createdAt: "createdAt";
 };
 export type RouteEventScalarFieldEnum = (typeof RouteEventScalarFieldEnum)[keyof typeof RouteEventScalarFieldEnum];
-export declare const RouteSummaryScalarFieldEnum: {
-    readonly id: "id";
-    readonly routeId: "routeId";
-    readonly summary: "summary";
-    readonly model: "model";
-    readonly generatedAt: "generatedAt";
-    readonly createdAt: "createdAt";
-    readonly updatedAt: "updatedAt";
-};
-export type RouteSummaryScalarFieldEnum = (typeof RouteSummaryScalarFieldEnum)[keyof typeof RouteSummaryScalarFieldEnum];
 export declare const CustomerNotificationScalarFieldEnum: {
     readonly id: "id";
     readonly organizationId: "organizationId";

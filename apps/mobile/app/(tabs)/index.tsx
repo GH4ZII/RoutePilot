@@ -27,7 +27,10 @@ import {
   formatPlannedDate,
   formatWeight,
 } from '@/lib/format';
-import { startDriverLocationUpdates } from '@/lib/driver-location';
+import {
+  isDriverLocationSimulationEnabled,
+  startDriverLocationUpdates,
+} from '@/lib/driver-location';
 import { mapsAppLabel, openRouteInMaps } from '@/lib/navigation';
 import { subscribeToEvents } from '@/lib/sse';
 import type { DriverRoute, RouteStop } from '@/types/routes';
@@ -84,6 +87,7 @@ export default function HomeScreen() {
     if (!activeRoute) return;
     const stopLocation = startDriverLocationUpdates(
       () => activeRoute.status === 'IN_PROGRESS',
+      activeRoute,
     );
     const stopSse = subscribeToEvents(() => {
       void queryClient.invalidateQueries({ queryKey: MY_ROUTES_QUERY_KEY });
@@ -185,6 +189,11 @@ export default function HomeScreen() {
         </Text>
       ) : null}
       {actionError ? <Text style={styles.error}>{actionError}</Text> : null}
+      {isDriverLocationSimulationEnabled() && activeRoute ? (
+        <Text style={styles.simulateHint}>
+          Dev: simulert GPS sendes langs ruten hvert 5. sekund.
+        </Text>
+      ) : null}
 
       {routes.length > 1 ? (
         <View style={styles.routePicker}>
@@ -611,6 +620,14 @@ const styles = StyleSheet.create({
     color: '#dc2626',
     marginBottom: 12,
     fontSize: 14,
+  },
+  simulateHint: {
+    color: '#0369a1',
+    marginBottom: 12,
+    fontSize: 13,
+    backgroundColor: '#e0f2fe',
+    padding: 10,
+    borderRadius: 8,
   },
   stopRow: {
     flexDirection: 'row',

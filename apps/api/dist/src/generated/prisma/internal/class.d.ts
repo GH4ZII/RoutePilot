@@ -63,9 +63,6 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get routeEvent(): Prisma.RouteEventDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
-    get routeSummary(): Prisma.RouteSummaryDelegate<ExtArgs, {
-        omit: OmitOpts;
-    }>;
     get customerNotification(): Prisma.CustomerNotificationDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;

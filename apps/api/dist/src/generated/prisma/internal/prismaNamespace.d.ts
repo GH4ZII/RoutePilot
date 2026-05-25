@@ -168,7 +168,6 @@ export declare const ModelName: {
     readonly RouteStop: "RouteStop";
     readonly ProofOfDelivery: "ProofOfDelivery";
     readonly RouteEvent: "RouteEvent";
-    readonly RouteSummary: "RouteSummary";
     readonly CustomerNotification: "CustomerNotification";
     readonly OptimizationJob: "OptimizationJob";
 };
@@ -183,7 +182,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "organization" | "user" | "driver" | "driverLocation" | "depot" | "vehicle" | "delivery" | "route" | "routeStop" | "proofOfDelivery" | "routeEvent" | "routeSummary" | "customerNotification" | "optimizationJob";
+        modelProps: "organization" | "user" | "driver" | "driverLocation" | "depot" | "vehicle" | "delivery" | "route" | "routeStop" | "proofOfDelivery" | "routeEvent" | "customerNotification" | "optimizationJob";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -1001,80 +1000,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 };
             };
         };
-        RouteSummary: {
-            payload: Prisma.$RouteSummaryPayload<ExtArgs>;
-            fields: Prisma.RouteSummaryFieldRefs;
-            operations: {
-                findUnique: {
-                    args: Prisma.RouteSummaryFindUniqueArgs<ExtArgs>;
-                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload> | null;
-                };
-                findUniqueOrThrow: {
-                    args: Prisma.RouteSummaryFindUniqueOrThrowArgs<ExtArgs>;
-                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>;
-                };
-                findFirst: {
-                    args: Prisma.RouteSummaryFindFirstArgs<ExtArgs>;
-                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload> | null;
-                };
-                findFirstOrThrow: {
-                    args: Prisma.RouteSummaryFindFirstOrThrowArgs<ExtArgs>;
-                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>;
-                };
-                findMany: {
-                    args: Prisma.RouteSummaryFindManyArgs<ExtArgs>;
-                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>[];
-                };
-                create: {
-                    args: Prisma.RouteSummaryCreateArgs<ExtArgs>;
-                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>;
-                };
-                createMany: {
-                    args: Prisma.RouteSummaryCreateManyArgs<ExtArgs>;
-                    result: BatchPayload;
-                };
-                createManyAndReturn: {
-                    args: Prisma.RouteSummaryCreateManyAndReturnArgs<ExtArgs>;
-                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>[];
-                };
-                delete: {
-                    args: Prisma.RouteSummaryDeleteArgs<ExtArgs>;
-                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>;
-                };
-                update: {
-                    args: Prisma.RouteSummaryUpdateArgs<ExtArgs>;
-                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>;
-                };
-                deleteMany: {
-                    args: Prisma.RouteSummaryDeleteManyArgs<ExtArgs>;
-                    result: BatchPayload;
-                };
-                updateMany: {
-                    args: Prisma.RouteSummaryUpdateManyArgs<ExtArgs>;
-                    result: BatchPayload;
-                };
-                updateManyAndReturn: {
-                    args: Prisma.RouteSummaryUpdateManyAndReturnArgs<ExtArgs>;
-                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>[];
-                };
-                upsert: {
-                    args: Prisma.RouteSummaryUpsertArgs<ExtArgs>;
-                    result: runtime.Types.Utils.PayloadToResult<Prisma.$RouteSummaryPayload>;
-                };
-                aggregate: {
-                    args: Prisma.RouteSummaryAggregateArgs<ExtArgs>;
-                    result: runtime.Types.Utils.Optional<Prisma.AggregateRouteSummary>;
-                };
-                groupBy: {
-                    args: Prisma.RouteSummaryGroupByArgs<ExtArgs>;
-                    result: runtime.Types.Utils.Optional<Prisma.RouteSummaryGroupByOutputType>[];
-                };
-                count: {
-                    args: Prisma.RouteSummaryCountArgs<ExtArgs>;
-                    result: runtime.Types.Utils.Optional<Prisma.RouteSummaryCountAggregateOutputType> | number;
-                };
-            };
-        };
         CustomerNotification: {
             payload: Prisma.$CustomerNotificationPayload<ExtArgs>;
             fields: Prisma.CustomerNotificationFieldRefs;
@@ -1399,16 +1324,6 @@ export declare const RouteEventScalarFieldEnum: {
     readonly createdAt: "createdAt";
 };
 export type RouteEventScalarFieldEnum = (typeof RouteEventScalarFieldEnum)[keyof typeof RouteEventScalarFieldEnum];
-export declare const RouteSummaryScalarFieldEnum: {
-    readonly id: "id";
-    readonly routeId: "routeId";
-    readonly summary: "summary";
-    readonly model: "model";
-    readonly generatedAt: "generatedAt";
-    readonly createdAt: "createdAt";
-    readonly updatedAt: "updatedAt";
-};
-export type RouteSummaryScalarFieldEnum = (typeof RouteSummaryScalarFieldEnum)[keyof typeof RouteSummaryScalarFieldEnum];
 export declare const CustomerNotificationScalarFieldEnum: {
     readonly id: "id";
     readonly organizationId: "organizationId";
@@ -1542,7 +1457,6 @@ export type GlobalOmitConfig = {
     routeStop?: Prisma.RouteStopOmit;
     proofOfDelivery?: Prisma.ProofOfDeliveryOmit;
     routeEvent?: Prisma.RouteEventOmit;
-    routeSummary?: Prisma.RouteSummaryOmit;
     customerNotification?: Prisma.CustomerNotificationOmit;
     optimizationJob?: Prisma.OptimizationJobOmit;
 };
