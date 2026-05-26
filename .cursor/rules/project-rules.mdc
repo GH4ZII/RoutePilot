@@ -1,0 +1,58 @@
+---
+description: RoutePilot monorepo conventions for API, web, mobile, and optimizer
+alwaysApply: true
+---
+
+# RoutePilot project rules
+
+## Context
+
+Read [AGENTS.md](../../AGENTS.md) and domain docs under `docs/` before large changes.
+
+## Monorepo layout
+
+- `apps/api` — NestJS; **only place** for Prisma schema and migrations
+- `apps/web` — React + Vite; dispatcher/admin only (not driver UI)
+- `apps/mobile` — Expo; driver flows
+- `apps/optimizer` — Python FastAPI; stateless VRP/TSP
+
+Do not import across apps except via HTTP APIs.
+
+## Security (non-negotiable)
+
+- Scope all tenant data by `organizationId` from JWT (`OrgScopeService`)
+- New endpoints need `@UseGuards(JwtAuthGuard, RolesGuard)` and explicit `@Roles(...)`
+- Never commit `.env` or secrets
+
+## API patterns
+
+- DTOs with `class-validator`; global `ValidationPipe` whitelists fields
+- Business logic in `*.service.ts`, thin controllers
+- Use Prisma transactions for multi-row writes (routes + stops + delivery status)
+- User-facing errors in **Norwegian** where the codebase already does
+- After `schema.prisma` changes: migration + `npx prisma generate` in `apps/api`
+
+## Frontend patterns
+
+- Web: match existing pages under `apps/web/src/pages`, types in `types/domain.ts`
+- Mobile: Expo Router under `apps/mobile/app`
+- API base URL from env (`VITE_API_URL`, `EXPO_PUBLIC_API_URL`)
+
+## Optimization
+
+VRP requires Redis, `OPTIMIZER_URL`, and `OSRM_BASE_URL`. Job flow: `POST /optimization/jobs` → BullMQ → OSRM → `/solve-vrp`. See `docs/architecture/optimization-pipeline.md`.
+
+## Code style
+
+- Minimal, focused diffs; no drive-by refactors
+- Match surrounding naming and file structure
+- Comments only for non-obvious business rules
+- Add tests when fixing bugs or for non-trivial logic; do not add trivial tests
+
+## Commands (repo root)
+
+```powershell
+npm run dev              # api + web + mobile
+npm run dev:optimizer    # Python on :8000
+docker compose up -d redis
+```
